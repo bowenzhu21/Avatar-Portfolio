@@ -11,6 +11,7 @@ interface PortfolioState {
   recentEntities: string[];
   conversationMode: ConversationMode;
   transcript: string;
+  partialTranscript: string;
   responseText: string;
   isListening: boolean;
   isThinking: boolean;
@@ -22,6 +23,7 @@ interface PortfolioState {
   setActiveSection: (section: string | null) => void;
   pushRecentEntity: (entityId: string) => void;
   setTranscript: (transcript: string) => void;
+  setPartialTranscript: (partialTranscript: string) => void;
   setResponseText: (responseText: string) => void;
   setConversationMode: (mode: ConversationMode) => void;
   setListening: (value: boolean) => void;
@@ -39,6 +41,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   recentEntities: [],
   conversationMode: "idle",
   transcript: "",
+  partialTranscript: "",
   responseText: "",
   isListening: false,
   isThinking: false,
@@ -56,6 +59,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
       ),
     })),
   setTranscript: (transcript) => set({ transcript }),
+  setPartialTranscript: (partialTranscript) => set({ partialTranscript }),
   setResponseText: (responseText) => set({ responseText }),
   setConversationMode: (conversationMode) => set({ conversationMode }),
   setListening: (isListening) =>
