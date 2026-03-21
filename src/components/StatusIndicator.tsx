@@ -4,7 +4,10 @@ import clsx from "clsx";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 const statusCopy = {
-  idle: "Idle",
+  default: "Default",
+  recruiter: "Recruiter",
+  technical: "Technical",
+  concise: "Concise",
   listening: "Listening",
   thinking: "Thinking",
   speaking: "Speaking",
@@ -18,7 +21,11 @@ export function StatusIndicator() {
       <span
         className={clsx(
           "h-2.5 w-2.5 rounded-full transition-colors",
-          mode === "idle" && "bg-white/40",
+          (mode === "default" ||
+            mode === "recruiter" ||
+            mode === "technical" ||
+            mode === "concise") &&
+            "bg-white/40",
           mode === "listening" && "bg-emerald-400 shadow-[0_0_18px_rgba(74,222,128,0.8)]",
           mode === "thinking" && "bg-amber-300 shadow-[0_0_18px_rgba(252,211,77,0.8)]",
           mode === "speaking" && "bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.85)]",

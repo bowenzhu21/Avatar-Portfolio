@@ -21,14 +21,18 @@ export function VoiceRouterProvider() {
   const lastHandledTranscriptRef = useRef("");
   const activeRoute = usePortfolioStore((state) => state.activeRoute);
   const activeEntity = usePortfolioStore((state) => state.activeEntity);
+  const activeCard = usePortfolioStore((state) => state.activeCard);
   const activeSection = usePortfolioStore((state) => state.activeSection);
   const recentEntities = usePortfolioStore((state) => state.recentEntities);
   const conversationMode = usePortfolioStore((state) => state.conversationMode);
+  const lastIntent = usePortfolioStore((state) => state.lastIntent);
   const setActiveRoute = usePortfolioStore((state) => state.setActiveRoute);
   const setActiveEntity = usePortfolioStore((state) => state.setActiveEntity);
   const setActiveSection = usePortfolioStore((state) => state.setActiveSection);
   const setActiveCard = usePortfolioStore((state) => state.setActiveCard);
   const setFollowUpSuggestions = usePortfolioStore((state) => state.setFollowUpSuggestions);
+  const setLastIntent = usePortfolioStore((state) => state.setLastIntent);
+  const setConversationMode = usePortfolioStore((state) => state.setConversationMode);
   const setResponseText = usePortfolioStore((state) => state.setResponseText);
   const setPartialTranscript = usePortfolioStore((state) => state.setPartialTranscript);
   const setThinking = usePortfolioStore((state) => state.setThinking);
@@ -58,16 +62,29 @@ export function VoiceRouterProvider() {
           transcript,
           activeRoute,
           activeEntityId: activeEntity?.id ?? null,
+          activeCard,
           activeSection,
           recentEntities,
           conversationMode,
+          lastIntent,
         });
 
         openCard();
         setActiveCard(result.card);
+        setLastIntent(result.intent);
         setResponseText(result.spokenResponse);
         setFollowUpSuggestions(result.followUpSuggestions);
         setPartialTranscript("");
+
+        if (/\b(recruiter|hiring manager)\b/i.test(transcript)) {
+          setConversationMode("recruiter");
+        } else if (/\b(technical|backend|architecture|deeper)\b/i.test(transcript)) {
+          setConversationMode("technical");
+        } else if (/\b(concise|brief|shorter)\b/i.test(transcript)) {
+          setConversationMode("concise");
+        } else if (conversationMode === "default") {
+          setConversationMode("default");
+        }
 
         const nextEntity =
           result.entity ?? (result.route ? getEntityByRoute(result.route) : null);
@@ -109,12 +126,14 @@ export function VoiceRouterProvider() {
     void run();
   }, [
     activeEntity,
+    activeCard,
     activeRoute,
     activeSection,
     conversationMode,
     createAndStartSession,
     isAvatarConnected,
     lastFinalTranscript,
+    lastIntent,
     openCard,
     pushRecentEntity,
     recentEntities,
@@ -123,7 +142,9 @@ export function VoiceRouterProvider() {
     setActiveEntity,
     setActiveRoute,
     setActiveSection,
+    setConversationMode,
     setFollowUpSuggestions,
+    setLastIntent,
     setPartialTranscript,
     setResponseText,
     setSpeaking,

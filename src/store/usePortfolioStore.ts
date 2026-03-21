@@ -1,7 +1,12 @@
 "use client";
 
 import { create } from "zustand";
-import type { CardType, ConversationMode, PortfolioEntity } from "@/types";
+import type {
+  CardType,
+  ConversationMode,
+  OrchestrationIntent,
+  PortfolioEntity,
+} from "@/types";
 
 interface PortfolioState {
   activeRoute: string;
@@ -11,6 +16,7 @@ interface PortfolioState {
   recentEntities: string[];
   followUpSuggestions: string[];
   conversationMode: ConversationMode;
+  lastIntent: OrchestrationIntent | null;
   transcript: string;
   partialTranscript: string;
   responseText: string;
@@ -24,6 +30,7 @@ interface PortfolioState {
   setActiveSection: (section: string | null) => void;
   pushRecentEntity: (entityId: string) => void;
   setFollowUpSuggestions: (suggestions: string[]) => void;
+  setLastIntent: (intent: OrchestrationIntent | null) => void;
   setTranscript: (transcript: string) => void;
   setPartialTranscript: (partialTranscript: string) => void;
   setResponseText: (responseText: string) => void;
@@ -42,7 +49,8 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   activeSection: null,
   recentEntities: [],
   followUpSuggestions: [],
-  conversationMode: "idle",
+  conversationMode: "default",
+  lastIntent: null,
   transcript: "",
   partialTranscript: "",
   responseText: "",
@@ -62,6 +70,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
       ),
     })),
   setFollowUpSuggestions: (followUpSuggestions) => set({ followUpSuggestions }),
+  setLastIntent: (lastIntent) => set({ lastIntent }),
   setTranscript: (transcript) => set({ transcript }),
   setPartialTranscript: (partialTranscript) => set({ partialTranscript }),
   setResponseText: (responseText) => set({ responseText }),
@@ -69,17 +78,17 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   setListening: (isListening) =>
     set({
       isListening,
-      conversationMode: isListening ? "listening" : "idle",
+      conversationMode: isListening ? "listening" : "default",
     }),
   setThinking: (isThinking) =>
     set({
       isThinking,
-      conversationMode: isThinking ? "thinking" : "idle",
+      conversationMode: isThinking ? "thinking" : "default",
     }),
   setSpeaking: (isSpeaking) =>
     set({
       isSpeaking,
-      conversationMode: isSpeaking ? "speaking" : "idle",
+      conversationMode: isSpeaking ? "speaking" : "default",
     }),
   toggleCard: () => set((state) => ({ isCardOpen: !state.isCardOpen })),
   openCard: () => set({ isCardOpen: true }),

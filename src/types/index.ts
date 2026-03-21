@@ -2,14 +2,21 @@ export type EntityType = "project" | "experience" | "other";
 
 export type CardType =
   | "overview"
-  | "technical"
-  | "recruiter"
+  | "architecture"
+  | "stack"
   | "comparison"
   | "contact"
-  | "timeline"
-  | "highlights";
+  | "resume"
+  | "hobbies";
 
-export type ConversationMode = "idle" | "listening" | "thinking" | "speaking";
+export type ConversationMode =
+  | "default"
+  | "recruiter"
+  | "technical"
+  | "concise"
+  | "listening"
+  | "thinking"
+  | "speaking";
 
 export type OrchestrationIntent =
   | "navigate"
@@ -43,9 +50,11 @@ export interface VoiceRouterInput {
   transcript: string;
   activeRoute?: string;
   activeEntityId?: string | null;
+  activeCard?: CardType | null;
   activeSection?: string | null;
   recentEntities?: string[];
   conversationMode?: ConversationMode;
+  lastIntent?: OrchestrationIntent | null;
 }
 
 export interface VoiceRouterOutput {

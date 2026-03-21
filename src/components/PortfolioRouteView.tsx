@@ -1,3 +1,6 @@
+"use client";
+
+import { usePortfolioStore } from "@/store/usePortfolioStore";
 import Link from "next/link";
 import type { Route } from "next";
 import { ComparisonCard } from "@/components/ComparisonCard";
@@ -11,9 +14,58 @@ interface PortfolioRouteViewProps {
 
 export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const entity = getEntityByRoute(route);
+  const activeCard = usePortfolioStore((state) => state.activeCard);
+  const activeSection = usePortfolioStore((state) => state.activeSection);
   const relatedEntities = (entity?.relatedItems ?? [])
     .map((id) => getEntityById(id))
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  const selectedSection =
+    entity?.sections.find((section) => section.id === activeSection) ?? entity?.sections[0] ?? null;
+
+  const cardContent = (() => {
+    if (!entity) {
+      return null;
+    }
+
+    switch (activeCard) {
+      case "architecture":
+        return {
+          title: "Architecture",
+          body: entity.technicalSummary,
+        };
+      case "stack":
+        return {
+          title: "Stack",
+          body: `Core themes: ${entity.tags.join(", ")}.`,
+        };
+      case "comparison":
+        return {
+          title: "Comparison",
+          body: "This view frames the current item against a relevant reference point.",
+        };
+      case "contact":
+        return {
+          title: "Contact",
+          body: "Placeholder contact content. This can later surface email, LinkedIn, and a clear next step.",
+        };
+      case "resume":
+        return {
+          title: "Resume",
+          body: "Placeholder resume summary. This view should condense Bowen's trajectory into a recruiter-friendly snapshot.",
+        };
+      case "hobbies":
+        return {
+          title: "Hobbies",
+          body: "Placeholder hobbies content. This view adds personal texture and cultural-fit context.",
+        };
+      default:
+        return {
+          title: selectedSection?.title ?? "Overview",
+          body: selectedSection?.summary ?? entity.shortSummary,
+        };
+    }
+  })();
 
   return (
     <div className="space-y-6">
@@ -23,8 +75,10 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
         <>
           <div className="grid gap-4 rounded-[1.75rem] border border-white/8 bg-white/[0.04] p-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-white/40">Summary</p>
-              <p className="mt-2 text-sm leading-7 text-sand-200/75">{entity.technicalSummary}</p>
+              <p className="text-xs uppercase tracking-[0.32em] text-white/40">{cardContent?.title ?? "Summary"}</p>
+              <p className="mt-2 text-sm leading-7 text-sand-200/75">
+                {cardContent?.body ?? entity.technicalSummary}
+              </p>
             </div>
             <div>
               <p className="text-xs uppercase tracking-[0.32em] text-white/40">Tags</p>

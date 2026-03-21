@@ -215,8 +215,11 @@ Adapt tone to the requested lens: ${lens}.`,
         transcript: args.input.transcript,
         lens,
         currentRoute: args.input.activeRoute ?? null,
+        currentCard: args.input.activeCard ?? null,
         currentEntity: getCompactEntityContext(args.currentEntity),
         recentEntities: args.input.recentEntities ?? [],
+        conversationMode: args.input.conversationMode ?? "default",
+        lastIntent: args.input.lastIntent ?? null,
         topCandidates: args.topCandidates,
         deterministicHint: args.deterministicHint
           ? {
