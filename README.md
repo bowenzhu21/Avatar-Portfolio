@@ -9,6 +9,23 @@ A production-oriented Next.js App Router portfolio scaffold designed for a voice
 - Deterministic `/api/voice-router` for navigation-aware orchestration
 - Stubbed integration points for Gemini, HeyGen, and ElevenLabs
 
+## Environment Variables
+
+Place secrets in `.env.local` at the project root.
+
+```bash
+GEMINI_API_KEY=your_gemini_key
+HEYGEN_API_KEY=your_heygen_key
+ELEVENLABS_API_KEY=your_elevenlabs_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+Rules:
+
+- `GEMINI_API_KEY`, `HEYGEN_API_KEY`, and `ELEVENLABS_API_KEY` are server-only.
+- `NEXT_PUBLIC_APP_URL` is the only value intentionally exposed to the client.
+- `.env.local` is gitignored and should not be committed.
+
 ## Stack
 
 - Next.js 15 App Router with TypeScript
@@ -55,6 +72,10 @@ A production-oriented Next.js App Router portfolio scaffold designed for a voice
   Stubbed ElevenLabs realtime transcription lifecycle.
 - `src/lib/orchestrator.ts`
   Client integration layer for calling orchestration endpoints.
+- `src/config/env.server.ts`
+  Server-only environment loader that validates required keys before protected integrations run.
+- `src/config/env.client.ts`
+  Minimal client-safe config surface for public values only.
 
 ## Setup
 
@@ -67,8 +88,10 @@ npm install
 2. Add environment variables in `.env.local`:
 
 ```bash
-NEXT_PUBLIC_HEYGEN_AVATAR_ID=your_avatar_id
-NEXT_PUBLIC_HEYGEN_CONTEXT_ID=your_context_id
+GEMINI_API_KEY=your_gemini_key
+HEYGEN_API_KEY=your_heygen_key
+ELEVENLABS_API_KEY=your_elevenlabs_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 3. Run the app:
@@ -110,3 +133,10 @@ Supported intents:
 - Replace the placeholder HeyGen lifecycle with actual Streaming Avatar / LiveAvatar session management.
 - Replace the placeholder ElevenLabs lifecycle with realtime microphone transcription.
 - Add Gemini fallback orchestration inside `/api/orchestrate`.
+
+## Config Loading
+
+- Avatar identity is static in `src/config/avatar.ts`.
+- Public app metadata reads `NEXT_PUBLIC_APP_URL` through `src/config/env.client.ts`.
+- Secret keys are loaded only through `src/config/env.server.ts`, which uses `server-only` and throws if required values are missing when a server integration is invoked.
+- Client components should not import the server env loader.

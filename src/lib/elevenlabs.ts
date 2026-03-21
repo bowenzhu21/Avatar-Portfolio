@@ -1,3 +1,5 @@
+import { getServerEnv } from "@/config/env.server";
+
 export interface ElevenLabsTranscriptChunk {
   text: string;
   isFinal: boolean;
@@ -11,7 +13,10 @@ export interface ElevenLabsRealtimeSession {
 }
 
 export async function createRealtimeTranscriptionSession(): Promise<ElevenLabsRealtimeSession> {
+  const env = getServerEnv();
+
   // TODO: Initialize realtime websocket/session with ElevenLabs STT credentials.
+  void env.ELEVENLABS_API_KEY;
   return {
     id: "stub-elevenlabs-session",
     model: "scribe_v1_stub",

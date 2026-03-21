@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heygen/streaming-avatar": "^2.1.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.6.2",
     "next": "^15.3.0",

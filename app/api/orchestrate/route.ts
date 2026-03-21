@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import type { VoiceRouterInput, VoiceRouterOutput } from "@/types";
+import { getServerEnv } from "@/config/env.server";
 import { orchestrationSystemPrompt } from "@/config/prompts";
 
 export async function POST(request: Request) {
   const input = (await request.json()) as VoiceRouterInput;
+  const env = getServerEnv();
 
   const response: VoiceRouterOutput = {
     intent: "fallback",
@@ -25,6 +27,7 @@ export async function POST(request: Request) {
     ...response,
     debug: {
       systemPromptPreview: orchestrationSystemPrompt.trim(),
+      appUrl: env.NEXT_PUBLIC_APP_URL,
       todo: "Wire Gemini server-side call here and fall back to /api/voice-router when deterministic matches win.",
     },
   });
