@@ -3,6 +3,7 @@ import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { OverlayShell } from "@/components/OverlayShell";
 import { StoreSyncProvider } from "@/components/providers/store-sync-provider";
+import { VoiceRouterProvider } from "@/components/providers/voice-router-provider";
 import { siteConfig } from "@/config/site";
 
 const manrope = Manrope({
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${manrope.variable} ${spaceGrotesk.variable}`}>
         <StoreSyncProvider />
+        <VoiceRouterProvider />
         <OverlayShell>{children}</OverlayShell>
       </body>
     </html>

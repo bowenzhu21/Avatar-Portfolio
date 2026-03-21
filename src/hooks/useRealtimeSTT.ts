@@ -16,6 +16,7 @@ const INITIAL_STATE: ElevenLabsRealtimeState = {
   isListening: false,
   transcript: "",
   partialTranscript: "",
+  lastFinalTranscript: "",
   error: null,
   microphonePermission: "unknown",
 };

@@ -34,6 +34,7 @@ export interface ElevenLabsRealtimeState {
   isListening: boolean;
   transcript: string;
   partialTranscript: string;
+  lastFinalTranscript: string;
   error: string | null;
   microphonePermission: "unknown" | "granted" | "denied";
 }
@@ -94,6 +95,7 @@ const INITIAL_STATE: ElevenLabsRealtimeState = {
   isListening: false,
   transcript: "",
   partialTranscript: "",
+  lastFinalTranscript: "",
   error: null,
   microphonePermission: "unknown",
 };
@@ -220,6 +222,7 @@ export class ElevenLabsRealtimeClient {
       },
       error: null,
       partialTranscript: "",
+      lastFinalTranscript: "",
     });
 
     try {
@@ -325,6 +328,7 @@ export class ElevenLabsRealtimeClient {
     this.setState({
       isListening: false,
       partialTranscript: "",
+      lastFinalTranscript: "",
       session: {
         sessionId: null,
         modelId: "scribe_v2_realtime",
@@ -346,6 +350,7 @@ export class ElevenLabsRealtimeClient {
     this.setState({
       transcript: "",
       partialTranscript: "",
+      lastFinalTranscript: "",
     });
   }
 
@@ -415,6 +420,7 @@ export class ElevenLabsRealtimeClient {
         this.setState({
           transcript: [this.state.transcript, message.text].filter(Boolean).join(" ").trim(),
           partialTranscript: "",
+          lastFinalTranscript: message.text,
         });
         return;
       }

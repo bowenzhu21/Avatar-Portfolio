@@ -9,6 +9,7 @@ interface PortfolioState {
   activeEntity: PortfolioEntity | null;
   activeSection: string | null;
   recentEntities: string[];
+  followUpSuggestions: string[];
   conversationMode: ConversationMode;
   transcript: string;
   partialTranscript: string;
@@ -22,6 +23,7 @@ interface PortfolioState {
   setActiveCard: (card: CardType) => void;
   setActiveSection: (section: string | null) => void;
   pushRecentEntity: (entityId: string) => void;
+  setFollowUpSuggestions: (suggestions: string[]) => void;
   setTranscript: (transcript: string) => void;
   setPartialTranscript: (partialTranscript: string) => void;
   setResponseText: (responseText: string) => void;
@@ -39,6 +41,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   activeEntity: null,
   activeSection: null,
   recentEntities: [],
+  followUpSuggestions: [],
   conversationMode: "idle",
   transcript: "",
   partialTranscript: "",
@@ -58,6 +61,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
         5,
       ),
     })),
+  setFollowUpSuggestions: (followUpSuggestions) => set({ followUpSuggestions }),
   setTranscript: (transcript) => set({ transcript }),
   setPartialTranscript: (partialTranscript) => set({ partialTranscript }),
   setResponseText: (responseText) => set({ responseText }),
