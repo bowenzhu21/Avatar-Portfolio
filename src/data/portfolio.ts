@@ -1,5 +1,19 @@
 import type { PortfolioEntity } from "@/types";
 
+export interface CompactPortfolioEntity {
+  id: string;
+  title: string;
+  type: PortfolioEntity["type"];
+  route: string;
+  aliases: string[];
+  tags: string[];
+  shortSummary: string;
+  sections: Array<{
+    id: string;
+    title: string;
+  }>;
+}
+
 export const portfolioEntities: PortfolioEntity[] = [
   {
     id: "matrix",
@@ -411,4 +425,20 @@ export const portfolioEntities: PortfolioEntity[] = [
 
 export const portfolioEntityMap = new Map(
   portfolioEntities.map((entity) => [entity.id, entity]),
+);
+
+export const compactPortfolioRegistry: CompactPortfolioEntity[] = portfolioEntities.map(
+  (entity) => ({
+    id: entity.id,
+    title: entity.title,
+    type: entity.type,
+    route: entity.route,
+    aliases: entity.aliases,
+    tags: entity.tags,
+    shortSummary: entity.shortSummary,
+    sections: entity.sections.map((section) => ({
+      id: section.id,
+      title: section.title,
+    })),
+  }),
 );

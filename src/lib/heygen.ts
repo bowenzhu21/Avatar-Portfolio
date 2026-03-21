@@ -347,3 +347,5 @@ export class HeyGenAvatarClient {
     }
   }
 }
+
+export const sharedHeyGenAvatarClient = new HeyGenAvatarClient();

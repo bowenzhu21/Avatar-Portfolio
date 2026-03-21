@@ -5,6 +5,7 @@ import {
   type ElevenLabsRealtimeState,
   ElevenLabsRealtimeClient,
 } from "@/lib/elevenlabs";
+import { sharedHeyGenAvatarClient } from "@/lib/heygen";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 const INITIAL_STATE: ElevenLabsRealtimeState = {
@@ -48,7 +49,9 @@ export function useRealtimeSTT() {
 
   async function toggleListening() {
     if (!state.isListening) {
-      // TODO: Interrupt active avatar speech here before opening a new listen cycle.
+      if (sharedHeyGenAvatarClient.getState().isSpeaking) {
+        await sharedHeyGenAvatarClient.interrupt();
+      }
     }
 
     await sharedRealtimeSTTClient.toggleListening();

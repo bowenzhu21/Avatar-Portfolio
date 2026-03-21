@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { StartAvatarResponse } from "@heygen/streaming-avatar";
 import {
   type HeyGenAvatarState,
-  HeyGenAvatarClient,
   type HeyGenCreateSessionOptions,
+  sharedHeyGenAvatarClient,
 } from "@/lib/heygen";
 
 const INITIAL_HOOK_STATE: HeyGenAvatarState = {
@@ -20,22 +20,11 @@ const INITIAL_HOOK_STATE: HeyGenAvatarState = {
 };
 
 export function useHeyGenAvatar() {
-  const clientRef = useRef<HeyGenAvatarClient | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [state, setState] = useState<HeyGenAvatarState>(INITIAL_HOOK_STATE);
 
-  if (!clientRef.current) {
-    clientRef.current = new HeyGenAvatarClient();
-  }
-
   useEffect(() => {
-    const client = clientRef.current;
-
-    if (!client) {
-      return;
-    }
-
-    return client.subscribe(setState);
+    return sharedHeyGenAvatarClient.subscribe(setState);
   }, []);
 
   useEffect(() => {
@@ -59,79 +48,32 @@ export function useHeyGenAvatar() {
     }
   }, [state.mediaStream]);
 
-  useEffect(() => {
-    return () => {
-      const client = clientRef.current;
-      if (!client) {
-        return;
-      }
-
-      void client.stopSession().catch(() => undefined);
-    };
-  }, []);
-
   async function createSession(
     options?: HeyGenCreateSessionOptions,
   ): Promise<StartAvatarResponse> {
-    const client = clientRef.current;
-
-    if (!client) {
-      throw new Error("HeyGen client is unavailable.");
-    }
-
-    return client.createSession(options);
+    return sharedHeyGenAvatarClient.createSession(options);
   }
 
   async function startSession(): Promise<StartAvatarResponse> {
-    const client = clientRef.current;
-
-    if (!client) {
-      throw new Error("HeyGen client is unavailable.");
-    }
-
-    return client.startSession();
+    return sharedHeyGenAvatarClient.startSession();
   }
 
   async function createAndStartSession(
     options?: HeyGenCreateSessionOptions,
   ): Promise<StartAvatarResponse> {
-    const client = clientRef.current;
-
-    if (!client) {
-      throw new Error("HeyGen client is unavailable.");
-    }
-
-    return client.createAndStartSession(options);
+    return sharedHeyGenAvatarClient.createAndStartSession(options);
   }
 
   async function stopSession(): Promise<void> {
-    const client = clientRef.current;
-
-    if (!client) {
-      return;
-    }
-
-    await client.stopSession();
+    await sharedHeyGenAvatarClient.stopSession();
   }
 
   async function speak(text: string): Promise<void> {
-    const client = clientRef.current;
-
-    if (!client) {
-      throw new Error("HeyGen client is unavailable.");
-    }
-
-    await client.speak(text);
+    await sharedHeyGenAvatarClient.speak(text);
   }
 
   async function interrupt(): Promise<void> {
-    const client = clientRef.current;
-
-    if (!client) {
-      return;
-    }
-
-    await client.interrupt();
+    await sharedHeyGenAvatarClient.interrupt();
   }
 
   return {

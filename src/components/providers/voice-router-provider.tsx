@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
+import { useHeyGenAvatar } from "@/hooks/useHeyGenAvatar";
 import { useRealtimeSTT } from "@/hooks/useRealtimeSTT";
 import { routeVoiceIntent } from "@/lib/orchestrator";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
@@ -11,8 +12,13 @@ import { getEntityByRoute } from "@/utils/portfolio";
 export function VoiceRouterProvider() {
   const router = useRouter();
   const { lastFinalTranscript } = useRealtimeSTT();
+  const {
+    isConnected: isAvatarConnected,
+    isSpeaking: isAvatarSpeaking,
+    createAndStartSession,
+    speak,
+  } = useHeyGenAvatar();
   const lastHandledTranscriptRef = useRef("");
-  const speakingTimeoutRef = useRef<number | null>(null);
   const activeRoute = usePortfolioStore((state) => state.activeRoute);
   const activeEntity = usePortfolioStore((state) => state.activeEntity);
   const activeSection = usePortfolioStore((state) => state.activeSection);
@@ -31,12 +37,8 @@ export function VoiceRouterProvider() {
   const pushRecentEntity = usePortfolioStore((state) => state.pushRecentEntity);
 
   useEffect(() => {
-    return () => {
-      if (speakingTimeoutRef.current) {
-        window.clearTimeout(speakingTimeoutRef.current);
-      }
-    };
-  }, []);
+    setSpeaking(isAvatarSpeaking);
+  }, [isAvatarSpeaking, setSpeaking]);
 
   useEffect(() => {
     const transcript = lastFinalTranscript.trim();
@@ -83,15 +85,18 @@ export function VoiceRouterProvider() {
         }
 
         setThinking(false);
-        setSpeaking(true);
-
-        if (speakingTimeoutRef.current) {
-          window.clearTimeout(speakingTimeoutRef.current);
+        if (!isAvatarConnected) {
+          await createAndStartSession();
         }
 
-        speakingTimeoutRef.current = window.setTimeout(() => {
-          setSpeaking(false);
-        }, Math.max(1800, Math.min(result.spokenResponse.length * 45, 6000)));
+        const conciseResponse = result.spokenResponse
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 240);
+
+        if (conciseResponse) {
+          await speak(conciseResponse);
+        }
       } catch {
         setThinking(false);
         setSpeaking(false);
@@ -107,6 +112,8 @@ export function VoiceRouterProvider() {
     activeRoute,
     activeSection,
     conversationMode,
+    createAndStartSession,
+    isAvatarConnected,
     lastFinalTranscript,
     openCard,
     pushRecentEntity,
@@ -121,6 +128,7 @@ export function VoiceRouterProvider() {
     setResponseText,
     setSpeaking,
     setThinking,
+    speak,
   ]);
 
   return null;
