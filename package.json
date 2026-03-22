@@ -9,9 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@heygen/streaming-avatar": "^2.1.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.6.2",
+    "livekit-client": "^2.17.3",
     "next": "^15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

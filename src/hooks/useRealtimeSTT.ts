@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   type ElevenLabsRealtimeState,
   ElevenLabsRealtimeClient,
@@ -26,20 +26,41 @@ const sharedRealtimeSTTClient = new ElevenLabsRealtimeClient();
 
 export function useRealtimeSTT() {
   const [state, setState] = useState<ElevenLabsRealtimeState>(INITIAL_STATE);
-  const setListening = usePortfolioStore((store) => store.setListening);
-  const setTranscript = usePortfolioStore((store) => store.setTranscript);
+  const previousFinalTranscriptRef = useRef("");
+  const beginListeningCycle = usePortfolioStore((store) => store.beginListeningCycle);
   const setPartialTranscript = usePortfolioStore((store) => store.setPartialTranscript);
+  const submitUtterance = usePortfolioStore((store) => store.submitUtterance);
+  const setInteractionPhase = usePortfolioStore((store) => store.setInteractionPhase);
+  const interactionPhase = usePortfolioStore((store) => store.interactionPhase);
 
   useEffect(() => {
     return sharedRealtimeSTTClient.subscribe((nextState) => {
       setState(nextState);
-      setListening(nextState.isListening);
-      setTranscript(nextState.transcript);
+      if (nextState.isListening) {
+        setInteractionPhase("listening");
+      } else if (interactionPhase === "listening") {
+        setInteractionPhase("idle");
+      }
       setPartialTranscript(nextState.partialTranscript);
+
+      const finalTranscript = nextState.lastFinalTranscript.trim();
+      if (
+        finalTranscript &&
+        finalTranscript !== previousFinalTranscriptRef.current
+      ) {
+        previousFinalTranscriptRef.current = finalTranscript;
+        submitUtterance(finalTranscript, "voice");
+        sharedRealtimeSTTClient.clearCommittedTranscript();
+      }
+
+      if (!finalTranscript) {
+        previousFinalTranscriptRef.current = "";
+      }
     });
-  }, [setListening, setPartialTranscript, setTranscript]);
+  }, [interactionPhase, setInteractionPhase, setPartialTranscript, submitUtterance]);
 
   async function startListening() {
+    beginListeningCycle();
     await sharedRealtimeSTTClient.startListening();
   }
 
@@ -49,6 +70,7 @@ export function useRealtimeSTT() {
 
   async function toggleListening() {
     if (!state.isListening) {
+      beginListeningCycle();
       if (sharedHeyGenAvatarClient.getState().isSpeaking) {
         await sharedHeyGenAvatarClient.interrupt();
       }

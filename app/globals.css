@@ -20,6 +20,7 @@ body {
     radial-gradient(circle at 20% 20%, rgba(53, 200, 255, 0.16), transparent 32%),
     radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.14), transparent 28%),
     linear-gradient(135deg, #04070d 0%, #08111c 50%, #0b1623 100%);
+  letter-spacing: -0.01em;
 }
 
 * {
@@ -40,4 +41,32 @@ textarea {
 .panel-blur {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+}
+
+.premium-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05)),
+    linear-gradient(135deg, rgba(8, 17, 28, 0.88), rgba(12, 22, 35, 0.7));
+  box-shadow:
+    0 30px 80px rgba(4, 7, 13, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.premium-outline {
+  position: relative;
+}
+
+.premium-outline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(102, 217, 255, 0.04));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }

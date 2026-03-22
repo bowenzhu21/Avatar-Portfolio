@@ -4,21 +4,22 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { useHeyGenAvatar } from "@/hooks/useHeyGenAvatar";
-import { useRealtimeSTT } from "@/hooks/useRealtimeSTT";
 import { routeVoiceIntent } from "@/lib/orchestrator";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityByRoute } from "@/utils/portfolio";
 
 export function VoiceRouterProvider() {
   const router = useRouter();
-  const { lastFinalTranscript } = useRealtimeSTT();
   const {
     isConnected: isAvatarConnected,
     isSpeaking: isAvatarSpeaking,
     createAndStartSession,
     speak,
+    unlockAudio,
   } = useHeyGenAvatar();
-  const lastHandledTranscriptRef = useRef("");
+  const lastHandledUtteranceRef = useRef("");
+  const pendingUtterance = usePortfolioStore((state) => state.pendingUtterance);
+  const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
   const activeRoute = usePortfolioStore((state) => state.activeRoute);
   const activeEntity = usePortfolioStore((state) => state.activeEntity);
   const activeCard = usePortfolioStore((state) => state.activeCard);
@@ -33,48 +34,59 @@ export function VoiceRouterProvider() {
   const setFollowUpSuggestions = usePortfolioStore((state) => state.setFollowUpSuggestions);
   const setLastIntent = usePortfolioStore((state) => state.setLastIntent);
   const setConversationMode = usePortfolioStore((state) => state.setConversationMode);
-  const setResponseText = usePortfolioStore((state) => state.setResponseText);
-  const setPartialTranscript = usePortfolioStore((state) => state.setPartialTranscript);
-  const setThinking = usePortfolioStore((state) => state.setThinking);
-  const setSpeaking = usePortfolioStore((state) => state.setSpeaking);
+  const setInteractionPhase = usePortfolioStore((state) => state.setInteractionPhase);
+  const setLatestSpokenResponse = usePortfolioStore((state) => state.setLatestSpokenResponse);
+  const setLatestRouterPayload = usePortfolioStore((state) => state.setLatestRouterPayload);
+  const setLatestRouterResponse = usePortfolioStore((state) => state.setLatestRouterResponse);
+  const acknowledgePendingUtterance = usePortfolioStore(
+    (state) => state.acknowledgePendingUtterance,
+  );
+  const clearTurnCaption = usePortfolioStore((state) => state.clearTurnCaption);
   const openCard = usePortfolioStore((state) => state.openCard);
   const pushRecentEntity = usePortfolioStore((state) => state.pushRecentEntity);
+  const syncPhoneScreenFromRoute = usePortfolioStore((state) => state.syncPhoneScreenFromRoute);
 
   useEffect(() => {
-    setSpeaking(isAvatarSpeaking);
-  }, [isAvatarSpeaking, setSpeaking]);
+    if (isAvatarSpeaking) {
+      setInteractionPhase("speaking");
+    } else if (interactionPhase === "speaking") {
+      setInteractionPhase("idle");
+    }
+  }, [interactionPhase, isAvatarSpeaking, setInteractionPhase]);
 
   useEffect(() => {
-    const transcript = lastFinalTranscript.trim();
-
-    if (!transcript || transcript === lastHandledTranscriptRef.current) {
+    const utterance = pendingUtterance;
+    if (!utterance || utterance.id === lastHandledUtteranceRef.current) {
       return;
     }
 
-    lastHandledTranscriptRef.current = transcript;
+    lastHandledUtteranceRef.current = utterance.id;
 
     const run = async () => {
-      setThinking(true);
-      setSpeaking(false);
+      const transcript = utterance.text.trim();
+      const payload = {
+        transcript,
+        activeRoute,
+        activeEntityId: activeEntity?.id ?? null,
+        activeCard,
+        activeSection,
+        recentEntities,
+        conversationMode,
+        lastIntent,
+      } as const;
+
+      setInteractionPhase("thinking");
+      setLatestRouterPayload(payload);
+      setLatestSpokenResponse("");
 
       try {
-        const result = await routeVoiceIntent({
-          transcript,
-          activeRoute,
-          activeEntityId: activeEntity?.id ?? null,
-          activeCard,
-          activeSection,
-          recentEntities,
-          conversationMode,
-          lastIntent,
-        });
+        const result = await routeVoiceIntent(payload);
+        setLatestRouterResponse(result);
 
         openCard();
         setActiveCard(result.card);
         setLastIntent(result.intent);
-        setResponseText(result.spokenResponse);
         setFollowUpSuggestions(result.followUpSuggestions);
-        setPartialTranscript("");
 
         if (/\b(recruiter|hiring manager)\b/i.test(transcript)) {
           setConversationMode("recruiter");
@@ -82,8 +94,6 @@ export function VoiceRouterProvider() {
           setConversationMode("technical");
         } else if (/\b(concise|brief|shorter)\b/i.test(transcript)) {
           setConversationMode("concise");
-        } else if (conversationMode === "default") {
-          setConversationMode("default");
         }
 
         const nextEntity =
@@ -98,43 +108,51 @@ export function VoiceRouterProvider() {
 
         if (result.route && result.route !== activeRoute) {
           setActiveRoute(result.route);
+          syncPhoneScreenFromRoute(result.route, nextEntity, result.card);
           router.push(result.route as Route);
+        } else {
+          syncPhoneScreenFromRoute(activeRoute, nextEntity ?? activeEntity, result.card);
         }
 
-        setThinking(false);
+        const conciseResponse = result.spokenResponse.replace(/\s+/g, " ").trim().slice(0, 240);
+        setLatestSpokenResponse(conciseResponse);
+        acknowledgePendingUtterance(utterance.id);
+        clearTurnCaption();
+
         if (!isAvatarConnected) {
+          await unlockAudio();
           await createAndStartSession();
         }
 
-        const conciseResponse = result.spokenResponse
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 240);
-
         if (conciseResponse) {
+          setInteractionPhase("speaking");
           await speak(conciseResponse);
+        } else {
+          setInteractionPhase("idle");
         }
       } catch {
-        setThinking(false);
-        setSpeaking(false);
-        setResponseText(
-          "The voice router could not process that request. Try naming a project, role, or section again.",
+        acknowledgePendingUtterance(utterance.id);
+        setInteractionPhase("idle");
+        setLatestSpokenResponse(
+          "I couldn’t route that cleanly. Try naming a project, role, or section again.",
         );
       }
     };
 
     void run();
   }, [
-    activeEntity,
+    acknowledgePendingUtterance,
     activeCard,
+    activeEntity,
     activeRoute,
     activeSection,
+    clearTurnCaption,
     conversationMode,
     createAndStartSession,
     isAvatarConnected,
-    lastFinalTranscript,
     lastIntent,
     openCard,
+    pendingUtterance,
     pushRecentEntity,
     recentEntities,
     router,
@@ -144,12 +162,14 @@ export function VoiceRouterProvider() {
     setActiveSection,
     setConversationMode,
     setFollowUpSuggestions,
+    setInteractionPhase,
     setLastIntent,
-    setPartialTranscript,
-    setResponseText,
-    setSpeaking,
-    setThinking,
+    setLatestRouterPayload,
+    setLatestRouterResponse,
+    setLatestSpokenResponse,
     speak,
+    syncPhoneScreenFromRoute,
+    unlockAudio,
   ]);
 
   return null;

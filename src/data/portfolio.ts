@@ -304,6 +304,25 @@ export const portfolioEntities: PortfolioEntity[] = [
     relatedItems: ["momenta", "aura-dev", "contact"],
   },
   {
+    id: "photos",
+    title: "Photos",
+    type: "other",
+    route: "/photos",
+    aliases: ["photos", "photo app", "gallery"],
+    shortSummary: "A blank placeholder for a future Photos app experience.",
+    technicalSummary: "Placeholder.",
+    recruiterSummary: "Placeholder.",
+    tags: ["Photos"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Placeholder.",
+      },
+    ],
+    relatedItems: [],
+  },
+  {
     id: "school",
     title: "School",
     type: "other",

@@ -11,14 +11,18 @@ const defaultPrompts = [
 ];
 
 export function SuggestedPromptChips() {
-  const setTranscript = usePortfolioStore((state) => state.setTranscript);
   const setPartialTranscript = usePortfolioStore((state) => state.setPartialTranscript);
+  const submitUtterance = usePortfolioStore((state) => state.submitUtterance);
   const followUpSuggestions = usePortfolioStore((state) => state.followUpSuggestions);
   const { stopListening } = useRealtimeSTT();
   const prompts = followUpSuggestions.length > 0 ? followUpSuggestions : defaultPrompts;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="space-y-3">
+      <p className="text-[11px] uppercase tracking-[0.32em] text-white/42">
+        {followUpSuggestions.length === 0 ? "Try a voice prompt" : "Suggested follow-ups"}
+      </p>
+      <div className="flex flex-wrap gap-2">
       {prompts.map((prompt) => (
         <button
           key={prompt}
@@ -26,13 +30,14 @@ export function SuggestedPromptChips() {
           onClick={() => {
             void stopListening();
             setPartialTranscript("");
-            setTranscript(prompt);
+            submitUtterance(prompt, "chip");
           }}
           className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-sand-100/80 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-sand-100"
         >
           {prompt}
         </button>
       ))}
+      </div>
     </div>
   );
 }

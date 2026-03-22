@@ -9,14 +9,30 @@ export type CardType =
   | "resume"
   | "hobbies";
 
-export type ConversationMode =
-  | "default"
-  | "recruiter"
-  | "technical"
-  | "concise"
-  | "listening"
-  | "thinking"
-  | "speaking";
+export type ConversationMode = "default" | "recruiter" | "technical" | "concise";
+
+export type InteractionPhase = "idle" | "listening" | "thinking" | "speaking";
+
+export type PhoneApp =
+  | "home"
+  | "projects"
+  | "experience"
+  | "photos"
+  | "school"
+  | "resume"
+  | "contact"
+  | "hobbies";
+
+export type PhoneScreenView = "home" | "list" | "detail";
+
+export interface PhoneScreenState {
+  app: PhoneApp;
+  view: PhoneScreenView;
+  title: string;
+  entityId: string | null;
+  route: string | null;
+  card: CardType;
+}
 
 export type OrchestrationIntent =
   | "navigate"
@@ -66,4 +82,17 @@ export interface VoiceRouterOutput {
   spokenResponse: string;
   confidence: number;
   followUpSuggestions: string[];
+}
+
+export interface SubmittedUtterance {
+  id: string;
+  text: string;
+  source: "voice" | "chip";
+}
+
+export interface ConversationTurn {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  timestamp: number;
 }

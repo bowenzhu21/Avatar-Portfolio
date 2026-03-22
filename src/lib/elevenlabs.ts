@@ -221,6 +221,7 @@ export class ElevenLabsRealtimeClient {
         status: "requesting_permission",
       },
       error: null,
+      transcript: "",
       partialTranscript: "",
       lastFinalTranscript: "",
     });
@@ -321,14 +322,18 @@ export class ElevenLabsRealtimeClient {
           commit: true,
         }),
       );
+
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 350);
+      });
     }
 
     await this.cleanupTransport();
 
     this.setState({
       isListening: false,
+      transcript: "",
       partialTranscript: "",
-      lastFinalTranscript: "",
       session: {
         sessionId: null,
         modelId: "scribe_v2_realtime",
@@ -350,6 +355,13 @@ export class ElevenLabsRealtimeClient {
     this.setState({
       transcript: "",
       partialTranscript: "",
+      lastFinalTranscript: "",
+    });
+  }
+
+  clearCommittedTranscript() {
+    this.setState({
+      transcript: "",
       lastFinalTranscript: "",
     });
   }
@@ -417,10 +429,11 @@ export class ElevenLabsRealtimeClient {
       }
       case "committed_transcript":
       case "committed_transcript_with_timestamps": {
+        const finalText = message.text.trim();
         this.setState({
-          transcript: [this.state.transcript, message.text].filter(Boolean).join(" ").trim(),
+          transcript: finalText,
           partialTranscript: "",
-          lastFinalTranscript: message.text,
+          lastFinalTranscript: finalText,
         });
         return;
       }

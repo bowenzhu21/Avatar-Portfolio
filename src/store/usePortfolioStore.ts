@@ -1,11 +1,18 @@
 "use client";
 
 import { create } from "zustand";
+import { derivePhoneScreen } from "@/utils/phone";
 import type {
   CardType,
   ConversationMode,
+  ConversationTurn,
+  InteractionPhase,
   OrchestrationIntent,
+  PhoneScreenState,
   PortfolioEntity,
+  SubmittedUtterance,
+  VoiceRouterInput,
+  VoiceRouterOutput,
 } from "@/types";
 
 interface PortfolioState {
@@ -16,13 +23,16 @@ interface PortfolioState {
   recentEntities: string[];
   followUpSuggestions: string[];
   conversationMode: ConversationMode;
+  interactionPhase: InteractionPhase;
   lastIntent: OrchestrationIntent | null;
-  transcript: string;
   partialTranscript: string;
-  responseText: string;
-  isListening: boolean;
-  isThinking: boolean;
-  isSpeaking: boolean;
+  latestUserUtterance: string;
+  latestSpokenResponse: string;
+  pendingUtterance: SubmittedUtterance | null;
+  conversationHistory: ConversationTurn[];
+  phoneScreen: PhoneScreenState;
+  latestRouterPayload: VoiceRouterInput | null;
+  latestRouterResponse: VoiceRouterOutput | null;
   isCardOpen: boolean;
   setActiveRoute: (route: string) => void;
   setActiveEntity: (entity: PortfolioEntity | null) => void;
@@ -31,18 +41,30 @@ interface PortfolioState {
   pushRecentEntity: (entityId: string) => void;
   setFollowUpSuggestions: (suggestions: string[]) => void;
   setLastIntent: (intent: OrchestrationIntent | null) => void;
-  setTranscript: (transcript: string) => void;
-  setPartialTranscript: (partialTranscript: string) => void;
-  setResponseText: (responseText: string) => void;
   setConversationMode: (mode: ConversationMode) => void;
-  setListening: (value: boolean) => void;
-  setThinking: (value: boolean) => void;
-  setSpeaking: (value: boolean) => void;
+  setInteractionPhase: (phase: InteractionPhase) => void;
+  beginListeningCycle: () => void;
+  setPartialTranscript: (partialTranscript: string) => void;
+  submitUtterance: (text: string, source?: SubmittedUtterance["source"]) => SubmittedUtterance | null;
+  acknowledgePendingUtterance: (utteranceId: string) => void;
+  setLatestSpokenResponse: (responseText: string) => void;
+  clearTurnCaption: () => void;
+  setPhoneScreen: (screen: PhoneScreenState) => void;
+  syncPhoneScreenFromRoute: (route: string, entity: PortfolioEntity | null, card?: CardType) => void;
+  setLatestRouterPayload: (payload: VoiceRouterInput | null) => void;
+  setLatestRouterResponse: (payload: VoiceRouterOutput | null) => void;
   toggleCard: () => void;
   openCard: () => void;
 }
 
-export const usePortfolioStore = create<PortfolioState>((set) => ({
+let utteranceCounter = 0;
+
+function createTurnId(prefix: string) {
+  utteranceCounter += 1;
+  return `${prefix}-${utteranceCounter}`;
+}
+
+export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   activeRoute: "/",
   activeCard: "overview",
   activeEntity: null,
@@ -50,17 +72,27 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   recentEntities: [],
   followUpSuggestions: [],
   conversationMode: "default",
+  interactionPhase: "idle",
   lastIntent: null,
-  transcript: "",
   partialTranscript: "",
-  responseText: "",
-  isListening: false,
-  isThinking: false,
-  isSpeaking: false,
+  latestUserUtterance: "",
+  latestSpokenResponse: "",
+  pendingUtterance: null,
+  conversationHistory: [],
+  phoneScreen: derivePhoneScreen({ route: "/" }),
+  latestRouterPayload: null,
+  latestRouterResponse: null,
   isCardOpen: true,
   setActiveRoute: (route) => set({ activeRoute: route }),
   setActiveEntity: (entity) => set({ activeEntity: entity }),
-  setActiveCard: (card) => set({ activeCard: card }),
+  setActiveCard: (card) =>
+    set((state) => ({
+      activeCard: card,
+      phoneScreen: {
+        ...state.phoneScreen,
+        card,
+      },
+    })),
   setActiveSection: (section) => set({ activeSection: section }),
   pushRecentEntity: (entityId) =>
     set((state) => ({
@@ -71,25 +103,84 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
     })),
   setFollowUpSuggestions: (followUpSuggestions) => set({ followUpSuggestions }),
   setLastIntent: (lastIntent) => set({ lastIntent }),
-  setTranscript: (transcript) => set({ transcript }),
-  setPartialTranscript: (partialTranscript) => set({ partialTranscript }),
-  setResponseText: (responseText) => set({ responseText }),
   setConversationMode: (conversationMode) => set({ conversationMode }),
-  setListening: (isListening) =>
+  setInteractionPhase: (interactionPhase) => set({ interactionPhase }),
+  beginListeningCycle: () =>
     set({
-      isListening,
-      conversationMode: isListening ? "listening" : "default",
+      partialTranscript: "",
+      latestUserUtterance: "",
+      pendingUtterance: null,
+      interactionPhase: "listening",
     }),
-  setThinking: (isThinking) =>
+  setPartialTranscript: (partialTranscript) => set({ partialTranscript }),
+  submitUtterance: (text, source = "voice") => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const pendingUtterance = {
+      id: createTurnId("utterance"),
+      text: trimmed,
+      source,
+    };
+
+    set((state) => ({
+      pendingUtterance,
+      partialTranscript: "",
+      latestUserUtterance: trimmed,
+      latestSpokenResponse: "",
+      interactionPhase: "thinking",
+      conversationHistory: [
+        ...state.conversationHistory,
+        {
+          id: createTurnId("user"),
+          role: "user" as const,
+          text: trimmed,
+          timestamp: Date.now(),
+        },
+      ].slice(-12),
+    }));
+
+    return pendingUtterance;
+  },
+  acknowledgePendingUtterance: (utteranceId) =>
+    set((state) => ({
+      pendingUtterance:
+        state.pendingUtterance?.id === utteranceId ? null : state.pendingUtterance,
+    })),
+  setLatestSpokenResponse: (latestSpokenResponse) =>
+    set((state) => ({
+      latestSpokenResponse,
+      interactionPhase: latestSpokenResponse ? "speaking" : state.interactionPhase,
+      conversationHistory: latestSpokenResponse
+        ? [
+            ...state.conversationHistory,
+            {
+              id: createTurnId("assistant"),
+              role: "assistant" as const,
+              text: latestSpokenResponse,
+              timestamp: Date.now(),
+            },
+          ].slice(-12)
+        : state.conversationHistory,
+    })),
+  clearTurnCaption: () =>
     set({
-      isThinking,
-      conversationMode: isThinking ? "thinking" : "default",
+      partialTranscript: "",
+      latestUserUtterance: "",
     }),
-  setSpeaking: (isSpeaking) =>
+  setPhoneScreen: (phoneScreen) => set({ phoneScreen }),
+  syncPhoneScreenFromRoute: (route, entity, card = get().activeCard) =>
     set({
-      isSpeaking,
-      conversationMode: isSpeaking ? "speaking" : "default",
+      phoneScreen: derivePhoneScreen({
+        route,
+        entity,
+        card,
+      }),
     }),
+  setLatestRouterPayload: (latestRouterPayload) => set({ latestRouterPayload }),
+  setLatestRouterResponse: (latestRouterResponse) => set({ latestRouterResponse }),
   toggleCard: () => set((state) => ({ isCardOpen: !state.isCardOpen })),
   openCard: () => set({ isCardOpen: true }),
 }));
