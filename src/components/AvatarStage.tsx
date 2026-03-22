@@ -10,11 +10,7 @@ export function AvatarStage() {
     videoRef,
     audioRef,
     status,
-    isLoading,
     isConnected,
-    error,
-    audioUnlocked,
-    unlockAudio,
     createAndStartSession,
   } = useHeyGenAvatar();
 
@@ -34,7 +30,10 @@ export function AvatarStage() {
   }, [createAndStartSession, status]);
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[#04070d]">
+    <div className="relative min-h-[520px] overflow-hidden rounded-[2.6rem] border border-white/58 bg-[linear-gradient(180deg,rgba(255,255,255,0.58),rgba(255,255,255,0.28))] shadow-[0_24px_70px_rgba(134,114,92,0.2)] backdrop-blur-[20px]">
+      <div className="absolute left-6 top-5 z-20">
+        <p className="text-xs uppercase tracking-[0.34em] text-stone-700">Bowen Zhu</p>
+      </div>
       <video
         ref={videoRef}
         className={clsx(
@@ -47,51 +46,18 @@ export function AvatarStage() {
       />
       <audio ref={audioRef} autoPlay playsInline className="hidden" />
 
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(36,212,255,0.18),transparent_26%),radial-gradient(circle_at_80%_16%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(180deg,rgba(4,7,13,0.18),rgba(4,7,13,0.46)_58%,rgba(4,7,13,0.82)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-[46vh] bg-gradient-to-t from-[#02050b] via-[#02050b]/55 to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_16%,rgba(255,255,255,0.34),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(19,16,13,0.1)_62%,rgba(19,16,13,0.24)_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t from-[#171310]/28 via-[#171310]/10 to-transparent" />
 
       {!isConnected ? (
-        <div className="absolute inset-0 flex items-center justify-center px-6">
-          <div className="panel-blur w-full max-w-2xl rounded-[2.4rem] border border-white/12 bg-[linear-gradient(180deg,rgba(8,12,18,0.7),rgba(8,12,18,0.45))] p-8 text-center shadow-[0_40px_120px_rgba(0,0,0,0.38)]">
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-300/88">
-              HeyGen LiveAvatar
-            </p>
-            <h1 className="mt-4 font-display text-4xl leading-none text-sand-100 md:text-5xl">
-              Full-screen avatar stage on standby
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-sand-200/72 md:text-base">
-              The avatar begins connecting as soon as the page opens. If audio is blocked by the
-              browser, use the audio unlock button once and the stream will take over the scene.
-            </p>
-
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={async () => {
-                  await unlockAudio();
-                  await createAndStartSession();
-                }}
-                disabled={isLoading}
-                className="rounded-full border border-cyan-300/35 bg-cyan-300/15 px-5 py-3 text-sm text-cyan-100 transition hover:bg-cyan-300/22 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isLoading ? "Starting session..." : "Start avatar session"}
-              </button>
-              {!audioUnlocked ? (
-                <button
-                  type="button"
-                  onClick={() => void unlockAudio()}
-                  className="rounded-full border border-white/15 bg-white/8 px-5 py-3 text-sm text-sand-100 transition hover:bg-white/12"
-                >
-                  Enable audio
-                </button>
-              ) : null}
-            </div>
-
-            {error ? (
-              <div className="mt-5 rounded-2xl border border-rose-300/20 bg-rose-300/10 px-4 py-3 text-sm text-rose-100">
-                {error}
-              </div>
-            ) : null}
+        <div className="absolute inset-0 flex items-center justify-center px-6 py-8">
+          <div className="flex items-center gap-3 rounded-full border border-white/60 bg-white/72 px-4 py-2 text-sm text-stone-800 shadow-[0_12px_34px_rgba(140,119,99,0.14)] backdrop-blur-xl">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-stone-700" />
+            <span>
+              {status === "session_loading" || status === "session_created"
+                ? "Connecting avatar…"
+                : "Preparing avatar…"}
+            </span>
           </div>
         </div>
       ) : null}

@@ -25,10 +25,10 @@ export function MicToggleButton() {
         className={clsx(
           "group panel-blur relative flex h-20 w-20 items-center justify-center rounded-full border transition-all duration-300",
           isListening
-            ? "border-cyan-300/70 bg-cyan-400/20 shadow-[0_0_40px_rgba(53,200,255,0.35)]"
-            : "border-white/15 bg-white/8 hover:border-white/25 hover:bg-white/12",
+            ? "border-cyan-500/45 bg-cyan-200/55 shadow-[0_0_40px_rgba(53,200,255,0.18)]"
+            : "border-black/8 bg-white/78 shadow-[0_18px_40px_rgba(140,119,99,0.16)] hover:border-black/12 hover:bg-white/92",
           disabled && "cursor-not-allowed opacity-60",
-          permissionDenied && "border-rose-300/35 bg-rose-300/10",
+          permissionDenied && "border-rose-300/35 bg-rose-100",
         )}
         aria-pressed={isListening}
         aria-label={isListening ? "Stop microphone" : "Start microphone"}
@@ -44,7 +44,7 @@ export function MicToggleButton() {
         </span>
       </button>
 
-      <p className="text-[11px] uppercase tracking-[0.32em] text-white/55">
+      <p className="text-[11px] uppercase tracking-[0.32em] text-white">
         {isListening
           ? "Listening live"
           : interactionPhase === "thinking"
@@ -55,7 +55,7 @@ export function MicToggleButton() {
       </p>
 
       {(permissionDenied || error) && (
-        <div className="panel-blur max-w-xs rounded-2xl border border-rose-300/20 bg-rose-300/10 px-4 py-2 text-center text-xs text-rose-100">
+        <div className="panel-blur max-w-xs rounded-2xl border border-rose-300/25 bg-rose-50 px-4 py-2 text-center text-xs text-rose-700">
           {permissionDenied
             ? "Microphone access is blocked. Enable permissions in your browser to continue."
             : error}

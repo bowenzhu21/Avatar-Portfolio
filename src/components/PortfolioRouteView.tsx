@@ -46,12 +46,14 @@ const homeApps: Array<{
   iconSrc?: string;
   tint: string;
   iconBackgroundClass?: string;
+  iconImageClassName?: string;
 }> = [
   {
     app: "photos",
     label: "Photos",
-    iconSrc: "/icons/photos.png",
+    iconSrc: "/icons/photos.webp",
     tint: "from-pink-500 via-fuchsia-400 to-orange-400",
+    iconImageClassName: "scale-[1.15] object-contain",
   },
   {
     app: "school",
@@ -71,6 +73,7 @@ const homeApps: Array<{
     label: "Contact",
     iconSrc: "/icons/contact.webp",
     tint: "from-blue-500 via-sky-400 to-cyan-500",
+    iconImageClassName: "scale-[2] object-contain",
   },
   {
     app: "hobbies",
@@ -127,7 +130,7 @@ function PlaceholderPage({ title }: { title: string }) {
   );
 }
 
-function useEasternTime() {
+function usePacificTime() {
   const [timeLabel, setTimeLabel] = useState("--:--");
   const [dateBits, setDateBits] = useState({ weekday: "", month: "", day: "" });
 
@@ -135,14 +138,14 @@ function useEasternTime() {
     function updateClock() {
       const now = new Date();
       const timeFormatter = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/New_York",
+        timeZone: "America/Los_Angeles",
         hour: "numeric",
         minute: "2-digit",
         hour12: false,
       });
 
       const dateFormatter = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/New_York",
+        timeZone: "America/Los_Angeles",
         weekday: "short",
         month: "short",
         day: "numeric",
@@ -178,7 +181,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const setActiveRoute = usePortfolioStore((state) => state.setActiveRoute);
   const setActiveSection = usePortfolioStore((state) => state.setActiveSection);
   const syncPhoneScreenFromRoute = usePortfolioStore((state) => state.syncPhoneScreenFromRoute);
-  const { timeLabel, weekday, month, day } = useEasternTime();
+  const { timeLabel, weekday, month, day } = usePacificTime();
 
   const visibleEntity =
     (phoneScreen.entityId ? getEntityById(phoneScreen.entityId) : null) ?? entity;
@@ -192,6 +195,18 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const experienceFolderItems = useMemo(() => getItemsForApp("experience").slice(0, 4), []);
 
   function openApp(app: Exclude<PhoneApp, "home">) {
+    if (app === "projects" || app === "experience") {
+      setPhoneScreen(createPhoneListScreen(app));
+      return;
+    }
+
+    const appEntity = getItemsForApp(app)[0];
+
+    if (appEntity) {
+      openEntity(appEntity);
+      return;
+    }
+
     setPhoneScreen(createPhoneListScreen(app));
   }
 
@@ -238,13 +253,13 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
         <div>
           <span>{timeLabel}</span>
         </div>
-        <div className="mr-[-0.2rem] flex items-center text-[12px] text-white/92">
+        <div className="mr-[-0.5rem] flex items-center text-[12px] text-white/92">
           <Image
             src="/airplane_mode.png"
             alt="Airplane mode"
             width={18}
             height={18}
-            className="h-[18px] w-[18px] object-contain"
+            className="h-[18px] w-[15px] object-contain"
           />
           <Image
             src="/wifi.png"
@@ -257,8 +272,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             src="/battery.png"
             alt="Battery"
             width={36}
-            height={17}
-            className="ml-[0.04rem] h-[17px] w-[36px] object-contain"
+            height={35}
+            className="ml-[0rem] h-[20px] w-[32px] object-contain"
           />
         </div>
       </div>
@@ -365,16 +380,17 @@ function HomeScreen({
     iconSrc?: string;
     tint: string;
     iconBackgroundClass?: string;
+    iconImageClassName?: string;
   }>;
   onOpenApp: (app: Exclude<PhoneApp, "home">) => void;
   onGoHome: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col px-2 pb-2">
+    <div className="flex h-full flex-col px-2 pb-4">
       <div className="grid auto-rows-[64px] grid-cols-4 gap-x-4 gap-y-4">
         <div className="col-span-2 row-span-2 mx-auto w-[86%] rounded-[1.32rem] border border-white/12 bg-black/68 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
           <div className="flex h-full flex-col items-center justify-center text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/72">EST</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/72">PT</p>
             <p className="mt-1 font-display text-[2.1rem] leading-none tracking-tight text-white">
               {timeLabel}
             </p>
@@ -408,6 +424,7 @@ function HomeScreen({
                 icon={app.icon}
                 iconSrc={app.iconSrc}
                 iconBackgroundClass={app.iconBackgroundClass}
+                iconImageClassName={app.iconImageClassName}
                 tint={app.tint}
                 onClick={() => onOpenApp(app.app)}
               />
@@ -424,29 +441,36 @@ function HomeScreen({
                 icon={app.icon}
                 iconSrc={app.iconSrc}
                 iconBackgroundClass={app.iconBackgroundClass}
+                iconImageClassName={app.iconImageClassName}
                 tint={app.tint}
                 onClick={() => onOpenApp(app.app)}
               />
             ))}
-          <AppIcon label="More" iconSrc="/icons/more.jpg" tint="from-slate-500 via-slate-400 to-slate-600" onClick={onGoHome} />
+          <div />
         </div>
 
         <DateWidget weekday={weekday} month={month} day={day} />
       </div>
 
-      <div className="mt-auto pt-5">
+      <div className="mt-auto pt-0">
         <div className="grid grid-cols-4 gap-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
           {[
-            { label: "Messages", icon: "●", tint: "from-emerald-400 to-lime-500" },
-            { label: "Phone", icon: "⌕", tint: "from-green-400 to-emerald-500" },
-            { label: "Safari", icon: "◌", tint: "from-sky-400 to-blue-500" },
-            { label: "Music", icon: "◉", tint: "from-emerald-400 to-green-500" },
+            { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500" },
+            { label: "Call", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500" },
+            { label: "Safari", iconSrc: "/icons/safari.jpg", tint: "from-sky-400 to-blue-500" },
+            { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500" },
           ].map((dockItem) => (
             <button key={dockItem.label} type="button" onClick={onGoHome} className="text-center">
               <div
-                className={`mx-auto flex h-[56px] w-[56px] items-center justify-center rounded-[1.15rem] bg-gradient-to-br ${dockItem.tint} shadow-[0_16px_24px_rgba(0,0,0,0.2)]`}
+                className={`mx-auto relative flex h-[56px] w-[56px] items-center justify-center overflow-hidden rounded-[1.15rem] bg-gradient-to-br ${dockItem.tint} shadow-[0_16px_24px_rgba(0,0,0,0.2)]`}
               >
-                <span className="text-lg font-semibold text-white">{dockItem.icon}</span>
+                <Image
+                  src={dockItem.iconSrc}
+                  alt={dockItem.label}
+                  fill
+                  className="scale-[1.08] object-cover"
+                  sizes="56px"
+                />
               </div>
             </button>
           ))}
@@ -461,6 +485,7 @@ function AppIcon({
   icon,
   iconSrc,
   iconBackgroundClass,
+  iconImageClassName,
   tint,
   onClick,
   folder = false,
@@ -470,6 +495,7 @@ function AppIcon({
   icon?: string;
   iconSrc?: string;
   iconBackgroundClass?: string;
+  iconImageClassName?: string;
   tint: string;
   onClick: () => void;
   folder?: boolean;
@@ -486,7 +512,13 @@ function AppIcon({
           className={`mx-auto relative flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-[1rem] ${iconBackgroundClass ?? `bg-gradient-to-br ${tint}`} shadow-[0_16px_24px_rgba(0,0,0,0.22)]`}
         >
           {iconSrc ? (
-            <Image src={iconSrc} alt={label} fill className="object-cover" sizes="54px" />
+            <Image
+              src={iconSrc}
+              alt={label}
+              fill
+              className={iconImageClassName ?? "scale-[1.08] object-cover"}
+              sizes="54px"
+            />
           ) : (
             <span className="text-[1.25rem] font-semibold text-white">{icon}</span>
           )}
@@ -536,7 +568,7 @@ function DateWidget({
           <span className="text-white/70">{month}</span>
         </div>
         <p className="mt-1 font-display text-[2.55rem] leading-none text-white">{day}</p>
-        <p className="mt-1 text-[10px] text-white/58">Eastern Time</p>
+        <p className="mt-1 text-[10px] text-white/58">Pacific Time</p>
       </div>
     </div>
   );
@@ -555,6 +587,8 @@ function FolderGrid({
   getIconSrc: (entityId: string) => string | undefined;
   onClose: () => void;
 }) {
+  const slots = Array.from({ length: 9 }, (_, index) => items[index] ?? null);
+
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center px-6 pt-16">
       <div className="relative flex w-full items-center justify-center pb-4">
@@ -563,30 +597,34 @@ function FolderGrid({
         </h2>
       </div>
 
-      <div className="w-full max-w-[265px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(214,201,196,0.78),rgba(194,189,197,0.72))] px-5 py-6 shadow-[0_22px_50px_rgba(0,0,0,0.24)] backdrop-blur-2xl">
-        <div className="grid grid-cols-3 gap-x-4 gap-y-5">
-        {items.map((item) => (
-          <button key={item.id} type="button" onClick={() => onOpen(item)} className="text-center">
-            <div className="relative mx-auto h-[68px] w-[68px] overflow-hidden rounded-[1.15rem] bg-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
-              {getIconSrc(item.id) ? (
-                <Image
-                  src={getIconSrc(item.id)!}
-                  alt={item.title}
-                  fill
-                  className="object-cover"
-                  sizes="68px"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-400">
-                  <span className="text-xl font-semibold text-slate-700">{item.title.slice(0, 1)}</span>
+      <div className="h-[320px] w-[320px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(214,201,196,0.78),rgba(194,189,197,0.72))] px-5 py-6 shadow-[0_22px_50px_rgba(0,0,0,0.24)] backdrop-blur-2xl">
+        <div className="grid h-full grid-cols-3 grid-rows-3 gap-x-4 gap-y-5">
+          {slots.map((item, index) =>
+            item ? (
+              <button key={item.id} type="button" onClick={() => onOpen(item)} className="text-center">
+                <div className="relative mx-auto h-[68px] w-[68px] overflow-hidden rounded-[1.15rem] bg-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
+                  {getIconSrc(item.id) ? (
+                    <Image
+                      src={getIconSrc(item.id)!}
+                      alt={item.title}
+                      fill
+                      className="object-cover"
+                      sizes="68px"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-400">
+                      <span className="text-xl font-semibold text-slate-700">{item.title.slice(0, 1)}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <p className="mt-2 text-[0.7rem] font-medium leading-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.28)]">
-              {item.title}
-            </p>
-          </button>
-        ))}
+                <p className="mt-2 truncate text-[0.7rem] font-medium leading-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.28)]">
+                  {item.title}
+                </p>
+              </button>
+            ) : (
+              <div key={`empty-slot-${index}`} className="pointer-events-none" />
+            ),
+          )}
         </div>
       </div>
     </div>

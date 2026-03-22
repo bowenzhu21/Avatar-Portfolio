@@ -16,7 +16,7 @@ export function SubtitleBar() {
     (interactionPhase === "listening" && partialTranscript) ||
     (interactionPhase === "thinking" && "Thinking through that…") ||
     latestSpokenResponse ||
-    "Ask about a project, role, or section.";
+    "Chat with me";
 
   const supportingText =
     interactionPhase === "listening"
@@ -30,9 +30,9 @@ export function SubtitleBar() {
   return (
     <motion.div
       layout
-      className="panel-blur relative mx-auto max-w-4xl overflow-hidden rounded-[1.9rem] border border-white/12 bg-[linear-gradient(180deg,rgba(4,7,13,0.74),rgba(4,7,13,0.52))] px-6 py-4 shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
+      className="panel-blur relative mx-auto max-w-4xl overflow-hidden rounded-[1.9rem] border border-white/58 bg-[linear-gradient(180deg,rgba(255,255,255,0.78),rgba(246,239,232,0.56))] px-6 py-4 shadow-[0_18px_50px_rgba(140,119,99,0.14)] backdrop-blur-[18px]"
     >
-      <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+      <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
       <div className="flex items-center justify-center gap-3 text-sm md:text-[1.05rem]">
         <span
           className={clsx(
@@ -43,7 +43,7 @@ export function SubtitleBar() {
               "bg-amber-300 shadow-[0_0_18px_rgba(252,211,77,0.85)]",
             interactionPhase === "speaking" &&
               "bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.9)]",
-            interactionPhase === "idle" && "bg-white/30",
+            interactionPhase === "idle" && "bg-black/28",
           )}
         />
         <AnimatePresence mode="wait" initial={false}>
@@ -53,7 +53,7 @@ export function SubtitleBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.22 }}
-            className="max-w-[48rem] text-center font-medium leading-7 text-sand-100"
+            className="max-w-[48rem] text-center font-semibold leading-7 text-stone-950"
           >
             {primaryText}
           </motion.span>
@@ -61,13 +61,13 @@ export function SubtitleBar() {
       </div>
 
       {supportingText ? (
-        <p className="mt-2 text-center text-xs uppercase tracking-[0.28em] text-sand-200/58">
+        <p className="mt-2 text-center text-xs uppercase tracking-[0.28em] text-stone-700">
           {supportingText}
         </p>
       ) : null}
 
       {(microphonePermission === "denied" || error) && (
-        <p className="mt-3 text-center text-xs text-rose-200">
+        <p className="mt-3 text-center text-xs text-rose-700">
           {microphonePermission === "denied"
             ? "Microphone permission denied. Allow access to enable voice input."
             : error}
@@ -75,8 +75,8 @@ export function SubtitleBar() {
       )}
 
       {!isListening && interactionPhase === "idle" ? (
-        <p className="mt-2 text-center text-[11px] uppercase tracking-[0.32em] text-white/40">
-          Voice-first portfolio navigation
+        <p className="mt-2 text-center text-[11px] uppercase tracking-[0.22em] text-stone-600">
+          Ask about my projects, experiences, hobbies, etc.
         </p>
       ) : null}
     </motion.div>
