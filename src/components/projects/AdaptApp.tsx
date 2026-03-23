@@ -28,7 +28,7 @@ export function AdaptApp() {
                 Adapt UI
               </h1>
 
-              <div className="relative mt-3 aspect-[1.7/1] overflow-hidden rounded-[1.2rem]">
+              <div className="relative mt-3 aspect-[1.7/1] overflow-hidden rounded-[0rem]">
                 <Image
                   src="/adapt/adapt.png"
                   alt="Adapt UI preview"

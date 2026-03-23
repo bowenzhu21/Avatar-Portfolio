@@ -113,7 +113,7 @@ function ResumeHeader() {
       <h1 className="text-[1.8rem] font-semibold tracking-[-0.04em] text-[#12100d]">
         {resumeRecord.name}
       </h1>
-      <div className="relative mx-auto mt-3 h-[9rem] w-full max-w-[28rem] overflow-hidden rounded-[1.35rem] border border-black/8 shadow-[0_16px_34px_rgba(25,20,15,0.08)]">
+      <div className="relative mx-auto mt-3 aspect-square w-full max-w-[12rem] overflow-hidden rounded-[1.35rem] border border-black/8 shadow-[0_16px_34px_rgba(25,20,15,0.08)]">
         <Image
           src="/photos/32.jpeg"
           alt="Bowen Zhu"

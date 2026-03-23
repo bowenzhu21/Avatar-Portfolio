@@ -58,8 +58,8 @@ export function RightSideCard({ children }: RightSideCardProps) {
 
           <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-[3.3rem] bg-[radial-gradient(circle_at_top,rgba(67,194,255,0.12),transparent_26%),linear-gradient(180deg,rgba(10,14,20,0.94),rgba(5,7,11,0.98))]">
             <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent)]" />
-            <div className="relative flex-1 overflow-hidden px-3 pb-8 pt-3">{children}</div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-11 z-30 flex justify-center">
+            <div className="relative flex-1 overflow-hidden px-3 pb-5 pt-3">{children}</div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-4 z-30 flex justify-center">
               <button
                 type="button"
                 onClick={goHome}
