@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ExperienceApp } from "@/components/experience/ExperienceApp";
 import { ContactApp } from "@/components/other/ContactApp";
+import { MessagesApp } from "@/components/other/MessagesApp";
 import { SafariApp } from "@/components/other/SafariApp";
 import { PhotosApp } from "@/components/photos/PhotosApp";
 import { AdaptApp } from "@/components/projects/AdaptApp";
@@ -222,6 +223,18 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       return;
     }
 
+    if (app === "messages") {
+      setPhoneScreen({
+        app: "messages",
+        view: "detail",
+        title: "Messages",
+        entityId: null,
+        route: null,
+        card: "overview",
+      });
+      return;
+    }
+
     if (app === "nutrition" || app === "fitness") {
       setPhoneScreen({
         app,
@@ -278,6 +291,16 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       homeApps={homeApps}
       onOpenApp={openApp}
       onGoHome={goPhoneHome}
+      onOpenMessages={() =>
+        setPhoneScreen({
+          app: "messages",
+          view: "detail",
+          title: "Messages",
+          entityId: null,
+          route: null,
+          card: "overview",
+        })
+      }
       onOpenSafari={() =>
         setPhoneScreen({
           app: "safari",
@@ -333,6 +356,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
         >
           {phoneScreen.view === "home" ? (
             homeScreen
+          ) : phoneScreen.app === "messages" ? (
+            <MessagesApp />
           ) : phoneScreen.app === "safari" ? (
             <SafariApp />
           ) : phoneScreen.view === "list" ? (
@@ -444,6 +469,7 @@ function HomeScreen({
   homeApps,
   onOpenApp,
   onGoHome,
+  onOpenMessages,
   onOpenSafari,
 }: {
   timeLabel: string;
@@ -463,6 +489,7 @@ function HomeScreen({
   }>;
   onOpenApp: (app: Exclude<PhoneApp, "home">) => void;
   onGoHome: () => void;
+  onOpenMessages: () => void;
   onOpenSafari: () => void;
 }) {
   return (
@@ -540,7 +567,7 @@ function HomeScreen({
       <div className="mt-auto pt-0">
         <div className="grid grid-cols-4 gap-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
           {[
-            { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onGoHome },
+            { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onOpenMessages },
             { label: "Call", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onGoHome },
             { label: "Safari", iconSrc: "/icons/safari.jpg", tint: "from-sky-400 to-blue-500", onClick: onOpenSafari },
             { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500", onClick: onGoHome },
