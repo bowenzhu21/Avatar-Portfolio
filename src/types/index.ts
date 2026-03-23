@@ -17,10 +17,13 @@ export type PhoneApp =
   | "home"
   | "projects"
   | "experience"
+  | "safari"
   | "photos"
   | "school"
   | "resume"
   | "contact"
+  | "nutrition"
+  | "fitness"
   | "hobbies";
 
 export type PhoneScreenView = "home" | "list" | "detail";
@@ -95,4 +98,22 @@ export interface ConversationTurn {
   role: "user" | "assistant";
   text: string;
   timestamp: number;
+}
+
+export interface PhotoAsset {
+  id: number;
+  src: string;
+  alt: string;
+}
+
+export interface SafariQueryResponse {
+  title: string;
+  url: string;
+  content: string;
+  query: string;
+}
+
+export interface SafariHistoryEntry extends SafariQueryResponse {
+  type: "result" | "error";
+  errorMessage?: string;
 }

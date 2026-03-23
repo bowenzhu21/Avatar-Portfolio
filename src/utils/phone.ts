@@ -19,12 +19,24 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
     return "photos";
   }
 
+  if (route === "/safari") {
+    return "safari";
+  }
+
   if (route === "/resume") {
     return "resume";
   }
 
   if (route === "/contact") {
     return "contact";
+  }
+
+  if (route === "/nutrition") {
+    return "nutrition";
+  }
+
+  if (route === "/fitness") {
+    return "fitness";
   }
 
   if (route === "/hobbies") {
@@ -69,11 +81,14 @@ export function createPhoneListScreen(
   const titleMap = {
     projects: "Projects",
     experience: "Experience",
+    safari: "Safari",
     photos: "Photos",
     school: "School",
     resume: "Resume",
     contact: "Contact",
-    hobbies: "Hobbies",
+    nutrition: "Nutrition",
+    fitness: "Fitness",
+    hobbies: "Nutrition & Fitness",
   } as const;
 
   return {

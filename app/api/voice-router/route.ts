@@ -121,7 +121,7 @@ function inferFollowUpCard(
     return "resume";
   }
 
-  if (/\b(hobbies|interests)\b/.test(normalized)) {
+  if (/\b(hobbies|interests|nutrition|fitness)\b/.test(normalized)) {
     return "hobbies";
   }
 
@@ -212,7 +212,7 @@ function buildContextualResponse(args: {
   }
 
   if (args.card === "hobbies") {
-    return "I’ll shift to hobbies to add some personal context beyond work and projects.";
+    return "I’ll switch to nutrition and fitness to add some personal context beyond work and projects.";
   }
 
   if (args.mode === "recruiter") {

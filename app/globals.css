@@ -70,3 +70,21 @@ textarea {
   mask-composite: exclude;
   pointer-events: none;
 }
+
+.photos-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(96, 96, 102, 0.68) transparent;
+}
+
+.photos-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.photos-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.photos-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(96, 96, 102, 0.68);
+}

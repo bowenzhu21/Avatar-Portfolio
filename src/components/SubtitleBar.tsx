@@ -76,7 +76,7 @@ export function SubtitleBar() {
 
       {!isListening && interactionPhase === "idle" ? (
         <p className="mt-2 text-center text-[11px] uppercase tracking-[0.22em] text-stone-600">
-          Ask about my projects, experiences, hobbies, etc.
+          Ask about my projects, experiences, nutrition, fitness, etc.
         </p>
       ) : null}
     </motion.div>

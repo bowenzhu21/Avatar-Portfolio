@@ -5,6 +5,16 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
+import { ExperienceApp } from "@/components/experience/ExperienceApp";
+import { ContactApp } from "@/components/other/ContactApp";
+import { SafariApp } from "@/components/other/SafariApp";
+import { PhotosApp } from "@/components/photos/PhotosApp";
+import { AdaptApp } from "@/components/projects/AdaptApp";
+import { AuraApp } from "@/components/projects/AuraApp";
+import { ElbowExoApp } from "@/components/projects/ElbowExoApp";
+import { GymBroApp } from "@/components/projects/GymBroApp";
+import { MatrixApp } from "@/components/projects/MatrixApp";
+import { ResumeApp } from "@/components/resume/ResumeApp";
 import { portfolioEntities } from "@/data/portfolio";
 import { createPhoneListScreen } from "@/utils/phone";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
@@ -36,7 +46,8 @@ const entityIconMap: Partial<Record<string, string>> = {
   resume: "/icons/resume.png",
   school: "/icons/school.jpeg",
   contact: "/icons/contact.webp",
-  hobbies: "/icons/hobbies.avif",
+  nutrition: "/icons/nutrition.png",
+  fitness: "/icons/fitness.avif",
 };
 
 const homeApps: Array<{
@@ -76,10 +87,17 @@ const homeApps: Array<{
     iconImageClassName: "scale-[2] object-contain",
   },
   {
-    app: "hobbies",
-    label: "Hobbies",
-    iconSrc: "/icons/hobbies.avif",
-    tint: "from-pink-500 via-rose-400 to-red-500",
+    app: "nutrition",
+    label: "Nutrition",
+    iconSrc: "/icons/nutrition.png",
+    tint: "bg-white",
+    iconImageClassName: "bg-white scale-[0.7] object-contain",
+  },
+  {
+    app: "fitness",
+    label: "Fitness",
+    iconSrc: "/icons/fitness.avif",
+    tint: "from-orange-400 via-red-400 to-pink-500",
   },
 ];
 
@@ -110,6 +128,10 @@ function getItemsForApp(app: PhoneApp) {
 
   if (app === "contact") {
     return portfolioEntities.filter((entity) => entity.route === "/contact");
+  }
+
+  if (app === "nutrition" || app === "fitness") {
+    return [];
   }
 
   if (app === "hobbies") {
@@ -200,6 +222,18 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       return;
     }
 
+    if (app === "nutrition" || app === "fitness") {
+      setPhoneScreen({
+        app,
+        view: "detail",
+        title: app === "nutrition" ? "Nutrition" : "Fitness",
+        entityId: null,
+        route: null,
+        card: "overview",
+      });
+      return;
+    }
+
     const appEntity = getItemsForApp(app)[0];
 
     if (appEntity) {
@@ -244,6 +278,16 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       homeApps={homeApps}
       onOpenApp={openApp}
       onGoHome={goPhoneHome}
+      onOpenSafari={() =>
+        setPhoneScreen({
+          app: "safari",
+          view: "detail",
+          title: "Safari",
+          entityId: null,
+          route: null,
+          card: "overview",
+        })
+      }
     />
   );
 
@@ -285,10 +329,12 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.972 }}
           transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-1 flex-col px-0 pb-0"
+          className="flex min-h-0 flex-1 flex-col px-0 pb-0"
         >
           {phoneScreen.view === "home" ? (
             homeScreen
+          ) : phoneScreen.app === "safari" ? (
+            <SafariApp />
           ) : phoneScreen.view === "list" ? (
             phoneScreen.app === "projects" || phoneScreen.app === "experience" ? (
               <div className="relative h-full overflow-hidden rounded-[2rem]">
@@ -342,7 +388,39 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
               </div>
             )
           ) : visibleEntity ? (
-            <PlaceholderPage title={visibleEntity.title} />
+            visibleEntity.id === "photos" ? (
+              <PhotosApp />
+            ) : visibleEntity.id === "heygen" ? (
+              <ExperienceApp screenId="heygen" />
+            ) : visibleEntity.id === "hippos-exoskeleton" ? (
+              <ExperienceApp screenId="hippos-exoskeleton" />
+            ) : visibleEntity.id === "momenta" ? (
+              <ExperienceApp screenId="momenta" />
+            ) : visibleEntity.id === "jma-consulting" ? (
+              <ExperienceApp screenId="jma-consulting" />
+            ) : visibleEntity.id === "school" ? (
+              <ExperienceApp screenId="school" />
+            ) : visibleEntity.id === "matrix" ? (
+              <MatrixApp />
+            ) : visibleEntity.id === "elbow-exo" ? (
+              <ElbowExoApp />
+            ) : visibleEntity.id === "gymbro" ? (
+              <GymBroApp />
+            ) : visibleEntity.id === "aura-dev" ? (
+              <AuraApp />
+            ) : visibleEntity.id === "adapt-ui" ? (
+              <AdaptApp />
+            ) : visibleEntity.id === "resume" ? (
+              <ResumeApp />
+            ) : visibleEntity.id === "contact" ? (
+              <ContactApp />
+            ) : (
+              <PlaceholderPage title={visibleEntity.title} />
+            )
+          ) : phoneScreen.app === "nutrition" ? (
+            <PlaceholderPage title="Nutrition" />
+          ) : phoneScreen.app === "fitness" ? (
+            <PlaceholderPage title="Fitness" />
           ) : (
             <div className="flex h-full flex-col justify-center rounded-[1.9rem] border border-white/12 bg-black/30 p-6 text-center backdrop-blur-xl">
               <p className="text-sm font-medium text-white/82">
@@ -366,6 +444,7 @@ function HomeScreen({
   homeApps,
   onOpenApp,
   onGoHome,
+  onOpenSafari,
 }: {
   timeLabel: string;
   weekday: string;
@@ -384,6 +463,7 @@ function HomeScreen({
   }>;
   onOpenApp: (app: Exclude<PhoneApp, "home">) => void;
   onGoHome: () => void;
+  onOpenSafari: () => void;
 }) {
   return (
     <div className="flex h-full flex-col px-2 pb-4">
@@ -433,7 +513,13 @@ function HomeScreen({
 
         <div className="col-span-2 row-span-2 grid grid-cols-2 gap-4">
           {homeApps
-            .filter((app) => app.app === "resume" || app.app === "contact" || app.app === "hobbies")
+            .filter(
+              (app) =>
+                app.app === "resume" ||
+                app.app === "contact" ||
+                app.app === "nutrition" ||
+                app.app === "fitness",
+            )
             .map((app) => (
               <AppIcon
                 key={app.app}
@@ -446,7 +532,6 @@ function HomeScreen({
                 onClick={() => onOpenApp(app.app)}
               />
             ))}
-          <div />
         </div>
 
         <DateWidget weekday={weekday} month={month} day={day} />
@@ -455,12 +540,12 @@ function HomeScreen({
       <div className="mt-auto pt-0">
         <div className="grid grid-cols-4 gap-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
           {[
-            { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500" },
-            { label: "Call", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500" },
-            { label: "Safari", iconSrc: "/icons/safari.jpg", tint: "from-sky-400 to-blue-500" },
-            { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500" },
+            { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onGoHome },
+            { label: "Call", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onGoHome },
+            { label: "Safari", iconSrc: "/icons/safari.jpg", tint: "from-sky-400 to-blue-500", onClick: onOpenSafari },
+            { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500", onClick: onGoHome },
           ].map((dockItem) => (
-            <button key={dockItem.label} type="button" onClick={onGoHome} className="text-center">
+            <button key={dockItem.label} type="button" onClick={dockItem.onClick} className="text-center">
               <div
                 className={`mx-auto relative flex h-[56px] w-[56px] items-center justify-center overflow-hidden rounded-[1.15rem] bg-gradient-to-br ${dockItem.tint} shadow-[0_16px_24px_rgba(0,0,0,0.2)]`}
               >
@@ -524,7 +609,7 @@ function AppIcon({
           )}
         </div>
       )}
-      <p className="mt-1.5 text-center text-[8px] font-medium leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+      <p className="mx-auto mt-1.5 max-w-[76px] text-center text-[8px] font-medium leading-[1.05] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
         {label}
       </p>
     </button>

@@ -415,27 +415,35 @@ export const portfolioEntities: PortfolioEntity[] = [
   },
   {
     id: "hobbies",
-    title: "Hobbies",
+    title: "Nutrition & Fitness",
     type: "other",
     route: "/hobbies",
-    aliases: ["hobbies", "interests", "outside work", "personal interests"],
+    aliases: [
+      "nutrition and fitness",
+      "nutrition",
+      "fitness",
+      "hobbies",
+      "interests",
+      "outside work",
+      "personal interests",
+    ],
     shortSummary:
-      "A lightweight view into personal interests that round out the portfolio beyond work and school.",
+      "A personal view into training, nutrition, and the routines that support consistency outside of work.",
     technicalSummary:
-      "Can support conversational depth by connecting personal curiosity to product taste, discipline, and energy outside core work.",
+      "Useful for connecting discipline, routine design, and personal systems beyond core engineering work.",
     recruiterSummary:
-      "Useful for cultural fit, rapport, and making the portfolio feel like a person rather than a resume dump.",
-    tags: ["Personal", "Interests", "Culture"],
+      "Adds a more human layer to the portfolio by showing discipline and lifestyle habits outside work.",
+    tags: ["Nutrition", "Fitness", "Lifestyle"],
     sections: [
       {
         id: "activities",
-        title: "Activities",
-        summary: "Interests, routines, and communities that matter outside formal work.",
+        title: "Routines",
+        summary: "Nutrition, training, and the routines that matter outside formal work.",
       },
       {
         id: "mindset",
         title: "Mindset",
-        summary: "How hobbies reflect learning style, discipline, or creative taste.",
+        summary: "How training and nutrition reflect discipline, consistency, and energy management.",
       },
     ],
     relatedItems: ["gymbro", "contact", "school"],
