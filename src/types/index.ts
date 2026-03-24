@@ -24,6 +24,7 @@ export type PhoneApp =
   | "school"
   | "resume"
   | "contact"
+  | "settings"
   | "nutrition"
   | "fitness"
   | "hobbies";

@@ -6,18 +6,12 @@ import { HeyGenAvatarClient, type HeyGenAvatarState } from "@/lib/heygen";
 import { phoneContacts } from "@/data/chatContacts";
 import type { ChatContact, ChatContactId } from "@/types";
 
-type PhoneTab = "favorites" | "recents" | "contacts";
+type PhoneTab = "favorites" | "contacts";
 type CallMode = "call" | "facetime";
 
 interface PhoneAppProps {
   onOpenMessages: (contactId: ChatContactId) => void;
 }
-
-const recents = [
-  { id: "recent-lara-out", contactId: "lara" as const, direction: "outgoing", label: "mobile", time: "Yesterday" },
-  { id: "recent-john-missed", contactId: "john" as const, direction: "missed", label: "mobile", time: "Mon" },
-  { id: "recent-lara-in", contactId: "lara" as const, direction: "incoming", label: "FaceTime Audio", time: "Sun" },
-];
 
 const INITIAL_DEBUG: HeyGenAvatarState["debug"] = {
   roomState: "disconnected",
@@ -89,7 +83,6 @@ export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
           <PhoneHeader activeTab={activeTab} />
           <div className="min-h-0 flex-1 overflow-y-auto bg-[#ffffff]">
             {activeTab === "favorites" ? <FavoritesScreen onOpenContact={openContact} /> : null}
-            {activeTab === "recents" ? <RecentsScreen onOpenContact={openContact} onOpenCall={openCall} /> : null}
             {activeTab === "contacts" ? <ContactsScreen onOpenContact={openContact} /> : null}
           </div>
           <PhoneTabBar activeTab={activeTab} onChange={setActiveTab} />
@@ -102,7 +95,6 @@ export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
 function PhoneHeader({ activeTab }: { activeTab: PhoneTab }) {
   const titleMap: Record<PhoneTab, string> = {
     favorites: "Favorites",
-    recents: "Recents",
     contacts: "Contacts",
   };
 
@@ -126,45 +118,6 @@ function FavoritesScreen({ onOpenContact }: { onOpenContact: (contactId: ChatCon
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-
-function RecentsScreen({
-  onOpenContact,
-  onOpenCall,
-}: {
-  onOpenContact: (contactId: ChatContactId) => void;
-  onOpenCall: (contactId: ChatContactId, mode: CallMode) => void;
-}) {
-  return (
-    <div className="px-4 pb-6 pt-2">
-      {recents.map((entry) => {
-        const contact = phoneContacts.find((item) => item.id === entry.contactId) ?? phoneContacts[0];
-        const missed = entry.direction === "missed";
-
-        return (
-          <div key={entry.id} className="flex items-center gap-3 border-b border-black/6 py-3">
-            <button type="button" onClick={() => onOpenContact(contact.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-[#e8ebf0]">
-                <Image src={contact.avatar} alt={contact.name} fill sizes="44px" className="object-cover" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className={`truncate text-[0.92rem] font-medium ${missed ? "text-[#d13939]" : "text-[#171717]"}`}>{contact.name}</p>
-                <p className="mt-0.5 text-[0.76rem] text-[#8b8b92]">{entry.label}</p>
-              </div>
-              <p className="shrink-0 text-[0.74rem] text-[#8b8b92]">{entry.time}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenCall(contact.id, entry.label.toLowerCase().includes("face") ? "facetime" : "call")}
-              className="text-[0.86rem] font-medium text-[#007aff]"
-            >
-              Call
-            </button>
-          </div>
-        );
-      })}
     </div>
   );
 }
@@ -220,9 +173,9 @@ function ContactDetailScreen({
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-3">
-          <DetailAction label="message" iconSrc="/phone/message.png" onClick={onMessage} />
-          <DetailAction label="call" iconSrc="/phone/call.png" onClick={onCall} />
-          <DetailAction label="FaceTime" iconSrc="/phone/facetime.png" onClick={onFaceTime} />
+          <DetailAction label="message" iconSrc="/phone/message.png" iconClassName="scale-[1]" onClick={onMessage} />
+          <DetailAction label="call" iconSrc="/phone/call.png" iconClassName="scale-[0.88]" onClick={onCall} />
+          <DetailAction label="FaceTime" iconSrc="/phone/facetime.png" iconClassName="scale-[1.14]" onClick={onFaceTime} />
         </div>
 
         <div className="mt-6 overflow-hidden rounded-[1.4rem] bg-white">
@@ -253,16 +206,18 @@ function ContactDetailScreen({
 function DetailAction({
   label,
   iconSrc,
+  iconClassName,
   onClick,
 }: {
   label: string;
   iconSrc: string;
+  iconClassName?: string;
   onClick: () => void;
 }) {
   return (
     <button type="button" onClick={onClick} className="rounded-[1.25rem] bg-white px-3 py-3 text-center shadow-[0_6px_16px_rgba(0,0,0,0.05)]">
       <div className="relative mx-auto h-6 w-6">
-        <Image src={iconSrc} alt={label} fill sizes="24px" className="object-contain" />
+        <Image src={iconSrc} alt={label} fill sizes="24px" className={`object-contain ${iconClassName ?? ""}`} />
       </div>
       <div className="mt-2 text-[0.74rem] font-medium text-[#007aff]">{label}</div>
     </button>
@@ -377,13 +332,12 @@ function PhoneTabBar({
 }) {
   const tabs: Array<{ id: PhoneTab; label: string; icon: string }> = [
     { id: "favorites", label: "Favorites", icon: "★" },
-    { id: "recents", label: "Recents", icon: "🕘" },
     { id: "contacts", label: "Contacts", icon: "👤" },
   ];
 
   return (
     <div className="border-t border-black/6 bg-[rgba(248,248,250,0.96)] px-2 pb-2 pt-1 backdrop-blur-xl">
-      <div className="grid grid-cols-5">
+      <div className="mx-auto grid max-w-[13.5rem] grid-cols-2">
         {tabs.map((tab) => {
           const active = tab.id === activeTab;
           return (

@@ -133,7 +133,7 @@ function getItemsForApp(app: PhoneApp) {
     return portfolioEntities.filter((entity) => entity.route === "/contact");
   }
 
-  if (app === "nutrition" || app === "fitness") {
+  if (app === "nutrition" || app === "fitness" || app === "settings") {
     return [];
   }
 
@@ -146,10 +146,10 @@ function getItemsForApp(app: PhoneApp) {
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
-    <div className="flex h-full flex-col rounded-[1.9rem] bg-white p-8">
-      <div className="border-b border-black/8 pb-5">
-        <p className="text-[11px] uppercase tracking-[0.28em] text-black/35">Placeholder Page</p>
-        <h1 className="mt-3 font-display text-[2.25rem] leading-none text-black">{title}</h1>
+    <div className="flex h-full flex-col rounded-[1.9rem] bg-white px-8 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center text-center">
+        <h1 className="font-display text-[2.25rem] leading-none text-black">{title}</h1>
+        <p className="mt-4 text-[0.95rem] font-medium text-black/42">Coming soon</p>
       </div>
     </div>
   );
@@ -320,11 +320,16 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       return;
     }
 
-    if (app === "nutrition" || app === "fitness") {
+    if (app === "nutrition" || app === "fitness" || app === "settings") {
       setPhoneScreen({
         app,
         view: "detail",
-        title: app === "nutrition" ? "Nutrition" : "Fitness",
+        title:
+          app === "nutrition"
+            ? "Nutrition"
+            : app === "fitness"
+              ? "Fitness"
+              : "Settings",
         entityId: null,
         route: null,
         card: "overview",
@@ -388,6 +393,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
           card: "overview",
         })
       }
+      onOpenSettings={() => openApp("settings")}
     />
   );
 
@@ -533,6 +539,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             <PlaceholderPage title="Nutrition" />
           ) : phoneScreen.app === "fitness" ? (
             <PlaceholderPage title="Fitness" />
+          ) : phoneScreen.app === "settings" ? (
+            <PlaceholderPage title="Settings" />
           ) : (
             <div className="flex h-full flex-col justify-center rounded-[1.9rem] border border-white/12 bg-black/30 p-6 text-center backdrop-blur-xl">
               <p className="text-sm font-medium text-white/82">
@@ -559,6 +567,7 @@ function HomeScreen({
   onOpenMessages,
   onOpenPhone,
   onOpenSafari,
+  onOpenSettings,
 }: {
   timeLabel: string;
   weekday: string;
@@ -580,6 +589,7 @@ function HomeScreen({
   onOpenMessages: () => void;
   onOpenPhone: () => void;
   onOpenSafari: () => void;
+  onOpenSettings: () => void;
 }) {
   return (
     <div className="flex h-full flex-col px-2 pb-4">
@@ -659,7 +669,7 @@ function HomeScreen({
             { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onOpenMessages },
             { label: "Phone", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onOpenPhone },
             { label: "Safari", iconSrc: "/icons/safari.jpg", tint: "from-sky-400 to-blue-500", onClick: onOpenSafari },
-            { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500", onClick: onGoHome },
+            { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500", onClick: onOpenSettings },
           ].map((dockItem) => (
             <button key={dockItem.label} type="button" onClick={dockItem.onClick} className="text-center">
               <div

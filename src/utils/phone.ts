@@ -39,6 +39,10 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
     return "contact";
   }
 
+  if (route === "/settings") {
+    return "settings";
+  }
+
   if (route === "/nutrition") {
     return "nutrition";
   }
@@ -96,6 +100,7 @@ export function createPhoneListScreen(
     school: "School",
     resume: "Resume",
     contact: "Contact",
+    settings: "Settings",
     nutrition: "Nutrition",
     fitness: "Fitness",
     hobbies: "Nutrition & Fitness",
