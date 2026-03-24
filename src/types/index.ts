@@ -15,6 +15,7 @@ export type InteractionPhase = "idle" | "listening" | "thinking" | "speaking";
 
 export type PhoneApp =
   | "home"
+  | "phone"
   | "messages"
   | "projects"
   | "experience"
@@ -121,11 +122,23 @@ export interface SafariHistoryEntry extends SafariQueryResponse {
 
 export interface MessagesChatMessage {
   id: string;
-  sender: "user" | "bowen";
+  sender: "user" | "contact";
   text: string;
   timestamp: number;
 }
 
 export interface MessagesChatResponse {
   reply: string;
+}
+
+export type ChatContactId = "bowen" | "lara" | "john";
+
+export interface ChatContact {
+  id: ChatContactId;
+  name: string;
+  avatar: string;
+  favorite?: boolean;
+  phoneLabel?: string;
+  phoneNumber?: string;
+  heygenAvatarId?: string;
 }

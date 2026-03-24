@@ -1,25 +1,28 @@
 import { NextResponse } from "next/server";
-import type { MessagesChatMessage, MessagesChatResponse } from "@/types";
+import { getChatContactById } from "@/data/chatContacts";
+import type { ChatContactId, MessagesChatMessage, MessagesChatResponse } from "@/types";
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 interface MessagesChatRequest {
   messages?: MessagesChatMessage[];
+  contactId?: ChatContactId;
 }
 
-function buildFallbackReply(latestUserMessage: string) {
+function buildFallbackReply(contactName: string, latestUserMessage: string) {
   if (!latestUserMessage) {
-    return "Hey, it's Bowen. Ask me about my projects, experience, school, or anything else you want to know.";
+    return `Hey, it's ${contactName}.`;
   }
 
-  return "I couldn't send a full reply right now, but ask me about a project, experience, school, or anything personal and I'll keep it concise.";
+  return `It's ${contactName}. I couldn't send a full reply right now, but send that again and I'll keep it concise.`;
 }
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as MessagesChatRequest;
     const messages = Array.isArray(body.messages) ? body.messages : [];
+    const contact = getChatContactById(body.contactId ?? "bowen");
     const trimmedMessages = messages.slice(-10);
     const latestUserMessage =
       [...trimmedMessages].reverse().find((message) => message.sender === "user")?.text?.trim() ?? "";
@@ -32,7 +35,7 @@ export async function POST(request: Request) {
 
     if (!geminiApiKey) {
       return NextResponse.json(
-        { reply: buildFallbackReply(latestUserMessage) } satisfies MessagesChatResponse,
+        { reply: buildFallbackReply(contact?.name ?? "Bowen", latestUserMessage) } satisfies MessagesChatResponse,
         { status: 200 },
       );
     }
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
           parts: [
             {
               text:
-                "You are Bowen Zhu replying inside an iPhone Messages thread. Respond in first person as Bowen. Keep replies concise, natural, and text-like. Do not mention being an AI. Use the portfolio context naturally when asked about projects, experience, school, fitness, or personal background. Avoid essay formatting unless the user explicitly asks for detail.",
+                `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail.`,
             },
           ],
         },
@@ -59,6 +62,10 @@ export async function POST(request: Request) {
                 text: JSON.stringify(
                   {
                     latestUserMessage,
+                    contact: {
+                      id: contact?.id ?? "bowen",
+                      name: contact?.name ?? "Bowen",
+                    },
                     recentThread: trimmedMessages.map((message) => ({
                       sender: message.sender,
                       text: message.text,
@@ -66,10 +73,14 @@ export async function POST(request: Request) {
                     instructions: [
                       "Reply like a real iMessage conversation.",
                       "Keep most replies to 1-4 short sentences.",
-                      "If asked about age, say you are 19 and were born November 21, 2006.",
-                      "If asked where you are from, say you were born in Montreal, grew up in Toronto, and are currently between Waterloo and the Bay Area for school and work.",
-                      "If asked about zodiac sign, say Scorpio.",
-                      "If asked about gym split, say Chest, Back, Arms, Legs.",
+                      contact?.id === "bowen"
+                        ? "If asked about age, say you are 19 and were born November 21, 2006."
+                        : "Keep the tone personal and direct.",
+                      contact?.id === "bowen"
+                        ? "If asked where you are from, say you were born in Montreal, grew up in Toronto, and are currently between Waterloo and the Bay Area for school and work."
+                        : "Do not invent long biographies unless asked.",
+                      contact?.id === "bowen" ? "If asked about zodiac sign, say Scorpio." : "Keep replies to 1-4 short sentences.",
+                      contact?.id === "bowen" ? "If asked about gym split, say Chest, Back, Arms, Legs." : "Sound like a real person texting back.",
                     ],
                   },
                   null,
@@ -96,7 +107,7 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { reply: buildFallbackReply(latestUserMessage) } satisfies MessagesChatResponse,
+        { reply: buildFallbackReply(contact?.name ?? "Bowen", latestUserMessage) } satisfies MessagesChatResponse,
         { status: 200 },
       );
     }
@@ -115,7 +126,7 @@ export async function POST(request: Request) {
 
     if (!rawText) {
       return NextResponse.json(
-        { reply: buildFallbackReply(latestUserMessage) } satisfies MessagesChatResponse,
+        { reply: buildFallbackReply(contact?.name ?? "Bowen", latestUserMessage) } satisfies MessagesChatResponse,
         { status: 200 },
       );
     }
@@ -123,11 +134,11 @@ export async function POST(request: Request) {
     const parsed = JSON.parse(rawText) as MessagesChatResponse;
 
     return NextResponse.json({
-      reply: parsed.reply?.trim() || buildFallbackReply(latestUserMessage),
+      reply: parsed.reply?.trim() || buildFallbackReply(contact?.name ?? "Bowen", latestUserMessage),
     } satisfies MessagesChatResponse);
   } catch {
     return NextResponse.json(
-      { reply: buildFallbackReply("") } satisfies MessagesChatResponse,
+      { reply: buildFallbackReply("Bowen", "") } satisfies MessagesChatResponse,
       { status: 200 },
     );
   }

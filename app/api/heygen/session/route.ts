@@ -13,6 +13,7 @@ type CreateSessionRequestBody = {
   interactivityType?: "CONVERSATIONAL" | "PUSH_TO_TALK";
   sandbox?: boolean;
   voiceId?: string | null;
+  avatarId?: string;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest) {
   const apiKey = getLiveAvatarApiKey();
   const requestBody = (await request.json().catch(() => ({}))) as CreateSessionRequestBody;
   const voiceId = requestBody.voiceId ?? env.LIVEAVATAR_VOICE_ID ?? undefined;
+  const avatarId = requestBody.avatarId?.trim() || avatarConfig.avatarId;
 
   try {
     const tokenResponse = await fetch(LIVEAVATAR_SESSION_TOKEN_URL, {
@@ -86,7 +88,7 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
       body: JSON.stringify({
         mode: "FULL",
-        avatar_id: avatarConfig.avatarId,
+        avatar_id: avatarId,
         avatar_persona: {
           context_id: avatarConfig.contextId,
           language: requestBody.language ?? "en",
@@ -163,7 +165,7 @@ export async function POST(request: NextRequest) {
       sessionToken,
       livekitUrl,
       livekitToken,
-      avatarId: avatarConfig.avatarId,
+      avatarId,
       contextId: avatarConfig.contextId,
       mode: "FULL",
       interactivityType: requestBody.interactivityType ?? "CONVERSATIONAL",

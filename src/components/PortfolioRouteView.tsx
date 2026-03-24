@@ -8,6 +8,8 @@ import type { Route } from "next";
 import { ExperienceApp } from "@/components/experience/ExperienceApp";
 import { ContactApp } from "@/components/other/ContactApp";
 import { MessagesApp } from "@/components/other/MessagesApp";
+import type { MessagesThreads } from "@/components/other/MessagesApp";
+import { PhoneApp as PhoneAppScreen } from "@/components/other/PhoneApp";
 import { SafariApp } from "@/components/other/SafariApp";
 import { PhotosApp } from "@/components/photos/PhotosApp";
 import { AdaptApp } from "@/components/projects/AdaptApp";
@@ -20,7 +22,7 @@ import { portfolioEntities } from "@/data/portfolio";
 import { createPhoneListScreen } from "@/utils/phone";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityById, getEntityByRoute } from "@/utils/portfolio";
-import type { PhoneApp, PortfolioEntity } from "@/types";
+import type { ChatContactId, MessagesChatMessage, MessagesChatResponse, PhoneApp, PortfolioEntity } from "@/types";
 
 interface PortfolioRouteViewProps {
   route: string;
@@ -205,6 +207,14 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const setActiveSection = usePortfolioStore((state) => state.setActiveSection);
   const syncPhoneScreenFromRoute = usePortfolioStore((state) => state.syncPhoneScreenFromRoute);
   const { timeLabel, weekday, month, day } = usePacificTime();
+  const [selectedMessageContactId, setSelectedMessageContactId] = useState<ChatContactId | null>(null);
+  const [sendingMessageContactId, setSendingMessageContactId] = useState<ChatContactId | null>(null);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
+  const [messageThreads, setMessageThreads] = useState<MessagesThreads>({
+    bowen: [],
+    lara: [],
+    john: [],
+  });
 
   const visibleEntity =
     (phoneScreen.entityId ? getEntityById(phoneScreen.entityId) : null) ?? entity;
@@ -217,21 +227,96 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const projectFolderItems = useMemo(() => getItemsForApp("projects").slice(0, 4), []);
   const experienceFolderItems = useMemo(() => getItemsForApp("experience").slice(0, 4), []);
 
+  function openMessages(contactId: ChatContactId | null = null) {
+    setSelectedMessageContactId(contactId);
+    setPhoneScreen({
+      app: "messages",
+      view: "detail",
+      title: "Messages",
+      entityId: null,
+      route: null,
+      card: "overview",
+    });
+  }
+
+  async function sendChatMessage(contactId: ChatContactId, text: string) {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const userMessage: MessagesChatMessage = {
+      id: `${contactId}-user-${Date.now()}`,
+      sender: "user",
+      text: trimmed,
+      timestamp: Date.now(),
+    };
+
+    const nextThread = [...(messageThreads[contactId] ?? []), userMessage];
+
+    setMessageThreads((current) => ({
+      ...current,
+      [contactId]: nextThread,
+    }));
+    setMessagesError(null);
+    setSendingMessageContactId(contactId);
+
+    try {
+      const response = await fetch("/api/messages-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contactId,
+          messages: nextThread,
+        }),
+      });
+
+      const payload = (await response.json()) as MessagesChatResponse | { error?: string };
+
+      if (!response.ok || "error" in payload || !("reply" in payload)) {
+        throw new Error(("error" in payload && payload.error) || "Message could not be sent.");
+      }
+
+      const replyMessage: MessagesChatMessage = {
+        id: `${contactId}-contact-${Date.now() + 1}`,
+        sender: "contact",
+        text: payload.reply,
+        timestamp: Date.now() + 1,
+      };
+
+      setMessageThreads((current) => ({
+        ...current,
+        [contactId]: [...current[contactId], replyMessage],
+      }));
+    } catch (error) {
+      setMessagesError(error instanceof Error ? error.message : "Message could not be sent.");
+    } finally {
+      setSendingMessageContactId((current) => (current === contactId ? null : current));
+    }
+  }
+
   function openApp(app: Exclude<PhoneApp, "home">) {
+    if (app === "phone") {
+      setPhoneScreen({
+        app: "phone",
+        view: "detail",
+        title: "Phone",
+        entityId: null,
+        route: null,
+        card: "overview",
+      });
+      return;
+    }
+
     if (app === "projects" || app === "experience") {
       setPhoneScreen(createPhoneListScreen(app));
       return;
     }
 
     if (app === "messages") {
-      setPhoneScreen({
-        app: "messages",
-        view: "detail",
-        title: "Messages",
-        entityId: null,
-        route: null,
-        card: "overview",
-      });
+      openMessages();
       return;
     }
 
@@ -291,16 +376,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       homeApps={homeApps}
       onOpenApp={openApp}
       onGoHome={goPhoneHome}
-      onOpenMessages={() =>
-        setPhoneScreen({
-          app: "messages",
-          view: "detail",
-          title: "Messages",
-          entityId: null,
-          route: null,
-          card: "overview",
-        })
-      }
+      onOpenMessages={() => openMessages()}
+      onOpenPhone={() => openApp("phone")}
       onOpenSafari={() =>
         setPhoneScreen({
           app: "safari",
@@ -356,8 +433,18 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
         >
           {phoneScreen.view === "home" ? (
             homeScreen
+          ) : phoneScreen.app === "phone" ? (
+            <PhoneAppScreen onOpenMessages={(contactId) => openMessages(contactId)} />
           ) : phoneScreen.app === "messages" ? (
-            <MessagesApp />
+            <MessagesApp
+              selectedContactId={selectedMessageContactId}
+              threads={messageThreads}
+              onOpenThread={(contactId) => setSelectedMessageContactId(contactId)}
+              onCloseThread={() => setSelectedMessageContactId(null)}
+              onSendMessage={sendChatMessage}
+              sendingContactId={sendingMessageContactId}
+              error={messagesError}
+            />
           ) : phoneScreen.app === "safari" ? (
             <SafariApp />
           ) : phoneScreen.view === "list" ? (
@@ -470,6 +557,7 @@ function HomeScreen({
   onOpenApp,
   onGoHome,
   onOpenMessages,
+  onOpenPhone,
   onOpenSafari,
 }: {
   timeLabel: string;
@@ -490,6 +578,7 @@ function HomeScreen({
   onOpenApp: (app: Exclude<PhoneApp, "home">) => void;
   onGoHome: () => void;
   onOpenMessages: () => void;
+  onOpenPhone: () => void;
   onOpenSafari: () => void;
 }) {
   return (
@@ -568,7 +657,7 @@ function HomeScreen({
         <div className="grid grid-cols-4 gap-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
           {[
             { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onOpenMessages },
-            { label: "Call", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onGoHome },
+            { label: "Phone", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onOpenPhone },
             { label: "Safari", iconSrc: "/icons/safari.jpg", tint: "from-sky-400 to-blue-500", onClick: onOpenSafari },
             { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500", onClick: onGoHome },
           ].map((dockItem) => (

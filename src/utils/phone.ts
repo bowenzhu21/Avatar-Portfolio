@@ -3,6 +3,10 @@ import { getEntityByRoute } from "@/utils/portfolio";
 import type { CardType, PhoneScreenState, PortfolioEntity } from "@/types";
 
 function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
+  if (route === "/phone") {
+    return "phone";
+  }
+
   if (route === "/messages") {
     return "messages";
   }
@@ -83,6 +87,7 @@ export function createPhoneListScreen(
   app: Exclude<PhoneScreenState["app"], "home">,
 ): PhoneScreenState {
   const titleMap = {
+    phone: "Phone",
     messages: "Messages",
     projects: "Projects",
     experience: "Experience",

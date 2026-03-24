@@ -3,22 +3,20 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MessagesChatMessage, MessagesChatResponse } from "@/types";
+import { allChatContacts, bowenContact, getChatContactById } from "@/data/chatContacts";
+import type { ChatContactId, MessagesChatMessage, MessagesChatResponse } from "@/types";
 
-const bowenContact = {
-  id: "bowen",
-  name: "Bowen",
-  avatar: "/messages/bowen.jpeg",
-};
+export type MessagesThreads = Record<ChatContactId, MessagesChatMessage[]>;
 
-const initialMessages: MessagesChatMessage[] = [
-  {
-    id: "bowen-intro",
-    sender: "bowen",
-    text: "Hey, it's Bowen. Ask me about my projects, experience, school, or anything else.",
-    timestamp: Date.now(),
-  },
-];
+interface MessagesAppProps {
+  selectedContactId: ChatContactId | null;
+  threads: MessagesThreads;
+  onOpenThread: (contactId: ChatContactId) => void;
+  onCloseThread: () => void;
+  onSendMessage: (contactId: ChatContactId, text: string) => Promise<void>;
+  sendingContactId: ChatContactId | null;
+  error: string | null;
+}
 
 function formatConversationTime(timestamp: number) {
   return new Intl.DateTimeFormat("en-US", {
@@ -35,20 +33,26 @@ function formatThreadDay(timestamp: number) {
   }).format(timestamp);
 }
 
-export function MessagesApp() {
-  const [threadOpen, setThreadOpen] = useState(false);
-  const [messages, setMessages] = useState<MessagesChatMessage[]>(initialMessages);
+export function MessagesApp({
+  selectedContactId,
+  threads,
+  onOpenThread,
+  onCloseThread,
+  onSendMessage,
+  sendingContactId,
+  error,
+}: MessagesAppProps) {
   const [draft, setDraft] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  const latestMessage = messages[messages.length - 1];
-  const preview = latestMessage?.text ?? "Start chatting";
-  const previewTime = latestMessage ? formatConversationTime(latestMessage.timestamp) : "";
+  const selectedContact = selectedContactId ? getChatContactById(selectedContactId) : null;
+  const selectedMessages = selectedContactId ? threads[selectedContactId] ?? [] : [];
+  const latestBowenMessage = threads.bowen[threads.bowen.length - 1];
+  const preview = latestBowenMessage?.text ?? "Start chatting";
+  const previewTime = latestBowenMessage ? formatConversationTime(latestBowenMessage.timestamp) : "";
+  const isSending = Boolean(selectedContactId && sendingContactId === selectedContactId);
 
   useEffect(() => {
-    if (!threadOpen || !scrollRef.current) {
+    if (!selectedContact || !scrollRef.current) {
       return;
     }
 
@@ -60,83 +64,27 @@ export function MessagesApp() {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [messages, threadOpen]);
-
-  async function sendMessage(prefilled?: string) {
-    const messageText = (prefilled ?? draft).trim();
-
-    if (!messageText || isSending) {
-      return;
-    }
-
-    const userMessage: MessagesChatMessage = {
-      id: `user-${Date.now()}`,
-      sender: "user",
-      text: messageText,
-      timestamp: Date.now(),
-    };
-
-    const nextMessages = [...messages, userMessage];
-
-    setMessages(nextMessages);
-    setDraft("");
-    setError(null);
-    setIsSending(true);
-
-    try {
-      const response = await fetch("/api/messages-chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: nextMessages,
-        }),
-      });
-
-      const payload = (await response.json()) as MessagesChatResponse | { error?: string };
-
-      if (!response.ok || "error" in payload || !("reply" in payload)) {
-        throw new Error(("error" in payload && payload.error) || "Message could not be sent.");
-      }
-
-      const bowenReply: MessagesChatMessage = {
-        id: `bowen-${Date.now() + 1}`,
-        sender: "bowen",
-        text: payload.reply,
-        timestamp: Date.now() + 1,
-      };
-
-      setMessages((currentMessages) => [...currentMessages, bowenReply]);
-    } catch (caughtError) {
-      const message = caughtError instanceof Error ? caughtError.message : "Message could not be sent.";
-      setError(message);
-    } finally {
-      setIsSending(false);
-    }
-  }
-
-  const messageGroups = useMemo(() => messages, [messages]);
+  }, [selectedContact, selectedMessages]);
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#f6f6f8] text-[#111111]">
       <AnimatePresence mode="wait" initial={false}>
-        {threadOpen ? (
+        {selectedContact ? (
           <motion.div
-            key="thread"
+            key={`thread-${selectedContact.id}`}
             initial={{ opacity: 0, x: 18 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -18 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="flex h-full min-h-0 flex-col"
           >
-            <MessagesThreadHeader onBack={() => setThreadOpen(false)} />
+            <MessagesThreadHeader contactName={selectedContact.name} avatar={selectedContact.avatar} onBack={onCloseThread} />
             <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto bg-[#ffffff] px-3 pb-4 pt-2">
               <div className="pb-2 text-center text-[0.72rem] text-[#8b8b92]">
-                {formatThreadDay(messages[0]?.timestamp ?? Date.now())}
+                {formatThreadDay(selectedMessages[0]?.timestamp ?? Date.now())}
               </div>
               <div className="space-y-1.5">
-                {messageGroups.map((message) => (
+                {selectedMessages.map((message) => (
                   <MessageBubble key={message.id} message={message} />
                 ))}
                 {isSending ? <TypingBubble /> : null}
@@ -145,7 +93,15 @@ export function MessagesApp() {
             <MessageComposer
               draft={draft}
               onChange={setDraft}
-              onSend={() => void sendMessage()}
+              onSend={async () => {
+                if (!draft.trim()) {
+                  return;
+                }
+
+                const nextDraft = draft;
+                setDraft("");
+                await onSendMessage(selectedContact.id, nextDraft);
+              }}
               disabled={isSending}
               error={error}
             />
@@ -159,11 +115,7 @@ export function MessagesApp() {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="flex h-full min-h-0 flex-col bg-[#f6f6f8]"
           >
-            <MessagesInbox
-              preview={preview}
-              previewTime={previewTime}
-              onOpenThread={() => setThreadOpen(true)}
-            />
+            <MessagesInbox preview={preview} previewTime={previewTime} onOpenThread={onOpenThread} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -178,25 +130,11 @@ function MessagesInbox({
 }: {
   preview: string;
   previewTime: string;
-  onOpenThread: () => void;
+  onOpenThread: (contactId: ChatContactId) => void;
 }) {
   return (
     <>
       <div className="border-b border-black/6 bg-[rgba(248,248,250,0.94)] px-4 pb-3 pt-4 backdrop-blur-xl">
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            className="text-[0.92rem] font-medium text-[#007aff] transition hover:opacity-80"
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-[#d8d8de] bg-white text-[1rem] text-[#007aff] shadow-[0_1px_0_rgba(255,255,255,0.5)]"
-          >
-            +
-          </button>
-        </div>
         <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#111111]">Messages</h1>
       </div>
 
@@ -205,7 +143,7 @@ function MessagesInbox({
           <p className="mb-3 text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-[#8b8b92]">
             Pinned
           </p>
-          <button type="button" onClick={onOpenThread} className="text-center">
+          <button type="button" onClick={() => onOpenThread("bowen")} className="text-center">
             <div className="relative mx-auto h-[4.25rem] w-[4.25rem] overflow-hidden rounded-full border border-black/8 bg-[#e8ebf0] shadow-[0_8px_16px_rgba(0,0,0,0.06)]">
               <Image src={bowenContact.avatar} alt={bowenContact.name} fill sizes="68px" className="object-cover" />
             </div>
@@ -215,7 +153,12 @@ function MessagesInbox({
 
         <section className="mt-8">
           <div className="overflow-hidden rounded-[1.25rem] bg-white">
-            <ConversationRow preview={preview} previewTime={previewTime} onOpenThread={onOpenThread} />
+            <ConversationRow
+              contactId="bowen"
+              preview={preview}
+              previewTime={previewTime}
+              onOpenThread={onOpenThread}
+            />
           </div>
         </section>
       </div>
@@ -224,26 +167,34 @@ function MessagesInbox({
 }
 
 function ConversationRow({
+  contactId,
   preview,
   previewTime,
   onOpenThread,
 }: {
+  contactId: ChatContactId;
   preview: string;
   previewTime: string;
-  onOpenThread: () => void;
+  onOpenThread: (contactId: ChatContactId) => void;
 }) {
+  const contact = getChatContactById(contactId);
+
+  if (!contact) {
+    return null;
+  }
+
   return (
     <button
       type="button"
-      onClick={onOpenThread}
+      onClick={() => onOpenThread(contactId)}
       className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[#f8f8fb]"
     >
       <div className="relative h-[3rem] w-[3rem] shrink-0 overflow-hidden rounded-full bg-[#e5e8ee]">
-        <Image src={bowenContact.avatar} alt={bowenContact.name} fill sizes="48px" className="object-cover" />
+        <Image src={contact.avatar} alt={contact.name} fill sizes="48px" className="object-cover" />
       </div>
       <div className="min-w-0 flex-1 border-b border-black/6 pb-0.5">
         <div className="flex items-center justify-between gap-3">
-          <p className="truncate text-[0.96rem] font-semibold text-[#111111]">{bowenContact.name}</p>
+          <p className="truncate text-[0.96rem] font-semibold text-[#111111]">{contact.name}</p>
           <p className="shrink-0 text-[0.72rem] text-[#8b8b92]">{previewTime}</p>
         </div>
         <p className="mt-0.5 truncate text-[0.8rem] text-[#6d6d74]">{preview}</p>
@@ -252,7 +203,15 @@ function ConversationRow({
   );
 }
 
-function MessagesThreadHeader({ onBack }: { onBack: () => void }) {
+function MessagesThreadHeader({
+  contactName,
+  avatar,
+  onBack,
+}: {
+  contactName: string;
+  avatar: string;
+  onBack: () => void;
+}) {
   return (
     <div className="border-b border-black/6 bg-[rgba(248,248,250,0.96)] px-3 pb-2 pt-2 backdrop-blur-xl">
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
@@ -267,9 +226,9 @@ function MessagesThreadHeader({ onBack }: { onBack: () => void }) {
 
         <div className="flex min-w-0 flex-col items-center justify-center">
           <div className="relative h-[2rem] w-[2rem] overflow-hidden rounded-full bg-[#e7eaf0]">
-            <Image src={bowenContact.avatar} alt={bowenContact.name} fill sizes="32px" className="object-cover" />
+            <Image src={avatar} alt={contactName} fill sizes="32px" className="object-cover" />
           </div>
-          <p className="mt-0.5 truncate text-[0.78rem] font-semibold text-[#111111]">{bowenContact.name}</p>
+          <p className="mt-0.5 truncate text-[0.78rem] font-semibold text-[#111111]">{contactName}</p>
         </div>
 
         <div className="w-[4.5rem]" />
@@ -324,7 +283,7 @@ function MessageComposer({
 }: {
   draft: string;
   onChange: (value: string) => void;
-  onSend: () => void;
+  onSend: () => void | Promise<void>;
   disabled: boolean;
   error: string | null;
 }) {
@@ -335,7 +294,7 @@ function MessageComposer({
         className="flex items-end gap-2"
         onSubmit={(event) => {
           event.preventDefault();
-          onSend();
+          void onSend();
         }}
       >
         <div className="flex min-h-[2.7rem] flex-1 items-end rounded-[1.45rem] border border-black/8 bg-white px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">

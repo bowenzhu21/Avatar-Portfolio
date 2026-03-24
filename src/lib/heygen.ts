@@ -77,6 +77,7 @@ export interface HeyGenCreateSessionOptions {
   interactivityType?: "CONVERSATIONAL" | "PUSH_TO_TALK";
   sandbox?: boolean;
   voiceId?: string | null;
+  avatarId?: string;
 }
 
 type StateListener = (state: HeyGenAvatarState) => void;

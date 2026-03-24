@@ -1,10 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 
 const elbowImages = [
-  { id: 1, src: "/elbowexo/1.png", alt: "Elbow Exo preview 1" },
   { id: 2, src: "/elbowexo/2.PNG", alt: "Elbow Exo preview 2" },
 ];
 
@@ -14,16 +12,7 @@ const elbowBullets = [
 ];
 
 export function ElbowExoApp() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeImage = elbowImages[activeIndex] ?? elbowImages[0];
-
-  function showPrevious() {
-    setActiveIndex((current) => (current > 0 ? current - 1 : elbowImages.length - 1));
-  }
-
-  function showNext() {
-    setActiveIndex((current) => (current < elbowImages.length - 1 ? current + 1 : 0));
-  }
+  const activeImage = elbowImages[0];
 
   return (
     <div
@@ -56,24 +45,6 @@ export function ElbowExoApp() {
                     priority
                   />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={showPrevious}
-                  className="absolute left-2 top-1/2 flex h-10 w-8 -translate-y-1/2 items-center justify-center text-[1.8rem] text-white/92 transition hover:text-white"
-                  aria-label="Previous Elbow Exo image"
-                >
-                  ‹
-                </button>
-
-                <button
-                  type="button"
-                  onClick={showNext}
-                  className="absolute right-2 top-1/2 flex h-10 w-8 -translate-y-1/2 items-center justify-center text-[1.8rem] text-white/92 transition hover:text-white"
-                  aria-label="Next Elbow Exo image"
-                >
-                  ›
-                </button>
               </div>
 
               <p className="mt-3 text-[0.86rem] leading-6 text-white/88">
