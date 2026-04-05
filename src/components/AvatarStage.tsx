@@ -7,15 +7,10 @@ import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 export function AvatarStage() {
-  const { isSpeaking, status, audioLevel } = useAvatarSpeech();
-  const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
+  const { isSpeaking, audioLevel } = useAvatarSpeech();
   const latestUserUtterance = usePortfolioStore((state) => state.latestUserUtterance);
   const level = isSpeaking ? Math.max(audioLevel, 0.08) : 0;
-  const footerLabel = latestUserUtterance
-    ? `Latest prompt: ${latestUserUtterance}`
-    : status === "generating"
-      ? "Preparing audio"
-      : "";
+  const footerLabel = latestUserUtterance ? `Latest prompt: ${latestUserUtterance}` : "";
 
   return (
     <div className="relative min-h-[445px] overflow-hidden rounded-[2.6rem] border border-white/10 bg-[#050505] shadow-[0_32px_100px_rgba(0,0,0,0.42)]">

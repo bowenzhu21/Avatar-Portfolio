@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import type { SafariQueryResponse } from "@/types";
-
-const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+import { generateStructuredJson } from "@/lib/structured-llm.server";
 
 interface SafariQueryRequest {
   query?: string;
@@ -103,85 +101,41 @@ export async function POST(request: Request) {
       return NextResponse.json(presetPage);
     }
 
-    const geminiApiKey = process.env.GEMINI_API_KEY?.trim();
-
-    if (!geminiApiKey) {
-      return NextResponse.json(buildFallbackPage(query), { status: 200 });
-    }
-
-    const response = await fetch(`${GEMINI_URL}?key=${geminiApiKey}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [
-            {
-              text:
-                "You are generating a Safari-style answer page inside Bowen Zhu's portfolio phone UI. Return strict JSON only. Make the answer feel like a polished browser result page, not a chat response. Be concise, well-structured, and readable on a phone. Prefer short headings, short paragraphs, and bullets when useful. Keep the title short. Use a URL-like string such as bowen.ai/search or bowen.ai/result.",
-            },
-          ],
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: JSON.stringify(
-                  {
-                    query,
-                    currentUrl: body.currentUrl ?? null,
-                    outputRequirements: {
-                      title: "short page title",
-                      url: "compact browser-like URL",
-                      content:
-                        "formatted answer body with short headings, bullets, and short paragraphs when helpful",
-                      query,
-                    },
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
+    const result = await generateStructuredJson<SafariQueryResponse>({
+      systemInstruction:
+        "You are generating a Safari-style answer page inside Bowen Zhu's portfolio phone UI. Return strict JSON only. Make the answer feel like a polished browser result page, not a chat response. Be concise, well-structured, and readable on a phone. Prefer short headings, short paragraphs, and bullets when useful. Keep the title short. Use a URL-like string such as bowen.ai/search or bowen.ai/result.",
+      userPrompt: JSON.stringify(
+        {
+          query,
+          currentUrl: body.currentUrl ?? null,
+          outputRequirements: {
+            title: "short page title",
+            url: "compact browser-like URL",
+            content:
+              "formatted answer body with short headings, bullets, and short paragraphs when helpful",
+            query,
           },
-        ],
-        generationConfig: {
-          temperature: 0.5,
-          responseMimeType: "application/json",
-          responseSchema: safariQuerySchema,
         },
-      }),
-      cache: "no-store",
+        null,
+        2,
+      ),
+      schema: safariQuerySchema,
+      schemaName: "safari_query_page",
+      temperature: 0.5,
     });
 
-    if (!response.ok) {
+    if (!result) {
       return NextResponse.json(buildFallbackPage(query), { status: 200 });
     }
 
-    const payload = (await response.json()) as {
-      candidates?: Array<{
-        content?: {
-          parts?: Array<{
-            text?: string;
-          }>;
-        };
-      }>;
-    };
-
-    const rawText = payload.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawText) {
-      return NextResponse.json(buildFallbackPage(query), { status: 200 });
-    }
-
-    const parsed = JSON.parse(rawText) as SafariQueryResponse;
+    const parsed = result.data;
 
     return NextResponse.json({
-      title: parsed.title?.trim() || `Results for ${query}`,
-      url: parsed.url?.trim() || "bowen.ai/search",
-      content: parsed.content?.trim() || buildFallbackPage(query).content,
+      title: (typeof parsed.title === "string" ? parsed.title.trim() : "") || `Results for ${query}`,
+      url: (typeof parsed.url === "string" ? parsed.url.trim() : "") || "bowen.ai/search",
+      content:
+        (typeof parsed.content === "string" ? parsed.content.trim() : "") ||
+        buildFallbackPage(query).content,
       query,
     } satisfies SafariQueryResponse);
   } catch {

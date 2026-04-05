@@ -19,6 +19,15 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: siteConfig.name,
   description: siteConfig.description,
+  icons: {
+    icon: [
+      { url: "/browser_icon.png", type: "image/png" },
+    ],
+    shortcut: ["/browser_icon.png"],
+    apple: [
+      { url: "/browser_icon.png", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({

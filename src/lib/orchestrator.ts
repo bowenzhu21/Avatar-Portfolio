@@ -38,7 +38,7 @@ export async function orchestrateWithGemini(
   });
 
   if (!response.ok) {
-    throw new Error("Gemini orchestration request failed.");
+    throw new Error("Narration orchestration request failed.");
   }
 
   return (await response.json()) as AvatarNarrationOutput;

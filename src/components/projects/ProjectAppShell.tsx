@@ -4,28 +4,38 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
 
-const adaptSummary =
-  "Adapt is a prompt-driven UI system that translates natural language into structured, working interfaces, enabling fast iteration and dynamic interface generation.";
+interface ProjectAppLink {
+  title: string;
+  href: string;
+  iconSrc: string;
+}
 
-const adaptBullets = [
-  "Built a 3-stage OpenAI pipeline to generate, validate & repair TypeScript components by parsing compiler errors into structured context for targeted re-prompting, isolating failure modes across imports, props & type violations.",
-  "Achieved 82% prompt-to-render success across 200 prompts via max-iteration budgeting and failure mode logging.",
-];
+interface ProjectPreview {
+  src: string;
+  alt: string;
+  fit?: "contain" | "cover";
+  paddingClassName?: string;
+  label?: string;
+}
 
-const adaptTabs = [
+interface ProjectAppShellProps {
+  title: string;
+  backgroundImageSrc: string;
+  summary: string;
+  bullets: string[];
+  preview: ProjectPreview;
+  links: ProjectAppLink[];
+  shellTone?: "dark" | "light";
+}
+
+const projectTabs = [
   { id: "overview", label: "Overview", iconSrc: "/appicons/home.webp" },
   { id: "highlights", label: "Highlights", iconSrc: "/appicons/highlights.png" },
   { id: "gallery", label: "Gallery", iconSrc: "/appicons/gallery.png" },
   { id: "links", label: "Links", iconSrc: "/appicons/links.png" },
 ] as const;
 
-type AdaptTabId = (typeof adaptTabs)[number]["id"];
-
-const shellBackgroundStyle = {
-  backgroundImage: 'url("/adapt/adapt_bg.jpeg")',
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-} as const;
+type ProjectTabId = (typeof projectTabs)[number]["id"];
 
 const liquidGlassStyle = {
   backgroundImage:
@@ -37,18 +47,41 @@ const navGlassStyle = {
     "linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015)), linear-gradient(135deg,rgba(255,255,255,0.012),rgba(255,255,255,0.004))",
 } as const;
 
-export function AdaptApp() {
-  const [activeTab, setActiveTab] = useState<AdaptTabId>("overview");
+export function ProjectAppShell({
+  title,
+  backgroundImageSrc,
+  summary,
+  bullets,
+  preview,
+  links,
+  shellTone = "dark",
+}: ProjectAppShellProps) {
+  const [activeTab, setActiveTab] = useState<ProjectTabId>("overview");
+  const isLightTone = shellTone === "light";
 
   return (
     <div
-      className="relative flex h-full min-h-0 flex-col overflow-hidden text-white"
-      style={shellBackgroundStyle}
+      className={`relative flex h-full min-h-0 flex-col overflow-hidden ${
+        isLightTone ? "text-[#121416]" : "text-white"
+      }`}
+      style={{
+        backgroundImage: `url("${backgroundImageSrc}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
     >
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-        <header className="border-b border-white/10 px-5 pb-5 pt-5 backdrop-blur-[18px]">
-          <h1 className="text-[2.25rem] font-semibold tracking-[-0.07em] text-white">
-            Adapt UI
+        <header
+          className={`px-5 pb-5 pt-5 backdrop-blur-[18px] ${
+            isLightTone ? "border-b border-black/12" : "border-b border-white/10"
+          }`}
+        >
+          <h1
+            className={`text-[2.25rem] font-semibold tracking-[-0.07em] ${
+              isLightTone ? "text-[#101214]" : "text-white"
+            }`}
+          >
+            {title}
           </h1>
         </header>
 
@@ -63,13 +96,18 @@ export function AdaptApp() {
               className="h-full overflow-y-auto px-5 pb-28 pt-5"
             >
               {activeTab === "overview" ? (
-                <OverviewPage />
+                <OverviewPage
+                  summary={summary}
+                  title={title}
+                  preview={preview}
+                  shellTone={shellTone}
+                />
               ) : activeTab === "highlights" ? (
-                <HighlightsPage />
+                <HighlightsPage bullets={bullets} shellTone={shellTone} />
               ) : activeTab === "gallery" ? (
-                <GalleryPage />
+                <GalleryPage title={title} preview={preview} />
               ) : (
-                <LinksPage />
+                <LinksPage links={links} />
               )}
             </motion.div>
           </AnimatePresence>
@@ -84,7 +122,7 @@ export function AdaptApp() {
           <div className="absolute right-10 top-[18%] h-[38%] w-[22%] rounded-full bg-white/[0.05] blur-xl" />
           <div className="absolute inset-0 bg-white/[0.008]" />
           <div className="relative grid grid-cols-4 gap-1 px-3 py-1.5">
-            {adaptTabs.map((tab) => {
+            {projectTabs.map((tab) => {
               const active = tab.id === activeTab;
 
               return (
@@ -121,17 +159,31 @@ export function AdaptApp() {
   );
 }
 
-function OverviewPage() {
+function OverviewPage({
+  summary,
+  title,
+  preview,
+  shellTone,
+}: {
+  summary: string;
+  title: string;
+  preview: ProjectPreview;
+  shellTone: "dark" | "light";
+}) {
+  const isLightTone = shellTone === "light";
+
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         <div className="relative aspect-[1.08/1] bg-black/15">
           <Image
-            src="/adapt/adapt.png"
-            alt="Adapt UI preview"
+            src={preview.src}
+            alt={preview.alt}
             fill
             sizes="(max-width: 768px) 92vw, 360px"
-            className="object-contain p-4"
+            className={`${preview.fit === "cover" ? "object-cover" : "object-contain"} ${
+              preview.paddingClassName ?? ""
+            }`}
             priority
           />
         </div>
@@ -139,37 +191,71 @@ function OverviewPage() {
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-[0.26em] text-white/56">
-              Interface View
+              {preview.label ?? "Preview"}
             </p>
-            <p className="mt-2 text-sm font-medium text-white">Prompt-to-UI system preview</p>
+            <p className="mt-2 text-sm font-medium text-white">{title}</p>
           </div>
           <span className="text-[10px] uppercase tracking-[0.24em] text-white/42">01</span>
         </div>
       </div>
 
-      <div className="border-l border-cyan-100/32 pl-4">
-        <p className="text-[0.88rem] leading-7 text-white/84">{adaptSummary}</p>
+      <div
+        className={`border-l pl-4 ${
+          isLightTone ? "border-black/18" : "border-white/22"
+        }`}
+      >
+        <p
+          className={`text-[0.88rem] leading-7 ${
+            isLightTone ? "text-black/82" : "text-white/84"
+          }`}
+        >
+          {summary}
+        </p>
       </div>
     </div>
   );
 }
 
-function HighlightsPage() {
+function HighlightsPage({
+  bullets,
+  shellTone,
+}: {
+  bullets: string[];
+  shellTone: "dark" | "light";
+}) {
+  const isLightTone = shellTone === "light";
+
   return (
     <div className="space-y-6">
       <ol className="space-y-0">
-        {adaptBullets.map((bullet, index) => {
-          const isLast = index === adaptBullets.length - 1;
+        {bullets.map((bullet, index) => {
+          const isLast = index === bullets.length - 1;
 
           return (
             <li key={bullet} className={`relative pl-12 ${isLast ? "" : "pb-8"}`}>
               {!isLast ? (
-                <span className="absolute left-[0.96rem] top-9 bottom-0 w-px bg-white/12" />
+                <span
+                  className={`absolute left-[0.96rem] top-9 bottom-0 w-px ${
+                    isLightTone ? "bg-black/14" : "bg-white/12"
+                  }`}
+                />
               ) : null}
-              <span className="absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border border-cyan-100/26 bg-white/6 text-[11px] font-semibold text-white/84 backdrop-blur-[16px]">
+              <span
+                className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-semibold backdrop-blur-[16px] ${
+                  isLightTone
+                    ? "border-black/18 bg-black/[0.03] text-black/82"
+                    : "border-white/22 bg-white/6 text-white/84"
+                }`}
+              >
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <p className="pt-1 text-[0.82rem] leading-6 text-white/84">{bullet}</p>
+              <p
+                className={`pt-1 text-[0.82rem] leading-6 ${
+                  isLightTone ? "text-black/82" : "text-white/84"
+                }`}
+              >
+                {bullet}
+              </p>
             </li>
           );
         })}
@@ -178,17 +264,25 @@ function HighlightsPage() {
   );
 }
 
-function GalleryPage() {
+function GalleryPage({
+  title,
+  preview,
+}: {
+  title: string;
+  preview: ProjectPreview;
+}) {
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         <div className="relative aspect-[1.08/1] bg-black/15">
           <Image
-            src="/adapt/adapt.png"
-            alt="Adapt UI preview"
+            src={preview.src}
+            alt={preview.alt}
             fill
             sizes="(max-width: 768px) 92vw, 360px"
-            className="object-contain p-4"
+            className={`${preview.fit === "cover" ? "object-cover" : "object-contain"} ${
+              preview.paddingClassName ?? ""
+            }`}
             priority
           />
         </div>
@@ -201,16 +295,18 @@ function GalleryPage() {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <button
           type="button"
-          className="relative shrink-0 overflow-hidden rounded-[1rem] border border-cyan-200/50 opacity-100"
-          aria-label="Show Adapt UI image 1"
+          className="relative shrink-0 overflow-hidden rounded-[1rem] border border-white/38 opacity-100"
+          aria-label={`Show ${title} image 1`}
         >
           <div className="relative h-[4.75rem] w-[4.75rem] bg-black/12">
             <Image
-              src="/adapt/adapt.png"
-              alt="Adapt UI thumbnail"
+              src={preview.src}
+              alt={`${title} thumbnail`}
               fill
               sizes="76px"
-              className="object-contain p-2"
+              className={`${preview.fit === "cover" ? "object-cover" : "object-contain"} ${
+                preview.paddingClassName ?? ""
+              }`}
             />
           </div>
         </button>
@@ -219,20 +315,18 @@ function GalleryPage() {
   );
 }
 
-function LinksPage() {
+function LinksPage({ links }: { links: ProjectAppLink[] }) {
   return (
     <div className="space-y-6">
       <div className="border-y border-white/10">
-        <ActionRow
-          title="GitHub"
-          href="https://github.com/bowenzhu21/Adapt-UI"
-          iconSrc="/appicons/github.svg"
-        />
-        <ActionRow
-          title="Demo"
-          href="https://adapt-ui.vercel.app/"
-          iconSrc="/appicons/links.png"
-        />
+        {links.map((link) => (
+          <ActionRow
+            key={`${link.title}-${link.href}`}
+            title={link.title}
+            href={link.href}
+            iconSrc={link.iconSrc}
+          />
+        ))}
       </div>
     </div>
   );
@@ -242,11 +336,7 @@ function ActionRow({
   title,
   href,
   iconSrc,
-}: {
-  title: string;
-  href: string;
-  iconSrc: string;
-}) {
+}: ProjectAppLink) {
   return (
     <a
       href={href}

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ExperienceApp } from "@/components/experience/ExperienceApp";
 import { ContactApp } from "@/components/other/ContactApp";
+import { FitnessSimulatorApp } from "@/components/other/FitnessSimulatorApp";
 import { MessagesApp } from "@/components/other/MessagesApp";
 import type { MessagesThreads } from "@/components/other/MessagesApp";
 import { PhoneApp as PhoneAppScreen } from "@/components/other/PhoneApp";
@@ -532,13 +533,15 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
               <ResumeApp />
             ) : visibleEntity.id === "contact" ? (
               <ContactApp />
+            ) : visibleEntity.id === "hobbies" ? (
+              <FitnessSimulatorApp />
             ) : (
               <PlaceholderPage title={visibleEntity.title} />
             )
           ) : phoneScreen.app === "nutrition" ? (
             <PlaceholderPage title="Nutrition" />
           ) : phoneScreen.app === "fitness" ? (
-            <PlaceholderPage title="Fitness" />
+            <FitnessSimulatorApp />
           ) : phoneScreen.app === "settings" ? (
             <PlaceholderPage title="Settings" />
           ) : (

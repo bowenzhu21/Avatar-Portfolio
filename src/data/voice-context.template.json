@@ -415,8 +415,8 @@
     }
   },
   "resume": {
-    "headline": "Systems Design Engineering student building AI systems, real-time inference pipelines, and distributed software.",
-    "short_summary": "I’m a University of Waterloo Systems Design Engineering student focused on AI systems, backend infrastructure, real-time streaming, and product-minded engineering. My experience spans voice AI, biomechanical systems, distributed inference, and full-stack startup environments.",
+    "headline": "Software Engineer focused on AI systems, inference pipelines, and distributed software.",
+    "short_summary": "I’m a University of Waterloo Systems Design Engineering student focused on AI systems, backend infrastructure, real-time streaming, and product-minded engineering. My recent work spans Robinhood, HeyGen, voice AI, biomechanical systems, and distributed inference.",
     "education": [
       "University of Waterloo",
       "BASc in Systems Design Engineering (Co-op)",
@@ -430,6 +430,8 @@
       "JavaScript",
       "Java",
       "SQL",
+      "RAG",
+      "LangChain",
       "FastAPI",
       "Flask",
       "WebSockets",
@@ -442,6 +444,8 @@
       "Kubernetes",
       "Docker",
       "Linux",
+      "Git",
+      "CI/CD",
       "TensorRT",
       "vLLM",
       "Modal",

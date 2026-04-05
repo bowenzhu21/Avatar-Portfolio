@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { resumeRecord } from "@/data/resume";
 
 export function ResumeApp() {
@@ -110,26 +109,22 @@ export function ResumeApp() {
 function ResumeHeader() {
   return (
     <div className="border-b border-[#d8d2c9] pb-4 text-center">
-      <h1 className="text-[1.8rem] font-semibold tracking-[-0.04em] text-[#12100d]">
+      <h1 className="text-[2rem] font-semibold tracking-[-0.05em] text-[#12100d]">
         {resumeRecord.name}
       </h1>
-      <div className="relative mx-auto mt-3 aspect-square w-full max-w-[12rem] overflow-hidden rounded-[1.35rem] border border-black/8 shadow-[0_16px_34px_rgba(25,20,15,0.08)]">
-        <Image
-          src="/photos/32.jpeg"
-          alt="Bowen Zhu"
-          fill
-          sizes="(max-width: 768px) 100vw, 448px"
-          className="object-cover"
-          priority
-        />
-      </div>
-      <p className="mt-1 text-[0.78rem] font-medium text-[#3a352e]">{resumeRecord.role}</p>
       <p className="mt-2 text-[0.72rem] leading-5 text-[#5f584f]">
         {resumeRecord.location} | {resumeRecord.phone} | {resumeRecord.email}
       </p>
       <p className="text-[0.72rem] leading-5 text-[#5f584f]">
-        {resumeRecord.github} | {resumeRecord.linkedin}
+        <a href={`https://${resumeRecord.github}`} target="_blank" rel="noreferrer" className="underline decoration-black/12 underline-offset-2">
+          {resumeRecord.github}
+        </a>{" "}
+        |{" "}
+        <a href={`https://${resumeRecord.linkedin}`} target="_blank" rel="noreferrer" className="underline decoration-black/12 underline-offset-2">
+          {resumeRecord.linkedin}
+        </a>
       </p>
+      <p className="mt-1 text-[0.78rem] font-medium text-[#3a352e]">{resumeRecord.role}</p>
     </div>
   );
 }

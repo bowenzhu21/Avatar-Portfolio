@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getServerEnv } from "@/config/env.server";
 import { portfolioEntities, portfolioEntityMap } from "@/data/portfolio";
 import {
   buildGeminiVoiceRouterPrompt,
   geminiVoiceRouterSchema,
   getTopCandidateMatches,
 } from "@/lib/orchestrator";
+import { generateStructuredJson } from "@/lib/structured-llm.server";
 import type {
   CardType,
   OrchestrationIntent,
@@ -20,9 +20,6 @@ import {
   matchPortfolioAlias,
   scoreConfidence,
 } from "@/utils/portfolio";
-
-const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 function pickCard(intent: OrchestrationIntent, sectionId?: string | null): CardType {
   if (intent === "compare") {
@@ -249,7 +246,7 @@ function isComplexOrAmbiguousQuery(transcript: string): boolean {
   );
 }
 
-function shouldUseGemini(args: {
+function shouldUseLlm(args: {
   transcript: string;
   deterministic: VoiceRouterOutput | null;
   topCandidates: ReturnType<typeof getTopCandidateMatches>;
@@ -290,13 +287,12 @@ function hydrateGeminiOutput(output: VoiceRouterOutput): VoiceRouterOutput {
   };
 }
 
-async function runGeminiFallback(args: {
+async function runModelFallback(args: {
   input: VoiceRouterInput;
   currentEntity: PortfolioEntity | null;
   deterministic: VoiceRouterOutput | null;
   topCandidates: ReturnType<typeof getTopCandidateMatches>;
 }): Promise<VoiceRouterOutput | null> {
-  const env = getServerEnv();
   const prompt = buildGeminiVoiceRouterPrompt({
     input: args.input,
     currentEntity: args.currentEntity,
@@ -304,52 +300,20 @@ async function runGeminiFallback(args: {
     deterministicHint: args.deterministic,
   });
 
-  const response = await fetch(`${GEMINI_URL}?key=${env.GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: prompt.systemInstruction }],
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt.userPrompt }],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.2,
-        responseMimeType: "application/json",
-        responseSchema: geminiVoiceRouterSchema,
-      },
-    }),
-    cache: "no-store",
+  const result = await generateStructuredJson<VoiceRouterOutput>({
+    systemInstruction: prompt.systemInstruction,
+    userPrompt: prompt.userPrompt,
+    schema: geminiVoiceRouterSchema,
+    schemaName: "voice_router_output",
+    temperature: 0.2,
   });
 
-  if (!response.ok) {
-    return null;
-  }
-
-  const payload = (await response.json()) as {
-    candidates?: Array<{
-      content?: {
-        parts?: Array<{
-          text?: string;
-        }>;
-      };
-    }>;
-  };
-
-  const rawText = payload.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!rawText) {
+  if (!result) {
     return null;
   }
 
   try {
-    return hydrateGeminiOutput(JSON.parse(rawText) as VoiceRouterOutput);
+    return hydrateGeminiOutput(result.data);
   } catch {
     return null;
   }
@@ -470,25 +434,25 @@ export async function POST(request: Request) {
 
   const topCandidates = getTopCandidateMatches(transcript);
 
-  if (shouldUseGemini({ transcript, deterministic: deterministicResult, topCandidates })) {
+  if (shouldUseLlm({ transcript, deterministic: deterministicResult, topCandidates })) {
     try {
-      const geminiResult = await runGeminiFallback({
+      const llmResult = await runModelFallback({
         input,
         currentEntity: fallbackEntity,
         deterministic: deterministicResult,
         topCandidates,
       });
 
-      if (geminiResult) {
-        if (preferredMode !== "default" && geminiResult.intent !== "clarify") {
-          geminiResult.spokenResponse = buildContextualResponse({
-            entity: geminiResult.entity ?? fallbackEntity ?? portfolioEntities[0],
+      if (llmResult) {
+        if (preferredMode !== "default" && llmResult.intent !== "clarify") {
+          llmResult.spokenResponse = buildContextualResponse({
+            entity: llmResult.entity ?? fallbackEntity ?? portfolioEntities[0],
             mode: preferredMode,
-            card: geminiResult.card,
-            section: geminiResult.section,
+            card: llmResult.card,
+            section: llmResult.section,
           });
         }
-        return NextResponse.json(geminiResult);
+        return NextResponse.json(llmResult);
       }
     } catch {
       return NextResponse.json(deterministicResult ?? buildSafeFallback(input));
