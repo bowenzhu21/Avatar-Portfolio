@@ -8,6 +8,13 @@ interface MessagesChatRequest {
   contactId?: ChatContactId;
 }
 
+function clampReply(text: string, maxWords: number, maxChars: number) {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  const wordLimited = normalized.split(" ").slice(0, maxWords).join(" ");
+
+  return wordLimited.slice(0, maxChars).trim();
+}
+
 function buildFallbackReply(contactName: string, latestUserMessage: string) {
   if (!latestUserMessage) {
     return `Hey, it's ${contactName}.`;
@@ -31,7 +38,7 @@ export async function POST(request: Request) {
 
     const result = await generateStructuredJson<MessagesChatResponse>({
       systemInstruction:
-        `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail.`,
+        `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say comfortably in one breath.`,
       userPrompt: JSON.stringify(
         {
           latestUserMessage,
@@ -45,7 +52,8 @@ export async function POST(request: Request) {
           })),
           instructions: [
             "Reply like a real iMessage conversation.",
-            "Keep most replies to 1-4 short sentences.",
+            "Keep most replies to 1-2 short sentences.",
+            "Keep the reply under 30 words unless the user explicitly asks for detail.",
             contact?.id === "bowen"
               ? "If asked about age, say you are 19 and were born November 21, 2006."
               : "Keep the tone personal and direct.",
@@ -81,7 +89,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       reply:
-        (typeof parsed.reply === "string" ? parsed.reply.trim() : "") ||
+        (typeof parsed.reply === "string" ? clampReply(parsed.reply, 30, 180) : "") ||
         buildFallbackReply(contact?.name ?? "Bowen", latestUserMessage),
     } satisfies MessagesChatResponse);
   } catch {

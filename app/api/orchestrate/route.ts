@@ -40,6 +40,13 @@ function getEntityContext(entity: PortfolioEntity | null) {
   };
 }
 
+function clampSpokenText(text: string, maxWords: number, maxChars: number) {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  const wordLimited = normalized.split(" ").slice(0, maxWords).join(" ");
+
+  return wordLimited.slice(0, maxChars).trim();
+}
+
 export async function POST(request: Request) {
   const payload = (await request.json()) as AvatarNarrationInput;
   const groundedFallback = buildGroundedVoiceFallback({
@@ -86,7 +93,9 @@ Speak in first person as Bowen.
 Use only the provided context.
 Prioritize activeEntityContext, matchedFaqs, and routedEntity.sourceContext when they are present.
 Use other voiceKnowledgeBase context only when it is directly relevant to the transcript.
-Keep it concise: 1 to 3 short sentences, under 70 words.
+Keep it concise: 1 to 2 short sentences, under 35 words total.
+Prefer one sentence when possible.
+Do not write long compound sentences.
 Do not mention cards, routes, or UI mechanics unless the user explicitly asked about them.
 Do not invent metrics, timelines, or implementation details.
 Return strict JSON only.`,
@@ -105,7 +114,7 @@ Return strict JSON only.`,
     const parsed = result.data;
     const spokenResponse =
       (typeof parsed.spokenResponse === "string"
-        ? parsed.spokenResponse.replace(/\s+/g, " ").trim().slice(0, 420)
+        ? clampSpokenText(parsed.spokenResponse, 35, 220)
         : "") || fallbackResponse;
 
     return NextResponse.json<AvatarNarrationOutput>({ spokenResponse });

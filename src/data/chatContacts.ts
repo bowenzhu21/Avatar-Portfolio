@@ -15,6 +15,7 @@ export const phoneContacts: ChatContact[] = [
     favorite: true,
     phoneLabel: "mobile",
     phoneNumber: "(415) 555-0143",
+    voiceId: "TxGi1N29NQoCaYD4fcU5",
   },
   {
     id: "john",
@@ -23,6 +24,7 @@ export const phoneContacts: ChatContact[] = [
     favorite: true,
     phoneLabel: "mobile",
     phoneNumber: "(650) 555-0191",
+    voiceId: "wSqOdjeNqDrHcoK0zorF",
   },
 ];
 

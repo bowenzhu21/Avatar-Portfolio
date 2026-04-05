@@ -2,24 +2,25 @@ import { NextResponse } from "next/server";
 import { avatarConfig } from "@/config/avatar";
 import { getServerEnv } from "@/config/env.server";
 
-const ELEVENLABS_TTS_URL = new URL(
-  `https://api.elevenlabs.io/v1/text-to-speech/${avatarConfig.voiceId}`,
-);
-ELEVENLABS_TTS_URL.searchParams.set("output_format", avatarConfig.speechOutputFormat);
-
 export async function POST(request: Request) {
   const env = getServerEnv();
   const payload = (await request.json().catch(() => null)) as
-    | { text?: string }
+    | { text?: string; voiceId?: string }
     | null;
   const text = payload?.text?.trim() ?? "";
+  const voiceId = payload?.voiceId?.trim() || avatarConfig.voiceId;
 
   if (!text) {
     return NextResponse.json({ error: "Text is required for avatar speech." }, { status: 400 });
   }
 
   try {
-    const response = await fetch(ELEVENLABS_TTS_URL, {
+    const elevenLabsTtsUrl = new URL(
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+    );
+    elevenLabsTtsUrl.searchParams.set("output_format", avatarConfig.speechOutputFormat);
+
+    const response = await fetch(elevenLabsTtsUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

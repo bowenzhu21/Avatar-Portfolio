@@ -150,4 +150,5 @@ export interface ChatContact {
   favorite?: boolean;
   phoneLabel?: string;
   phoneNumber?: string;
+  voiceId?: string;
 }
