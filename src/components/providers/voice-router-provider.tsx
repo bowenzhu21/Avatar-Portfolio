@@ -3,20 +3,19 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
-import { useHeyGenAvatar } from "@/hooks/useHeyGenAvatar";
-import { routeVoiceIntent } from "@/lib/orchestrator";
+import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
+import { orchestrateWithGemini, routeVoiceIntent } from "@/lib/orchestrator";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityByRoute } from "@/utils/portfolio";
 
 export function VoiceRouterProvider() {
   const router = useRouter();
   const {
-    isConnected: isAvatarConnected,
     isSpeaking: isAvatarSpeaking,
-    createAndStartSession,
     speak,
+    interrupt,
     unlockAudio,
-  } = useHeyGenAvatar();
+  } = useAvatarSpeech();
   const lastHandledUtteranceRef = useRef("");
   const pendingUtterance = usePortfolioStore((state) => state.pendingUtterance);
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
@@ -75,6 +74,7 @@ export function VoiceRouterProvider() {
         lastIntent,
       } as const;
 
+      await interrupt();
       setInteractionPhase("thinking");
       setLatestRouterPayload(payload);
       setLatestSpokenResponse("");
@@ -114,18 +114,23 @@ export function VoiceRouterProvider() {
           syncPhoneScreenFromRoute(activeRoute, nextEntity ?? activeEntity, result.card);
         }
 
-        const conciseResponse = result.spokenResponse.replace(/\s+/g, " ").trim().slice(0, 240);
-        setLatestSpokenResponse(conciseResponse);
+        const narration = await orchestrateWithGemini({
+          input: payload,
+          routerResult: result,
+        }).catch(() => ({
+          spokenResponse: result.spokenResponse,
+        }));
+        const conciseResponse = narration.spokenResponse
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 320);
+
         acknowledgePendingUtterance(utterance.id);
         clearTurnCaption();
-
-        if (!isAvatarConnected) {
-          await unlockAudio();
-          await createAndStartSession();
-        }
+        setLatestSpokenResponse(conciseResponse);
 
         if (conciseResponse) {
-          setInteractionPhase("speaking");
+          await unlockAudio();
           await speak(conciseResponse);
         } else {
           setInteractionPhase("idle");
@@ -146,10 +151,9 @@ export function VoiceRouterProvider() {
     activeEntity,
     activeRoute,
     activeSection,
+    interrupt,
     clearTurnCaption,
     conversationMode,
-    createAndStartSession,
-    isAvatarConnected,
     lastIntent,
     openCard,
     pendingUtterance,

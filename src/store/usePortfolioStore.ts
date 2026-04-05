@@ -152,7 +152,6 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   setLatestSpokenResponse: (latestSpokenResponse) =>
     set((state) => ({
       latestSpokenResponse,
-      interactionPhase: latestSpokenResponse ? "speaking" : state.interactionPhase,
       conversationHistory: latestSpokenResponse
         ? [
             ...state.conversationHistory,

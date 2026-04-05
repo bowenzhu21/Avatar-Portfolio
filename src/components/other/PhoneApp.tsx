@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { HeyGenAvatarClient, type HeyGenAvatarState } from "@/lib/heygen";
+import { useState } from "react";
 import { phoneContacts } from "@/data/chatContacts";
 import type { ChatContact, ChatContactId } from "@/types";
 
@@ -12,32 +11,6 @@ type CallMode = "call" | "facetime";
 interface PhoneAppProps {
   onOpenMessages: (contactId: ChatContactId) => void;
 }
-
-const INITIAL_DEBUG: HeyGenAvatarState["debug"] = {
-  roomState: "disconnected",
-  remoteParticipantIdentity: null,
-  hasRemoteParticipant: false,
-  remoteAudioSubscribed: false,
-  remoteVideoSubscribed: false,
-  remoteAudioTrackCount: 0,
-  remoteVideoTrackCount: 0,
-  audioElementAttached: false,
-  audioPlaybackBlocked: false,
-  audioPlaybackStarted: false,
-};
-
-const INITIAL_AVATAR_STATE: HeyGenAvatarState = {
-  status: "idle",
-  isLoading: false,
-  isConnected: false,
-  isSpeaking: false,
-  videoStream: null,
-  audioStream: null,
-  session: null,
-  connectionQuality: "unknown",
-  error: null,
-  debug: INITIAL_DEBUG,
-};
 
 export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("favorites");
@@ -233,52 +206,16 @@ function PhoneCallScreen({
   mode: CallMode;
   onHangUp: () => void;
 }) {
-  const {
-    videoRef,
-    audioRef,
-    state,
-    createAndStartSession,
-    stopSession,
-  } = usePhoneAvatar(contact.heygenAvatarId ?? null);
-
-  useEffect(() => {
-    if (!contact.heygenAvatarId) {
-      return;
-    }
-
-    void createAndStartSession({ avatarId: contact.heygenAvatarId }).catch(() => {});
-
-    return () => {
-      void stopSession();
-    };
-  }, [contact.heygenAvatarId, createAndStartSession, stopSession]);
-
-  const statusLabel =
-    state.status === "connected" || state.status === "speaking"
-      ? mode === "facetime"
-        ? "Connected"
-        : "On call"
-      : state.status === "error"
-        ? "Connection failed"
-        : mode === "facetime"
-          ? "Connecting FaceTime..."
-          : "Calling...";
+  const statusLabel = mode === "facetime" ? "FaceTime connected" : "On call";
 
   return (
     <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#0e131b,#04070d)] text-white">
-      <audio ref={audioRef} className="hidden" playsInline />
       <div className="absolute inset-0">
-        {state.videoStream ? (
-          <video ref={videoRef} className="h-full w-full object-cover" autoPlay playsInline muted />
-        ) : (
-          <>
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.56)),url("${contact.avatar}")` }}
-            />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_26%)]" />
-          </>
-        )}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.56)),url("${contact.avatar}")` }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_26%)]" />
       </div>
 
       <div className="relative z-10 flex h-full flex-col px-5 pb-8 pt-12">
@@ -290,11 +227,26 @@ function PhoneCallScreen({
           <p className="mt-2 text-[0.84rem] text-white/72">{statusLabel}</p>
         </div>
 
-        {process.env.NODE_ENV === "development" ? (
-          <div className="mt-5 self-center rounded-full border border-white/14 bg-white/10 px-3 py-1 text-[0.68rem] text-white/72 backdrop-blur-xl">
-            {state.debug.roomState} · audio {state.debug.remoteAudioSubscribed ? "on" : "off"} · video {state.debug.remoteVideoSubscribed ? "on" : "off"}
+        <div className="mt-8 flex justify-center">
+          <div className="relative flex h-[10rem] w-[10rem] items-center justify-center">
+            {[0, 1, 2].map((ring) => (
+              <div
+                key={ring}
+                className="absolute inset-0 animate-pulse rounded-full border border-white/18"
+                style={{ animationDelay: `${ring * 220}ms` }}
+              />
+            ))}
+            <div className="relative h-[7.75rem] w-[7.75rem] overflow-hidden rounded-full border border-white/16">
+              <Image
+                src={contact.avatar}
+                alt={contact.name}
+                fill
+                sizes="124px"
+                className="object-cover"
+              />
+            </div>
           </div>
-        ) : null}
+        </div>
 
         <div className="mt-auto">
           <div className="mx-auto grid max-w-[16rem] grid-cols-3 gap-4 pb-6">
@@ -309,7 +261,6 @@ function PhoneCallScreen({
           <button
             type="button"
             onClick={() => {
-              void stopSession();
               onHangUp();
             }}
             className="mx-auto flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full bg-[#ff3b30] text-[1.5rem] shadow-[0_18px_30px_rgba(255,59,48,0.3)]"
@@ -350,81 +301,4 @@ function PhoneTabBar({
       </div>
     </div>
   );
-}
-
-function usePhoneAvatar(avatarId: string | null) {
-  const clientRef = useRef<HeyGenAvatarClient | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [state, setState] = useState<HeyGenAvatarState>(INITIAL_AVATAR_STATE);
-
-  if (!clientRef.current) {
-    clientRef.current = new HeyGenAvatarClient();
-  }
-
-  useEffect(() => {
-    const client = clientRef.current!;
-    return client.subscribe(setState);
-  }, []);
-
-  useEffect(() => {
-    const element = videoRef.current;
-    if (!element) {
-      return;
-    }
-
-    element.muted = true;
-
-    if (!state.videoStream) {
-      element.srcObject = null;
-      return;
-    }
-
-    element.srcObject = state.videoStream;
-    void element.play().catch(() => {});
-  }, [state.videoStream]);
-
-  useEffect(() => {
-    const client = clientRef.current!;
-    const element = audioRef.current;
-    client.markAudioElementAttached(Boolean(element));
-
-    if (!element) {
-      return;
-    }
-
-    if (!state.audioStream) {
-      element.srcObject = null;
-      client.markAudioPlaybackStatus("cleared");
-      return;
-    }
-
-    element.srcObject = state.audioStream;
-    element.muted = false;
-    element.autoplay = true;
-    void element.play().then(
-      () => client.markAudioPlaybackStatus("started"),
-      () => client.markAudioPlaybackStatus("blocked"),
-    );
-  }, [state.audioStream]);
-
-  const api = useMemo(() => {
-    const client = clientRef.current!;
-
-    return {
-      createAndStartSession: (options?: { avatarId?: string }) =>
-        client.createAndStartSession({
-          interactivityType: "CONVERSATIONAL",
-          avatarId: options?.avatarId ?? avatarId ?? undefined,
-        }),
-      stopSession: () => client.stopSession(),
-    };
-  }, [avatarId]);
-
-  return {
-    videoRef,
-    audioRef,
-    state,
-    ...api,
-  };
 }

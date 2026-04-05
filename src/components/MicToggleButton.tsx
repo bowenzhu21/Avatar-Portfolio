@@ -1,14 +1,14 @@
 "use client";
 
 import clsx from "clsx";
-import { useHeyGenAvatar } from "@/hooks/useHeyGenAvatar";
+import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
 import { useRealtimeSTT } from "@/hooks/useRealtimeSTT";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 export function MicToggleButton() {
   const { isListening, toggleListening, session, microphonePermission, error } =
     useRealtimeSTT();
-  const { unlockAudio } = useHeyGenAvatar();
+  const { unlockAudio } = useAvatarSpeech();
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
   const disabled = session.status === "connecting" || session.status === "token_loading";
   const permissionDenied = microphonePermission === "denied";
@@ -50,7 +50,7 @@ export function MicToggleButton() {
           : interactionPhase === "thinking"
             ? "Routing intent"
             : interactionPhase === "speaking"
-              ? "Avatar speaking"
+              ? "Bowen speaking"
               : "Tap to talk"}
       </p>
 

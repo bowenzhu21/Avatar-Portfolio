@@ -1,5 +1,11 @@
 import { compactPortfolioRegistry } from "@/data/portfolio";
-import type { PortfolioEntity, VoiceRouterInput, VoiceRouterOutput } from "@/types";
+import type {
+  AvatarNarrationInput,
+  AvatarNarrationOutput,
+  PortfolioEntity,
+  VoiceRouterInput,
+  VoiceRouterOutput,
+} from "@/types";
 import { orchestrationSystemPrompt } from "@/config/prompts";
 
 export async function routeVoiceIntent(
@@ -21,8 +27,8 @@ export async function routeVoiceIntent(
 }
 
 export async function orchestrateWithGemini(
-  payload: VoiceRouterInput,
-): Promise<VoiceRouterOutput> {
+  payload: AvatarNarrationInput,
+): Promise<AvatarNarrationOutput> {
   const response = await fetch("/api/orchestrate", {
     method: "POST",
     headers: {
@@ -35,7 +41,7 @@ export async function orchestrateWithGemini(
     throw new Error("Gemini orchestration request failed.");
   }
 
-  return (await response.json()) as VoiceRouterOutput;
+  return (await response.json()) as AvatarNarrationOutput;
 }
 
 function detectConversationLens(transcript: string): "technical" | "recruiter" | "general" {

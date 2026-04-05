@@ -1,66 +1,92 @@
 "use client";
 
-import clsx from "clsx";
-import { useEffect, useRef } from "react";
-import { useHeyGenAvatar } from "@/hooks/useHeyGenAvatar";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { avatarConfig } from "@/config/avatar";
+import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
+import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 export function AvatarStage() {
-  const startedOnLoadRef = useRef(false);
-  const {
-    videoRef,
-    audioRef,
-    status,
-    isConnected,
-    createAndStartSession,
-  } = useHeyGenAvatar();
-
-  useEffect(() => {
-    if (startedOnLoadRef.current) {
-      return;
-    }
-
-    if (status !== "idle") {
-      return;
-    }
-
-    startedOnLoadRef.current = true;
-    void createAndStartSession().catch(() => {
-      startedOnLoadRef.current = false;
-    });
-  }, [createAndStartSession, status]);
+  const { isSpeaking, status, audioLevel } = useAvatarSpeech();
+  const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
+  const latestUserUtterance = usePortfolioStore((state) => state.latestUserUtterance);
+  const level = isSpeaking ? Math.max(audioLevel, 0.08) : 0;
+  const footerLabel = latestUserUtterance
+    ? `Latest prompt: ${latestUserUtterance}`
+    : status === "generating"
+      ? "Preparing audio"
+      : "";
 
   return (
-    <div className="relative min-h-[520px] overflow-hidden rounded-[2.6rem] border border-white/58 bg-[linear-gradient(180deg,rgba(255,255,255,0.58),rgba(255,255,255,0.28))] shadow-[0_24px_70px_rgba(134,114,92,0.2)] backdrop-blur-[20px]">
-      <div className="absolute left-6 top-5 z-20">
-        <p className="text-xs uppercase tracking-[0.34em] text-stone-700">Bowen Zhu</p>
-      </div>
-      <video
-        ref={videoRef}
-        className={clsx(
-          "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
-          isConnected ? "opacity-100" : "opacity-0",
-        )}
-        autoPlay
-        playsInline
-        muted
-      />
-      <audio ref={audioRef} autoPlay playsInline className="hidden" />
+    <div className="relative min-h-[445px] overflow-hidden rounded-[2.6rem] border border-white/10 bg-[#050505] shadow-[0_32px_100px_rgba(0,0,0,0.42)]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.12),transparent_24%),radial-gradient(circle_at_50%_78%,rgba(0,190,255,0.15),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0)_28%,rgba(255,255,255,0.05)_100%)]" />
+      <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:36px_36px]" />
 
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_16%,rgba(255,255,255,0.34),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(19,16,13,0.1)_62%,rgba(19,16,13,0.24)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t from-[#171310]/28 via-[#171310]/10 to-transparent" />
-
-      {!isConnected ? (
-        <div className="absolute inset-0 flex items-center justify-center px-6 py-8">
-          <div className="flex items-center gap-3 rounded-full border border-white/60 bg-white/72 px-4 py-2 text-sm text-stone-800 shadow-[0_12px_34px_rgba(140,119,99,0.14)] backdrop-blur-xl">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-stone-700" />
-            <span>
-              {status === "session_loading" || status === "session_created"
-                ? "Connecting avatar…"
-                : "Preparing avatar…"}
-            </span>
+      <div className="relative z-10 flex h-full min-h-[445px] flex-col justify-between p-8 text-white">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.34em] text-white/48">
+              {avatarConfig.role}
+            </p>
+            <h2 className="mt-2 text-[2.1rem] font-semibold tracking-[-0.06em]">
+              {avatarConfig.name}
+            </h2>
           </div>
         </div>
-      ) : null}
+
+        <div className="flex flex-1 items-center justify-center py-1">
+          <motion.div
+            animate={{
+              scale: isSpeaking ? 1 + level * 0.08 : 1,
+              y: isSpeaking ? -level * 6 : 0,
+            }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="relative flex h-[20.75rem] w-[20.75rem] items-center justify-center"
+          >
+            {[0, 1, 2, 3].map((ring) => (
+              <motion.div
+                key={ring}
+                animate={
+                  isSpeaking
+                    ? {
+                        scale: [1, 1.08 + ring * 0.12 + level * 0.18, 1],
+                        opacity: [0.12, 0.3 - ring * 0.04, 0.08],
+                      }
+                    : {
+                        scale: 1,
+                        opacity: ring === 0 ? 0.16 : 0.08,
+                      }
+                }
+                transition={{
+                  duration: 1.4 + ring * 0.2,
+                  repeat: isSpeaking ? Number.POSITIVE_INFINITY : 0,
+                  ease: "easeInOut",
+                  delay: ring * 0.14,
+                }}
+                className="absolute inset-0 rounded-full border border-cyan-300/22"
+              />
+            ))}
+
+            <div className="absolute inset-[1.2rem] rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.18),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03))] blur-md" />
+            <div className="relative h-[16.25rem] w-[16.25rem] overflow-hidden rounded-full border border-white/14 bg-white/6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+              <Image
+                src={avatarConfig.profileImageSrc}
+                alt={avatarConfig.canvasLabel}
+                fill
+                priority
+                sizes="300px"
+                className="object-cover"
+              />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="space-y-5">
+          <p className="min-h-[1.25rem] text-center text-xs uppercase tracking-[0.24em] text-white/34">
+            {footerLabel}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

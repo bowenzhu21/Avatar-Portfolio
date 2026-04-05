@@ -5,7 +5,7 @@ import {
   type ElevenLabsRealtimeState,
   ElevenLabsRealtimeClient,
 } from "@/lib/elevenlabs";
-import { sharedHeyGenAvatarClient } from "@/lib/heygen";
+import { sharedAvatarSpeechClient } from "@/lib/avatar-speech";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 const INITIAL_STATE: ElevenLabsRealtimeState = {
@@ -71,8 +71,8 @@ export function useRealtimeSTT() {
   async function toggleListening() {
     if (!state.isListening) {
       beginListeningCycle();
-      if (sharedHeyGenAvatarClient.getState().isSpeaking) {
-        await sharedHeyGenAvatarClient.interrupt();
+      if (sharedAvatarSpeechClient.getState().isSpeaking) {
+        await sharedAvatarSpeechClient.interrupt();
       }
     }
 

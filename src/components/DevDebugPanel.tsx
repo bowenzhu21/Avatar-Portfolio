@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useHeyGenAvatar } from "@/hooks/useHeyGenAvatar";
+import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
 import { useRealtimeSTT } from "@/hooks/useRealtimeSTT";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 export function DevDebugPanel() {
   const [open, setOpen] = useState(false);
-  const avatar = useHeyGenAvatar();
+  const avatar = useAvatarSpeech();
   const stt = useRealtimeSTT();
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
   const latestUserUtterance = usePortfolioStore((state) => state.latestUserUtterance);
@@ -33,21 +33,17 @@ export function DevDebugPanel() {
         <div className="panel-blur mt-3 space-y-3 rounded-[1.5rem] border border-white/10 bg-black/65 p-4 text-xs text-white/75 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
           <div className="grid grid-cols-2 gap-2">
             <DebugRow label="Avatar status" value={avatar.status} />
-            <DebugRow label="Room state" value={avatar.debug.roomState} />
-            <DebugRow label="Remote participant" value={String(avatar.debug.hasRemoteParticipant)} />
-            <DebugRow label="Video subscribed" value={String(avatar.debug.remoteVideoSubscribed)} />
-            <DebugRow label="Audio subscribed" value={String(avatar.debug.remoteAudioSubscribed)} />
-            <DebugRow label="Audio attached" value={String(avatar.debug.audioElementAttached)} />
-            <DebugRow label="Audio started" value={String(avatar.debug.audioPlaybackStarted)} />
-            <DebugRow label="Audio blocked" value={String(avatar.debug.audioPlaybackBlocked)} />
+            <DebugRow label="Provider" value={avatar.provider ?? "-"} />
+            <DebugRow label="Audio unlocked" value={String(avatar.isAudioUnlocked)} />
             <DebugRow label="Listening" value={String(stt.isListening)} />
             <DebugRow label="Speaking" value={String(avatar.isSpeaking)} />
             <DebugRow label="Phase" value={interactionPhase} />
-            <DebugRow label="Session" value={avatar.session?.sessionId.slice(0, 8) ?? "-"} />
+            <DebugRow label="Level" value={avatar.audioLevel.toFixed(2)} />
           </div>
           <DebugBlock label="Partial transcript" value={stt.partialTranscript} />
           <DebugBlock label="Final utterance" value={latestUserUtterance} />
           <DebugBlock label="Spoken response" value={latestSpokenResponse} />
+          <DebugBlock label="Audio error" value={avatar.error ?? ""} />
           <DebugBlock
             label="Router payload"
             value={latestRouterPayload ? JSON.stringify(latestRouterPayload, null, 2) : ""}

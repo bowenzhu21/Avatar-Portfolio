@@ -90,6 +90,15 @@ export interface VoiceRouterOutput {
   followUpSuggestions: string[];
 }
 
+export interface AvatarNarrationInput {
+  input: VoiceRouterInput;
+  routerResult: VoiceRouterOutput;
+}
+
+export interface AvatarNarrationOutput {
+  spokenResponse: string;
+}
+
 export interface SubmittedUtterance {
   id: string;
   text: string;
@@ -141,5 +150,4 @@ export interface ChatContact {
   favorite?: boolean;
   phoneLabel?: string;
   phoneNumber?: string;
-  heygenAvatarId?: string;
 }

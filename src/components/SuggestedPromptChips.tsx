@@ -1,5 +1,6 @@
 "use client";
 
+import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
 import { useRealtimeSTT } from "@/hooks/useRealtimeSTT";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
@@ -15,6 +16,7 @@ export function SuggestedPromptChips() {
   const submitUtterance = usePortfolioStore((state) => state.submitUtterance);
   const followUpSuggestions = usePortfolioStore((state) => state.followUpSuggestions);
   const { stopListening } = useRealtimeSTT();
+  const { unlockAudio } = useAvatarSpeech();
   const prompts = followUpSuggestions.length > 0 ? followUpSuggestions : defaultPrompts;
 
   return (
@@ -28,6 +30,7 @@ export function SuggestedPromptChips() {
           key={prompt}
           type="button"
           onClick={() => {
+            void unlockAudio();
             void stopListening();
             setPartialTranscript("");
             submitUtterance(prompt, "chip");
