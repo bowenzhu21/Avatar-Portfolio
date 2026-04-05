@@ -6,14 +6,7 @@ import { useRealtimeSTT } from "@/hooks/useRealtimeSTT";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 export function MicToggleButton() {
-  const {
-    isListening,
-    toggleListening,
-    session,
-    microphonePermission,
-    error,
-    autoStoppedForSilence,
-  } =
+  const { isListening, toggleListening, session, microphonePermission, error } =
     useRealtimeSTT();
   const { unlockAudio } = useAvatarSpeech();
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
@@ -54,8 +47,6 @@ export function MicToggleButton() {
       <p className="text-[11px] uppercase tracking-[0.32em] text-white">
         {isListening
           ? "Listening live"
-          : autoStoppedForSilence
-            ? "Mic paused"
           : interactionPhase === "thinking"
             ? "Routing intent"
             : interactionPhase === "speaking"
@@ -63,13 +54,11 @@ export function MicToggleButton() {
               : "Tap to talk"}
       </p>
 
-      {(permissionDenied || error || autoStoppedForSilence) && (
+      {(permissionDenied || error) && (
         <div className="panel-blur max-w-xs rounded-2xl border border-rose-300/25 bg-rose-50 px-4 py-2 text-center text-xs text-rose-700">
           {permissionDenied
             ? "Microphone access is blocked. Enable permissions in your browser to continue."
-            : autoStoppedForSilence
-              ? "Mic stopped after silence to save voice credits. Tap to listen again."
-              : error}
+            : error}
         </div>
       )}
     </div>

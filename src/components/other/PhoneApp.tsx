@@ -53,7 +53,7 @@ export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
           contact={contact}
           onBack={closeDetail}
           onCall={() => openCall(contact.id, "call")}
-          onFaceTime={() => openCall(contact.id, "facetime")}
+          onFaceTime={() => openCall(contact.id, "call")}
           onMessage={() => onOpenMessages(contact.id)}
         />
       ) : (
@@ -226,8 +226,6 @@ function PhoneCallScreen({
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const mountedRef = useRef(true);
   const holdToTalkRef = useRef(false);
-  const showCameraFeed = mode !== "facetime";
-
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
@@ -433,17 +431,7 @@ function PhoneCallScreen({
 
   return (
     <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#0e131b,#04070d)] text-white">
-      <div className="absolute inset-0">
-        {showCameraFeed ? (
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.56)),url("${contact.avatar}")` }}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(107,240,255,0.12),transparent_26%),linear-gradient(180deg,rgba(9,16,27,0.94),rgba(4,7,13,1))]" />
-        )}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_26%)]" />
-      </div>
+      <div className="absolute inset-0 bg-black" />
 
       <div className="relative z-10 flex h-full flex-col px-5 pb-8 pt-12">
         <div className="text-center">
@@ -462,9 +450,6 @@ function PhoneCallScreen({
               {error}
             </p>
           ) : null}
-          <p className="mx-auto mt-3 max-w-[16rem] text-[0.74rem] leading-5 text-white/48">
-            Hold mute to talk. Release to send.
-          </p>
         </div>
 
         <div className="mt-8 flex justify-center">
@@ -473,46 +458,21 @@ function PhoneCallScreen({
             className="relative flex h-[11.5rem] w-[11.5rem] items-center justify-center"
             aria-label={`${contact.name} call visual`}
           >
-            {[0, 1, 2, 3].map((ring) => (
-              <div
-                key={ring}
-                className={`absolute inset-0 rounded-full border border-cyan-200/20 ${
-                  isListening || isRemoteSpeaking ? "animate-pulse" : ""
-                }`}
-                style={{
-                  animationDelay: `${ring * 180}ms`,
-                  transform: `scale(${1 + ring * 0.08})`,
-                }}
-              />
-            ))}
             <div className="absolute inset-[1.2rem] rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.03))] blur-md" />
-            {showCameraFeed ? (
-              <div className="relative h-[7.75rem] w-[7.75rem] overflow-hidden rounded-full border border-white/16">
-                <Image
-                  src={contact.avatar}
-                  alt={contact.name}
-                  fill
-                  sizes="124px"
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="relative flex h-[7.75rem] w-[7.75rem] items-center justify-center rounded-full border border-white/12 bg-white/[0.05] shadow-[0_18px_48px_rgba(0,0,0,0.28)] backdrop-blur-[16px]">
-                <div className="text-center">
-                  <p className="text-[1.9rem] font-semibold tracking-[-0.06em] text-white">
-                    {contact.name.charAt(0)}
-                  </p>
-                  <p className="mt-1 text-[0.58rem] uppercase tracking-[0.24em] text-white/46">
-                    camera off
-                  </p>
-                </div>
-              </div>
-            )}
+            <div className="relative h-[7.75rem] w-[7.75rem] overflow-hidden rounded-full border border-white/16">
+              <Image
+                src={contact.avatar}
+                alt={contact.name}
+                fill
+                sizes="124px"
+                className="object-cover"
+              />
+            </div>
           </button>
         </div>
 
         <div className="mt-auto">
-          <div className="mx-auto grid max-w-[16rem] grid-cols-3 gap-4 pb-6">
+          <div className="mx-auto grid max-w-[5rem] grid-cols-1 gap-4 pb-6">
             <div className="flex flex-col items-center">
               <button
                 type="button"
@@ -531,13 +491,6 @@ function PhoneCallScreen({
                 mute
               </button>
             </div>
-            {[ "speaker", mode === "facetime" ? "camera" : "add"].map((label) => (
-              <div key={label} className="flex flex-col items-center">
-                <div className="flex h-[3.5rem] w-[3.5rem] items-center justify-center rounded-full bg-white/16 text-[0.82rem] font-medium backdrop-blur-xl">
-                  {label}
-                </div>
-              </div>
-            ))}
           </div>
           <button
             type="button"
