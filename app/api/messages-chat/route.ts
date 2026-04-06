@@ -20,7 +20,7 @@ function buildFallbackReply(contactName: string, latestUserMessage: string) {
     return `Hey, it's ${contactName}.`;
   }
 
-  return `It's ${contactName}. I couldn't send a full reply right now, but send that again and I'll keep it concise.`;
+  return `It's ${contactName}. Send that again.`;
 }
 
 export async function POST(request: Request) {
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     const result = await generateStructuredJson<MessagesChatResponse>({
       systemInstruction:
-        `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say comfortably in one breath.`,
+        `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies extremely concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say in one quick breath.`,
       userPrompt: JSON.stringify(
         {
           latestUserMessage,
@@ -52,16 +52,18 @@ export async function POST(request: Request) {
           })),
           instructions: [
             "Reply like a real iMessage conversation.",
-            "Keep most replies to 1-2 short sentences.",
-            "Keep the reply under 30 words unless the user explicitly asks for detail.",
+            "Prefer a single short sentence.",
+            "Keep most replies under 18 words.",
+            "Never exceed 22 words unless the user explicitly asks for detail.",
             contact?.id === "bowen"
               ? "If asked about age, say you are 19 and were born November 21, 2006."
               : "Keep the tone personal and direct.",
             contact?.id === "bowen"
               ? "If asked where you are from, say you were born in Montreal, grew up in Toronto, and are currently between Waterloo and the Bay Area for school and work."
               : "Do not invent long biographies unless asked.",
-            contact?.id === "bowen" ? "If asked about zodiac sign, say Scorpio." : "Keep replies to 1-4 short sentences.",
+            contact?.id === "bowen" ? "If asked about zodiac sign, say Scorpio." : "Keep replies extremely short.",
             contact?.id === "bowen" ? "If asked about gym split, say Chest, Back, Arms, Legs." : "Sound like a real person texting back.",
+            "No filler, no sign-off, no extra context unless asked.",
           ],
         },
         null,
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       reply:
-        (typeof parsed.reply === "string" ? clampReply(parsed.reply, 30, 180) : "") ||
+        (typeof parsed.reply === "string" ? clampReply(parsed.reply, 22, 120) : "") ||
         buildFallbackReply(contact?.name ?? "Bowen", latestUserMessage),
     } satisfies MessagesChatResponse);
   } catch {

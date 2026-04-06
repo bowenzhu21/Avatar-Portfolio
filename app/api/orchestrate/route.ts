@@ -94,8 +94,11 @@ Use only the provided context.
 Prioritize activeEntityContext, matchedFaqs, and routedEntity.sourceContext when they are present.
 Use other voiceKnowledgeBase context only when it is directly relevant to the transcript.
 Keep it concise: 1 to 2 short sentences, under 35 words total.
-Prefer one sentence when possible.
+Prefer one sentence.
+Keep it under 20 words whenever possible, and never exceed 24 words.
+Use simple, direct phrasing.
 Do not write long compound sentences.
+Do not add filler, intros, or sign-offs.
 Do not mention cards, routes, or UI mechanics unless the user explicitly asked about them.
 Do not invent metrics, timelines, or implementation details.
 Return strict JSON only.`,
@@ -114,7 +117,7 @@ Return strict JSON only.`,
     const parsed = result.data;
     const spokenResponse =
       (typeof parsed.spokenResponse === "string"
-        ? clampSpokenText(parsed.spokenResponse, 35, 220)
+        ? clampSpokenText(parsed.spokenResponse, 24, 140)
         : "") || fallbackResponse;
 
     return NextResponse.json<AvatarNarrationOutput>({ spokenResponse });
