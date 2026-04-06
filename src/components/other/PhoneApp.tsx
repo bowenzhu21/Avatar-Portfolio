@@ -3,6 +3,10 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { phoneContacts } from "@/data/chatContacts";
+import {
+  type DeepgramRealtimeState,
+  DeepgramRealtimeClient,
+} from "@/lib/deepgram";
 import type {
   ChatContact,
   ChatContactId,
@@ -16,6 +20,20 @@ type CallMode = "call" | "facetime";
 interface PhoneAppProps {
   onOpenMessages: (contactId: ChatContactId) => void;
 }
+
+const INITIAL_CALL_STT_STATE: DeepgramRealtimeState = {
+  session: {
+    sessionId: null,
+    modelId: "nova-3",
+    status: "idle",
+  },
+  isListening: false,
+  transcript: "",
+  partialTranscript: "",
+  lastFinalTranscript: "",
+  error: null,
+  microphonePermission: "unknown",
+};
 
 export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("favorites");
@@ -215,17 +233,17 @@ function PhoneCallScreen({
   const [statusLabel, setStatusLabel] = useState(
     mode === "facetime" ? "FaceTime connected" : "On call",
   );
-  const [partialTranscript, setPartialTranscript] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [isRemoteSpeaking, setIsRemoteSpeaking] = useState(false);
+  const [callError, setCallError] = useState<string | null>(null);
+  const [sttState, setSttState] = useState<DeepgramRealtimeState>(INITIAL_CALL_STT_STATE);
   const messagesRef = useRef<MessagesChatMessage[]>([]);
   const isThinkingRef = useRef(false);
   const isRemoteSpeakingRef = useRef(false);
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const mountedRef = useRef(true);
   const holdToTalkRef = useRef(false);
+  const callSttClientRef = useRef<DeepgramRealtimeClient>(new DeepgramRealtimeClient());
+  const previousFinalTranscriptRef = useRef("");
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
@@ -242,10 +260,43 @@ function PhoneCallScreen({
     mountedRef.current = true;
     setStatusLabel("Hold mute to talk");
 
+    const client = callSttClientRef.current;
+    const unsubscribe = client.subscribe((nextState) => {
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setSttState(nextState);
+
+      if (nextState.isListening && !isThinkingRef.current && !isRemoteSpeakingRef.current) {
+        setStatusLabel("Listening...");
+      } else if (
+        !nextState.isListening &&
+        !isThinkingRef.current &&
+        !isRemoteSpeakingRef.current
+      ) {
+        setStatusLabel("Hold mute to talk");
+      }
+
+      const finalTranscript = nextState.lastFinalTranscript.trim();
+      if (
+        finalTranscript &&
+        finalTranscript !== previousFinalTranscriptRef.current
+      ) {
+        previousFinalTranscriptRef.current = finalTranscript;
+        void handleUserTranscript(finalTranscript);
+        client.clearCommittedTranscript();
+      }
+
+      if (!finalTranscript) {
+        previousFinalTranscriptRef.current = "";
+      }
+    });
+
     return () => {
       mountedRef.current = false;
-      recognitionRef.current?.stop();
-      recognitionRef.current = null;
+      unsubscribe();
+      void client.stopListening();
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
@@ -258,11 +309,9 @@ function PhoneCallScreen({
       return;
     }
 
-    setPartialTranscript("");
-    setIsListening(false);
     setIsThinking(true);
     setStatusLabel("Thinking...");
-    setError(null);
+    setCallError(null);
 
     const userMessage: MessagesChatMessage = {
       id: `${contact.id}-call-user-${Date.now()}`,
@@ -323,7 +372,7 @@ function PhoneCallScreen({
       setIsThinking(false);
       setIsRemoteSpeaking(false);
       setStatusLabel("Call error");
-      setError(nextError instanceof Error ? nextError.message : "Call response failed.");
+      setCallError(nextError instanceof Error ? nextError.message : "Call response failed.");
     }
   }
 
@@ -332,91 +381,23 @@ function PhoneCallScreen({
       return;
     }
 
-    const SpeechRecognitionCtor = getSpeechRecognitionCtor();
-    if (!SpeechRecognitionCtor) {
-      setStatusLabel("Speech recognition unavailable");
-      setError("This browser does not support live speech recognition for calls.");
-      return;
-    }
-
-    if (!recognitionRef.current) {
-      const recognition = new SpeechRecognitionCtor();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = "en-US";
-
-      recognition.onstart = () => {
-        if (!mountedRef.current) {
-          return;
-        }
-
-        setIsListening(true);
-        setStatusLabel("Listening...");
-        setError(null);
-      };
-
-      recognition.onresult = (event) => {
-        let interim = "";
-        let finalTranscript = "";
-
-        for (let index = event.resultIndex; index < event.results.length; index += 1) {
-          const transcript = event.results[index]?.[0]?.transcript ?? "";
-          if (event.results[index]?.isFinal) {
-            finalTranscript += transcript;
-          } else {
-            interim += transcript;
-          }
-        }
-
-        if (finalTranscript.trim()) {
-          void handleUserTranscript(finalTranscript);
-        } else {
-          setPartialTranscript(interim.trim());
-        }
-      };
-
-      recognition.onerror = (event) => {
-        if (!mountedRef.current) {
-          return;
-        }
-
-        setIsListening(false);
-        setPartialTranscript("");
-        setError(event.error === "not-allowed" ? "Microphone permission denied." : null);
-        if (event.error !== "aborted") {
-          setStatusLabel("Hold mute to talk");
-        }
-      };
-
-      recognition.onend = () => {
-        if (!mountedRef.current) {
-          return;
-        }
-
-        setIsListening(false);
-        if (
-          !holdToTalkRef.current &&
-          !isThinkingRef.current &&
-          !isRemoteSpeakingRef.current
-        ) {
-          setStatusLabel("Hold mute to talk");
-        }
-      };
-
-      recognitionRef.current = recognition;
-    }
-
     try {
-      recognitionRef.current.start();
-    } catch {
-      // Ignore duplicate start attempts while holding to talk.
+      await callSttClientRef.current.startListening();
+    } catch (error) {
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setStatusLabel("Call error");
+      setCallError(
+        error instanceof Error ? error.message : "Realtime call transcription failed.",
+      );
     }
   }
 
   async function stopListening() {
     holdToTalkRef.current = false;
-    setIsListening(false);
-    recognitionRef.current?.stop();
+    await callSttClientRef.current.stopListening();
   }
 
   async function beginHoldToTalk() {
@@ -425,7 +406,7 @@ function PhoneCallScreen({
     }
 
     holdToTalkRef.current = true;
-    setError(null);
+    setCallError(null);
     await startListening();
   }
 
@@ -440,14 +421,14 @@ function PhoneCallScreen({
           </p>
           <h1 className="mt-3 text-[2rem] font-semibold tracking-[-0.05em]">{contact.name}</h1>
           <p className="mt-2 text-[0.84rem] text-white/72">{statusLabel}</p>
-          {partialTranscript ? (
+          {sttState.partialTranscript ? (
             <p className="mx-auto mt-3 max-w-[16rem] text-[0.76rem] leading-5 text-white/52">
-              {partialTranscript}
+              {sttState.partialTranscript}
             </p>
           ) : null}
-          {error ? (
+          {callError || sttState.error ? (
             <p className="mx-auto mt-3 max-w-[16rem] text-[0.76rem] leading-5 text-rose-200/84">
-              {error}
+              {callError || sttState.error}
             </p>
           ) : null}
         </div>
@@ -483,7 +464,7 @@ function PhoneCallScreen({
                 onTouchEnd={() => void stopListening()}
                 onTouchCancel={() => void stopListening()}
                 className={`flex h-[3.5rem] w-[3.5rem] items-center justify-center rounded-full text-[0.72rem] font-medium backdrop-blur-xl transition ${
-                  isListening
+                  sttState.isListening
                     ? "bg-cyan-200/28 text-white shadow-[0_0_24px_rgba(112,255,224,0.22)]"
                     : "bg-white/16 text-white"
                 }`}
@@ -505,50 +486,6 @@ function PhoneCallScreen({
         </div>
       </div>
     </div>
-  );
-}
-
-type SpeechRecognitionLikeEvent = Event & {
-  resultIndex: number;
-  results: ArrayLike<{
-    isFinal: boolean;
-    0: {
-      transcript: string;
-    };
-  }>;
-};
-
-type SpeechRecognitionLikeErrorEvent = Event & {
-  error: string;
-};
-
-interface SpeechRecognitionLike extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onstart: ((event: Event) => void) | null;
-  onend: ((event: Event) => void) | null;
-  onerror: ((event: SpeechRecognitionLikeErrorEvent) => void) | null;
-  onresult: ((event: SpeechRecognitionLikeEvent) => void) | null;
-  start: () => void;
-  stop: () => void;
-}
-
-interface SpeechRecognitionLikeConstructor {
-  new (): SpeechRecognitionLike;
-}
-
-function getSpeechRecognitionCtor() {
-  return (
-    (window as typeof window & {
-      SpeechRecognition?: SpeechRecognitionLikeConstructor;
-      webkitSpeechRecognition?: SpeechRecognitionLikeConstructor;
-    }).SpeechRecognition ??
-    (window as typeof window & {
-      SpeechRecognition?: SpeechRecognitionLikeConstructor;
-      webkitSpeechRecognition?: SpeechRecognitionLikeConstructor;
-    }).webkitSpeechRecognition ??
-    null
   );
 }
 

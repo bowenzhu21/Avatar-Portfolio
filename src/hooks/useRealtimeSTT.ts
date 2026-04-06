@@ -2,16 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  type ElevenLabsRealtimeState,
-  ElevenLabsRealtimeClient,
-} from "@/lib/elevenlabs";
+  type DeepgramRealtimeState,
+  DeepgramRealtimeClient,
+} from "@/lib/deepgram";
 import { sharedAvatarSpeechClient } from "@/lib/avatar-speech";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
-const INITIAL_STATE: ElevenLabsRealtimeState = {
+const INITIAL_STATE: DeepgramRealtimeState = {
   session: {
     sessionId: null,
-    modelId: "scribe_v2_realtime",
+    modelId: "nova-3",
     status: "idle",
   },
   isListening: false,
@@ -22,10 +22,10 @@ const INITIAL_STATE: ElevenLabsRealtimeState = {
   microphonePermission: "unknown",
 };
 
-const sharedRealtimeSTTClient = new ElevenLabsRealtimeClient();
+const sharedRealtimeSTTClient = new DeepgramRealtimeClient();
 
 export function useRealtimeSTT() {
-  const [state, setState] = useState<ElevenLabsRealtimeState>(INITIAL_STATE);
+  const [state, setState] = useState<DeepgramRealtimeState>(INITIAL_STATE);
   const previousFinalTranscriptRef = useRef("");
   const beginListeningCycle = usePortfolioStore((store) => store.beginListeningCycle);
   const setPartialTranscript = usePortfolioStore((store) => store.setPartialTranscript);
