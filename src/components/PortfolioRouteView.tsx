@@ -83,6 +83,7 @@ const homeApps: Array<{
     iconSrc: "/icons/resume.jpg",
     tint: "from-amber-300 via-orange-300 to-red-500",
     iconBackgroundClass: "bg-white",
+    iconImageClassName: "scale-[1.5] object-contain",
   },
   {
     app: "contact",
