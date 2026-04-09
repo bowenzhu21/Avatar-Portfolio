@@ -28,7 +28,7 @@ export function NutritionFitnessApp() {
           <div className="rounded-[1.8rem] border border-black/6 bg-white/38 p-4 shadow-[0_18px_34px_rgba(27,24,20,0.05)] backdrop-blur-[24px]">
             <div className="relative mx-auto h-20 w-20 overflow-hidden rounded-[1.4rem] bg-white shadow-[0_12px_24px_rgba(0,0,0,0.06)]">
               <Image
-                src="/icons/nutrition.png"
+                src="/icons/nutrition.jpg"
                 alt="Nutrition"
                 fill
                 sizes="80px"
@@ -47,7 +47,7 @@ export function NutritionFitnessApp() {
           <div className="rounded-[1.8rem] border border-black/6 bg-white/38 p-4 shadow-[0_18px_34px_rgba(27,24,20,0.05)] backdrop-blur-[24px]">
             <div className="relative mx-auto h-20 w-20 overflow-hidden rounded-[1.4rem] bg-white shadow-[0_12px_24px_rgba(0,0,0,0.06)]">
               <Image
-                src="/icons/fitness.avif"
+                src="/icons/fitness.jpg"
                 alt="Fitness"
                 fill
                 sizes="80px"

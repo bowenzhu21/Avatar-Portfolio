@@ -6,7 +6,9 @@ export interface ExperienceScreenRecord {
   location?: string;
   iconSrc: string;
   background: string;
+  backgroundImageSrc?: string;
   accent: string;
+  textTone?: "dark" | "light";
   description?: string;
   bullets: string[];
 }
@@ -21,6 +23,7 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     iconSrc: "/icons/heygen.jpeg",
     background:
       "radial-gradient(circle at 18% 14%, rgba(255,255,255,0.42), transparent 28%), radial-gradient(circle at 82% 22%, rgba(122,192,255,0.34), transparent 30%), linear-gradient(180deg, rgba(228,241,255,0.98) 0%, rgba(193,222,255,0.97) 48%, rgba(152,198,252,0.96) 100%)",
+    backgroundImageSrc: "/experiences/heygen_bg.jpg",
     accent: "#69b6ff",
     bullets: [],
   },
@@ -33,7 +36,9 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     iconSrc: "/icons/hippos.jpeg",
     background:
       "radial-gradient(circle at 16% 12%, rgba(255,255,255,0.44), transparent 28%), radial-gradient(circle at 84% 20%, rgba(171,191,228,0.34), transparent 30%), linear-gradient(180deg, rgba(235,241,250,0.98) 0%, rgba(206,219,239,0.97) 44%, rgba(178,194,223,0.96) 100%)",
+    backgroundImageSrc: "/experiences/hippos_bg.jpg",
     accent: "#8fa8d8",
+    textTone: "light",
     bullets: [
       "Reduced sensor-to-app latency 73% (120 ms) and improved data capture reliability 25% by integrating processing into the mobile app and implementing offline buffering with backpressure.",
       "Drove $100k order by shipping production C++ firmware and synchronized BLE mobile clients across 50 devices.",
@@ -49,7 +54,9 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     iconSrc: "/icons/momenta.jpeg",
     background:
       "radial-gradient(circle at 16% 12%, rgba(255,255,255,0.46), transparent 28%), radial-gradient(circle at 84% 20%, rgba(149,117,255,0.34), transparent 30%), linear-gradient(180deg, rgba(241,235,255,0.98) 0%, rgba(220,208,255,0.97) 44%, rgba(193,176,255,0.96) 100%)",
+    backgroundImageSrc: "/experiences/momenta_bg.jpg",
     accent: "#7b63ff",
+    textTone: "light",
     bullets: [
       "Achieved 160 ms E2E latency for AI voice detection by building a Twilio pipeline with sliding-window buffering.",
       "Increased inference throughput 8x and supported 100 concurrent call classifications per GPU node by building a TensorRT-optimized GPU inference service on AWS T4 instances.",
@@ -65,7 +72,9 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     iconSrc: "/icons/jma.jpeg",
     background:
       "radial-gradient(circle at 16% 12%, rgba(255,255,255,0.44), transparent 28%), radial-gradient(circle at 84% 20%, rgba(86,176,132,0.34), transparent 30%), linear-gradient(180deg, rgba(236,247,239,0.98) 0%, rgba(209,233,216,0.97) 44%, rgba(181,214,192,0.96) 100%)",
+    backgroundImageSrc: "/experiences/jma_bg.jpg",
     accent: "#4b9f78",
+    textTone: "light",
     bullets: [
       "Automated admin workflows for the Python Software Foundation, 8.2M+ users, by shipping 3 MySQL + JavaScript backend extensions (merge, delete, user creation).",
       "Scaled classification and taxonomy structuring for 10K+ product SKUs by building an LLM + embeddings pipeline for taxonomy classification, entity resolution, and semantic search indexing.",
@@ -79,7 +88,9 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     iconSrc: "/icons/school.jpeg",
     background:
       "radial-gradient(circle at 16% 12%, rgba(255,255,255,0.42), transparent 28%), radial-gradient(circle at 84% 20%, rgba(191,146,62,0.3), transparent 30%), linear-gradient(180deg, rgba(247,239,216,0.98) 0%, rgba(236,217,165,0.97) 44%, rgba(216,187,113,0.95) 100%)",
+    backgroundImageSrc: "/experiences/waterloo_bg.jpg",
     accent: "#916d2c",
+    textTone: "light",
     description:
       "I study Systems Design Engineering at the University of Waterloo. I like it because it pushes me to think across software, systems, hardware, and product constraints rather than staying boxed into one narrow lane.",
     bullets: [

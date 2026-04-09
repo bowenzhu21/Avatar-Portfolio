@@ -80,6 +80,43 @@ export const portfolioEntities: PortfolioEntity[] = [
     relatedItems: ["matrix", "aura-dev", "heygen"],
   },
   {
+    id: "robintrain",
+    title: "RobinTrain",
+    type: "project",
+    route: "/projects/robintrain",
+    aliases: [
+      "robintrain",
+      "robin train",
+      "robinhood training",
+      "robinhood support training",
+    ],
+    shortSummary:
+      "A support-agent training platform for scoring written and voice responses on quality, compliance, and communication.",
+    technicalSummary:
+      "Built around RAG, GPT-4o, Deepgram STT, and Hume AI to evaluate written and spoken support interactions with low-latency feedback.",
+    recruiterSummary:
+      "Shows applied AI systems work tied to production evaluation quality, real deployment, and measurable agreement with human reviewers.",
+    tags: ["RAG", "GPT-4o", "Deepgram", "Hume AI"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Product scope, training workflow, and how support responses are evaluated.",
+      },
+      {
+        id: "evaluation",
+        title: "Evaluation",
+        summary: "Written and voice scoring across tone, clarity, compliance, empathy, and pacing.",
+      },
+      {
+        id: "impact",
+        title: "Impact",
+        summary: "Deployment across Robinhood support workflows and agreement with QA review.",
+      },
+    ],
+    relatedItems: ["momenta", "heygen", "adapt-ui"],
+  },
+  {
     id: "aura-dev",
     title: "Aura Dev",
     type: "project",

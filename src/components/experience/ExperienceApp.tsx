@@ -25,15 +25,20 @@ const liquidGlassStyle = {
 export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceScreens }) {
   const screen = experienceScreens[screenId];
   const [activeTab, setActiveTab] = useState<ExperienceTabId>("home");
+  const isLightText = screen.textTone === "light";
+  const shellStyle = screen.backgroundImageSrc
+    ? {
+        backgroundImage: `url("${screen.backgroundImageSrc}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : { background: screen.background };
 
   return (
-    <div
-      className="relative flex h-full min-h-0 flex-col overflow-hidden"
-      style={{ background: screen.background }}
-    >
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col text-[#172033]">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden" style={shellStyle}>
+      <div className={`relative z-10 flex min-h-0 flex-1 flex-col ${isLightText ? "text-white" : "text-[#172033]"}`}>
         <header className="border-b border-white/22 px-5 pb-5 pt-5 backdrop-blur-[18px]">
-          <h1 className="text-[2.1rem] font-semibold tracking-[-0.07em] text-[#172033]">
+          <h1 className={`text-[2.1rem] font-semibold tracking-[-0.07em] ${isLightText ? "text-white" : "text-[#172033]"}`}>
             {screen.title}
           </h1>
         </header>
@@ -110,11 +115,16 @@ function OverviewPage({
 }) {
   const screen = experienceScreens[screenId];
   const typeLabel = screenId === "school" ? "Education" : "Experience";
+  const isLightText = screen.textTone === "light";
 
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-[2rem] border border-white/26 shadow-[0_24px_60px_rgba(0,0,0,0.16)]">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.06))]" />
+        <div className={`absolute inset-0 ${
+          isLightText
+            ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.32),rgba(0,0,0,0.18))]"
+            : "bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.06))]"
+        }`} />
         <div className="relative flex min-h-[18rem] flex-col justify-between p-5">
           <div className="relative h-16 w-16 overflow-hidden rounded-[1.25rem] border border-white/50 shadow-[0_14px_28px_rgba(25,30,48,0.14)]">
             <Image
@@ -134,10 +144,10 @@ function OverviewPage({
             >
               {typeLabel}
             </p>
-            <p className="mt-2 text-[1.05rem] font-medium leading-6 text-[#172033]">
+            <p className={`mt-2 text-[1.05rem] font-medium leading-6 ${isLightText ? "text-white" : "text-[#172033]"}`}>
               {screen.role}
             </p>
-            <p className="mt-1 text-[0.78rem] text-[#41516d]">
+            <p className={`mt-1 text-[0.78rem] ${isLightText ? "text-white/78" : "text-[#41516d]"}`}>
               {screen.date}
               {screen.location ? ` | ${screen.location}` : ""}
             </p>
@@ -147,7 +157,7 @@ function OverviewPage({
 
       {screen.description ? (
         <div className="border-l pl-4" style={{ borderColor: `${screen.accent}55` }}>
-          <p className="text-[0.88rem] leading-7 text-[#23314a]">{screen.description}</p>
+          <p className={`text-[0.88rem] leading-7 ${isLightText ? "text-white/84" : "text-[#23314a]"}`}>{screen.description}</p>
         </div>
       ) : null}
     </div>
@@ -160,11 +170,12 @@ function HighlightsPage({
   screenId: keyof typeof experienceScreens;
 }) {
   const screen = experienceScreens[screenId];
+  const isLightText = screen.textTone === "light";
 
   if (!screen.bullets.length) {
     return (
       <div
-        className="rounded-[1.7rem] border border-white/22 px-4 py-4 text-[0.82rem] leading-6 text-[#31415e] backdrop-blur-[20px]"
+        className={`rounded-[1.7rem] border border-white/22 px-4 py-4 text-[0.82rem] leading-6 backdrop-blur-[20px] ${isLightText ? "text-white/84" : "text-[#31415e]"}`}
         style={liquidGlassStyle}
       >
         No detailed highlights have been added for this experience yet.
@@ -181,15 +192,15 @@ function HighlightsPage({
           return (
             <li key={bullet} className={`relative pl-12 ${isLast ? "" : "pb-8"}`}>
               {!isLast ? (
-                <span className="absolute left-[0.96rem] top-9 bottom-0 w-px bg-[#172033]/12" />
+                <span className={`absolute left-[0.96rem] top-9 bottom-0 w-px ${isLightText ? "bg-white/16" : "bg-[#172033]/12"}`} />
               ) : null}
               <span
-                className="absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border bg-white/18 text-[11px] font-semibold text-[#172033] backdrop-blur-[16px]"
+                className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border bg-white/18 text-[11px] font-semibold backdrop-blur-[16px] ${isLightText ? "text-white" : "text-[#172033]"}`}
                 style={{ borderColor: `${screen.accent}55` }}
               >
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <p className="pt-1 text-[0.82rem] leading-6 text-[#22314a]">{bullet}</p>
+              <p className={`pt-1 text-[0.82rem] leading-6 ${isLightText ? "text-white/84" : "text-[#22314a]"}`}>{bullet}</p>
             </li>
           );
         })}

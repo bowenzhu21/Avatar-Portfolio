@@ -145,6 +145,70 @@
         }
       ]
     },
+    "robintrain": {
+      "title": "RobinTrain",
+      "one_liner": "I built RobinTrain as a customer support agent training platform that scores written and voice responses for quality, compliance, and communication.",
+      "full_summary": "RobinTrain is a training platform I built for Robinhood's support organization. It evaluates written support responses with a RAG and GPT-4o pipeline and also scores voice interactions through a separate speech evaluation pipeline. The system focuses on practical support dimensions like tone, clarity, compliance, empathy, and pacing.",
+      "why_it_matters": "This project mattered to me because it connects applied AI directly to a real operational setting. Instead of building a generic demo, I was working on a system that had to align closely with human QA judgment and support real training workflows.",
+      "problem": "Support teams need consistent ways to evaluate how agents respond in writing and speech, especially on dimensions like tone, clarity, compliance, empathy, and pacing.",
+      "solution": "I built one pipeline for written response scoring using RAG and GPT-4o, and another voice evaluation pipeline using Deepgram STT and Hume AI for spoken interactions.",
+      "your_role": "I architected the training platform and built both the written-response evaluation flow and the voice evaluation pipeline.",
+      "tech_stack": [
+        "RAG",
+        "GPT-4o",
+        "Deepgram STT",
+        "Hume AI"
+      ],
+      "highlights": [
+        "Architected a customer support agent training platform using RAG and GPT-4o.",
+        "Deployed it across Robinhood's support organization.",
+        "Achieved 96 percent agreement with QA reviewers on written response scoring.",
+        "Built a voice evaluation pipeline using Deepgram STT and Hume AI.",
+        "Scored support responses on tone, empathy, and pacing with 400 ms end-to-end latency."
+      ],
+      "architecture": [
+        "A written-response scoring pipeline grounded with retrieval and GPT-4o.",
+        "A voice evaluation path that first transcribes audio with Deepgram STT.",
+        "Hume AI is used to evaluate spoken qualities like tone, empathy, and pacing.",
+        "The platform is designed around support training workflows rather than a generic chatbot flow."
+      ],
+      "challenges": [
+        "Getting model-based scoring to align closely with human QA expectations.",
+        "Designing evaluation outputs that are useful for training rather than just classification.",
+        "Keeping the voice pipeline fast enough to feel practical for interactive use."
+      ],
+      "tradeoffs": [
+        "Tighter alignment to QA standards improves trust, but reduces room for loose heuristic scoring.",
+        "Adding a voice evaluation path increases product value, but introduces more latency and integration complexity.",
+        "Grounded retrieval improves written scoring reliability, but adds system complexity compared with a one-shot LLM approach."
+      ],
+      "results": [
+        "Deployed across Robinhood's support organization.",
+        "Achieved 96 percent agreement with QA reviewers.",
+        "Reached 400 ms end-to-end latency for voice evaluation."
+      ],
+      "demo_links": [
+        {
+          "label": "Demo",
+          "url": "https://robinhood-training.vercel.app/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/bowenzhu21/Robinhood-Training"
+        }
+      ],
+      "faq": [
+        {
+          "question_patterns": [
+            "tell me about robintrain",
+            "what is robintrain",
+            "tell me about robinhood training",
+            "explain robintrain"
+          ],
+          "answer": "RobinTrain is a support agent training platform I built for Robinhood. It scores written and voice responses across things like tone, clarity, compliance, empathy, and pacing, and it was designed to stay close to how human QA reviewers evaluate support quality."
+        }
+      ]
+    },
     "aura-dev": {
       "title": "Aura Dev",
       "one_liner": "I built Aura Dev as a voice-first coding assistant that listens, reasons through requests, and executes coding tasks through a remote tool chain.",

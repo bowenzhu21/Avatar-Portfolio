@@ -17,6 +17,7 @@ import { AuraApp } from "@/components/projects/AuraApp";
 import { ElbowExoApp } from "@/components/projects/ElbowExoApp";
 import { GymBroApp } from "@/components/projects/GymBroApp";
 import { MatrixApp } from "@/components/projects/MatrixApp";
+import { RobinTrainApp } from "@/components/projects/RobinTrainApp";
 import { ResumeApp } from "@/components/resume/ResumeApp";
 import { portfolioEntities } from "@/data/portfolio";
 import { createPhoneListScreen } from "@/utils/phone";
@@ -37,20 +38,21 @@ const wallpaperStyle = {
 
 const entityIconMap: Partial<Record<string, string>> = {
   matrix: "/icons/matrix.png",
+  robintrain: "/icons/robintrain.jpeg",
   "adapt-ui": "/icons/adapt.png",
-  "aura-dev": "/icons/aura.png",
-  "elbow-exo": "/icons/elbow.png",
+  "aura-dev": "/icons/aura.jpg",
+  "elbow-exo": "/icons/elbow.jpg",
   gymbro: "/icons/gymbro.png",
   heygen: "/icons/heygen.jpeg",
   "hippos-exoskeleton": "/icons/hippos.jpeg",
   momenta: "/icons/momenta.jpeg",
   "jma-consulting": "/icons/jma.jpeg",
   photos: "/icons/photos.png",
-  resume: "/icons/resume.png",
+  resume: "/icons/resume.jpg",
   school: "/icons/school.jpeg",
   contact: "/icons/contact.webp",
-  nutrition: "/icons/nutrition.png",
-  fitness: "/icons/fitness.avif",
+  nutrition: "/icons/nutrition.jpg",
+  fitness: "/icons/fitness.jpg",
 };
 
 const homeApps: Array<{
@@ -78,7 +80,7 @@ const homeApps: Array<{
   {
     app: "resume",
     label: "Resume",
-    iconSrc: "/icons/resume.png",
+    iconSrc: "/icons/resume.jpg",
     tint: "from-amber-300 via-orange-300 to-red-500",
     iconBackgroundClass: "bg-white",
   },
@@ -92,14 +94,14 @@ const homeApps: Array<{
   {
     app: "nutrition",
     label: "Nutrition",
-    iconSrc: "/icons/nutrition.png",
+    iconSrc: "/icons/nutrition.jpg",
     tint: "bg-white",
-    iconImageClassName: "bg-white scale-[0.7] object-contain",
+    iconImageClassName: "object-cover",
   },
   {
     app: "fitness",
     label: "Fitness",
-    iconSrc: "/icons/fitness.avif",
+    iconSrc: "/icons/fitness.jpg",
     tint: "from-orange-400 via-red-400 to-pink-500",
   },
 ];
@@ -520,6 +522,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
               <ExperienceApp screenId="school" />
             ) : visibleEntity.id === "matrix" ? (
               <MatrixApp />
+            ) : visibleEntity.id === "robintrain" ? (
+              <RobinTrainApp />
             ) : visibleEntity.id === "elbow-exo" ? (
               <ElbowExoApp />
             ) : visibleEntity.id === "gymbro" ? (
@@ -594,7 +598,7 @@ function HomeScreen({
   onOpenSettings: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col px-2 pb-4">
+    <div className="flex h-full flex-col px-2 pb-4 pt-1">
       <div className="grid auto-rows-[64px] grid-cols-4 gap-x-4 gap-y-4">
         <div className="col-span-2 row-span-2 mx-auto w-[86%] rounded-[1.32rem] border border-white/12 bg-black/68 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
           <div className="flex h-full flex-col items-center justify-center text-center">

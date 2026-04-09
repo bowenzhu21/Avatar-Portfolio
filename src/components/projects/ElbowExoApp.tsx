@@ -14,13 +14,26 @@ export function ElbowExoApp() {
       backgroundImageSrc="/elbowexo/elbow_bg.jpg"
       summary="Elbow Exo is a wearable sensing system that tracks arm motion in real time using embedded sensors, enabling analysis and feedback for biomechanics and human movement."
       bullets={elbowBullets}
-      shellTone="light"
       preview={{
-        src: "/elbowexo/2.PNG",
-        alt: "Elbow Exo preview",
-        fit: "cover",
+        src: "/elbowexo/img1.PNG",
+        alt: "Elbow Exo preview 1",
+        fit: "contain",
         label: "Prototype",
       }}
+      galleryImages={[
+        {
+          id: 1,
+          src: "/elbowexo/img1.PNG",
+          alt: "Elbow Exo preview 1",
+          fit: "contain",
+        },
+        {
+          id: 2,
+          src: "/elbowexo/img2.PNG",
+          alt: "Elbow Exo preview 2",
+          fit: "contain",
+        },
+      ]}
       links={[
         {
           title: "GitHub",
