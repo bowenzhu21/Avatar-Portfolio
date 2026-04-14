@@ -135,7 +135,7 @@ export function SafariApp() {
   const canGoForward = currentIndex < history.length - 1 && currentIndex >= 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#f4f4f6] text-[#111111]">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[2.45rem] bg-[#f4f4f6] text-[#111111]">
       <SafariChrome
         inputValue={inputValue}
         onChange={setInputValue}

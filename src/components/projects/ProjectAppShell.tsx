@@ -86,7 +86,7 @@ export function ProjectAppShell({
 
   return (
     <div
-      className={`relative flex h-full min-h-0 flex-col overflow-hidden ${
+      className={`relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2.45rem] ${
         isLightTone ? "text-[#121416]" : "text-white"
       }`}
       style={{

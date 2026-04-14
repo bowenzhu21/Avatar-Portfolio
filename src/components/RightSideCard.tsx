@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import clsx from "clsx";
+import { useRef } from "react";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 interface RightSideCardProps {
@@ -12,12 +13,15 @@ interface RightSideCardProps {
 
 export function RightSideCard({ children }: RightSideCardProps) {
   const router = useRouter();
+  const swipeStartYRef = useRef<number | null>(null);
   const isCardOpen = usePortfolioStore((state) => state.isCardOpen);
+  const phoneScreen = usePortfolioStore((state) => state.phoneScreen);
   const setPhoneScreen = usePortfolioStore((state) => state.setPhoneScreen);
   const setActiveRoute = usePortfolioStore((state) => state.setActiveRoute);
   const setActiveEntity = usePortfolioStore((state) => state.setActiveEntity);
   const setActiveSection = usePortfolioStore((state) => state.setActiveSection);
   const setActiveCard = usePortfolioStore((state) => state.setActiveCard);
+  const showTopChrome = phoneScreen.view !== "detail";
 
   function goHome() {
     setPhoneScreen({
@@ -33,6 +37,25 @@ export function RightSideCard({ children }: RightSideCardProps) {
     setActiveSection(null);
     setActiveCard("overview");
     router.push("/" as Route);
+  }
+
+  function handleHomeSwipeStart(event: React.TouchEvent<HTMLButtonElement>) {
+    swipeStartYRef.current = event.changedTouches[0]?.clientY ?? null;
+  }
+
+  function handleHomeSwipeEnd(event: React.TouchEvent<HTMLButtonElement>) {
+    const startY = swipeStartYRef.current;
+    const endY = event.changedTouches[0]?.clientY ?? null;
+    swipeStartYRef.current = null;
+
+    if (startY === null || endY === null) {
+      return;
+    }
+
+    const upwardDistance = startY - endY;
+    if (upwardDistance >= 42) {
+      goHome();
+    }
   }
 
   return (
@@ -53,16 +76,31 @@ export function RightSideCard({ children }: RightSideCardProps) {
           style={{ transformPerspective: 1800 }}
         >
           <div className="absolute inset-0 rounded-[3.3rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))]" />
-          <div className="pointer-events-none absolute left-1/2 top-5 z-20 h-7 w-36 -translate-x-1/2 rounded-full bg-black/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" />
-          <div className="pointer-events-none absolute inset-x-10 top-0 h-16 rounded-b-[2rem] bg-white/5 blur-2xl" />
+          {showTopChrome ? (
+            <>
+              <div className="pointer-events-none absolute left-1/2 top-5 z-20 h-7 w-36 -translate-x-1/2 rounded-full bg-black/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" />
+              <div className="pointer-events-none absolute inset-x-10 top-0 h-16 rounded-b-[2rem] bg-white/5 blur-2xl" />
+            </>
+          ) : null}
 
           <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-[3.3rem] bg-[radial-gradient(circle_at_top,rgba(67,194,255,0.12),transparent_26%),linear-gradient(180deg,rgba(10,14,20,0.94),rgba(5,7,11,0.98))]">
-            <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent)]" />
-            <div className="relative flex-1 overflow-hidden px-3 pb-5 pt-3">{children}</div>
+            {showTopChrome ? (
+              <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent)]" />
+            ) : null}
+            <div className="relative flex-1 overflow-hidden px-3 pb-5 pt-3">
+              <div
+                className="isolate h-full overflow-hidden rounded-[2.5rem] bg-black"
+                style={{ clipPath: "inset(0 round 2.5rem)" }}
+              >
+                {children}
+              </div>
+            </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-4 z-30 flex justify-center">
               <button
                 type="button"
                 onClick={goHome}
+                onTouchStart={handleHomeSwipeStart}
+                onTouchEnd={handleHomeSwipeEnd}
                 className="pointer-events-auto relative h-5 w-40"
                 aria-label="Go to iPhone home screen"
               >

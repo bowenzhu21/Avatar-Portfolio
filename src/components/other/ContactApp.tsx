@@ -6,7 +6,7 @@ import { resumeRecord } from "@/data/resume";
 export function ContactApp() {
   return (
     <div
-      className="h-full overflow-y-auto bg-[#d9d3cd] bg-cover bg-center bg-no-repeat px-4 pb-6 pt-5"
+      className="h-full overflow-y-auto rounded-[2.45rem] bg-[#d9d3cd] bg-cover bg-center bg-no-repeat px-4 pb-6 pt-5"
       style={{
         backgroundImage:
           'linear-gradient(180deg,rgba(255,251,247,0.18),rgba(236,226,216,0.18)),url("/contact/contact_bg.jpg")',

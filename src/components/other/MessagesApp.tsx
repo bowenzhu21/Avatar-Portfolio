@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { allChatContacts, bowenContact, getChatContactById } from "@/data/chatContacts";
+import { allChatContacts, getChatContactById } from "@/data/chatContacts";
 import type { ChatContactId, MessagesChatMessage, MessagesChatResponse } from "@/types";
 
 export type MessagesThreads = Record<ChatContactId, MessagesChatMessage[]>;
@@ -46,10 +46,25 @@ export function MessagesApp({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const selectedContact = selectedContactId ? getChatContactById(selectedContactId) : null;
   const selectedMessages = selectedContactId ? threads[selectedContactId] ?? [] : [];
-  const latestBowenMessage = threads.bowen[threads.bowen.length - 1];
-  const preview = latestBowenMessage?.text ?? "Start chatting";
-  const previewTime = latestBowenMessage ? formatConversationTime(latestBowenMessage.timestamp) : "";
   const isSending = Boolean(selectedContactId && sendingContactId === selectedContactId);
+  const inboxThreads = useMemo(
+    () =>
+      allChatContacts.map((contact) => {
+        const latestMessage = threads[contact.id][threads[contact.id].length - 1];
+
+        return {
+          contact,
+          preview: latestMessage?.text ?? "Start chatting",
+          previewTime: latestMessage ? formatConversationTime(latestMessage.timestamp) : "",
+          latestTimestamp: latestMessage?.timestamp ?? 0,
+        };
+      }),
+    [threads],
+  );
+  const pinnedContacts = inboxThreads.filter((entry) => entry.contact.id === "bowen");
+  const conversationRows = [...inboxThreads].sort(
+    (left, right) => right.latestTimestamp - left.latestTimestamp,
+  );
 
   useEffect(() => {
     if (!selectedContact || !scrollRef.current) {
@@ -67,7 +82,7 @@ export function MessagesApp({
   }, [selectedContact, selectedMessages]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#f6f6f8] text-[#111111]">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[2.45rem] bg-[#f6f6f8] text-[#111111]">
       <AnimatePresence mode="wait" initial={false}>
         {selectedContact ? (
           <motion.div
@@ -115,7 +130,11 @@ export function MessagesApp({
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="flex h-full min-h-0 flex-col bg-[#f6f6f8]"
           >
-            <MessagesInbox preview={preview} previewTime={previewTime} onOpenThread={onOpenThread} />
+            <MessagesInbox
+              pinnedContacts={pinnedContacts}
+              conversationRows={conversationRows}
+              onOpenThread={onOpenThread}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -124,12 +143,20 @@ export function MessagesApp({
 }
 
 function MessagesInbox({
-  preview,
-  previewTime,
+  pinnedContacts,
+  conversationRows,
   onOpenThread,
 }: {
-  preview: string;
-  previewTime: string;
+  pinnedContacts: Array<{
+    contact: NonNullable<ReturnType<typeof getChatContactById>>;
+    preview: string;
+    previewTime: string;
+  }>;
+  conversationRows: Array<{
+    contact: NonNullable<ReturnType<typeof getChatContactById>>;
+    preview: string;
+    previewTime: string;
+  }>;
   onOpenThread: (contactId: ChatContactId) => void;
 }) {
   return (
@@ -143,22 +170,29 @@ function MessagesInbox({
           <p className="mb-3 text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-[#8b8b92]">
             Pinned
           </p>
-          <button type="button" onClick={() => onOpenThread("bowen")} className="text-center">
-            <div className="relative mx-auto h-[4.25rem] w-[4.25rem] overflow-hidden rounded-full border border-black/8 bg-[#e8ebf0] shadow-[0_8px_16px_rgba(0,0,0,0.06)]">
-              <Image src={bowenContact.avatar} alt={bowenContact.name} fill sizes="68px" className="object-cover" />
-            </div>
-            <p className="mt-2 text-[0.8rem] font-medium text-[#1a1a1d]">{bowenContact.name}</p>
-          </button>
+          <div className="flex gap-5 overflow-x-auto pb-1">
+            {pinnedContacts.map(({ contact }) => (
+              <button key={contact.id} type="button" onClick={() => onOpenThread(contact.id)} className="text-center">
+                <div className="relative mx-auto h-[4.25rem] w-[4.25rem] overflow-hidden rounded-full border border-black/8 bg-[#e8ebf0] shadow-[0_8px_16px_rgba(0,0,0,0.06)]">
+                  <Image src={contact.avatar} alt={contact.name} fill sizes="68px" className="object-cover" />
+                </div>
+                <p className="mt-2 text-[0.8rem] font-medium text-[#1a1a1d]">{contact.name}</p>
+              </button>
+            ))}
+          </div>
         </section>
 
         <section className="mt-8">
           <div className="overflow-hidden rounded-[1.25rem] bg-white">
-            <ConversationRow
-              contactId="bowen"
-              preview={preview}
-              previewTime={previewTime}
-              onOpenThread={onOpenThread}
-            />
+            {conversationRows.map(({ contact, preview, previewTime }) => (
+              <ConversationRow
+                key={contact.id}
+                contactId={contact.id}
+                preview={preview}
+                previewTime={previewTime}
+                onOpenThread={onOpenThread}
+              />
+            ))}
           </div>
         </section>
       </div>

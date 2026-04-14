@@ -72,7 +72,7 @@ export function PhotosApp() {
   }, [activeIndex]);
 
   return (
-    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[#f7f7f8]">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[2.45rem] bg-[#f7f7f8]">
       <PhotosLibraryGrid
         photoItems={photoLibrary}
         onOpenPhoto={openPhoto}

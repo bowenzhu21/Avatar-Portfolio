@@ -35,7 +35,10 @@ export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceS
     : { background: screen.background };
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col overflow-hidden" style={shellStyle}>
+    <div
+      className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2.45rem]"
+      style={shellStyle}
+    >
       <div className={`relative z-10 flex min-h-0 flex-1 flex-col ${isLightText ? "text-white" : "text-[#172033]"}`}>
         <header className="border-b border-white/22 px-5 pb-5 pt-5 backdrop-blur-[18px]">
           <h1 className={`text-[2.1rem] font-semibold tracking-[-0.07em] ${isLightText ? "text-white" : "text-[#172033]"}`}>

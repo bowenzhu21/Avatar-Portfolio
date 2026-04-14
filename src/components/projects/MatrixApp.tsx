@@ -63,7 +63,7 @@ export function MatrixApp() {
 
   return (
     <div
-      className="relative flex h-full min-h-0 flex-col overflow-hidden text-white"
+      className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2.45rem] text-white"
       style={shellBackgroundStyle}
     >
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">

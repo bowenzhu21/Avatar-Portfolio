@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
+import clsx from "clsx";
 import { ExperienceApp } from "@/components/experience/ExperienceApp";
 import { ContactApp } from "@/components/other/ContactApp";
 import { MessagesApp } from "@/components/other/MessagesApp";
@@ -149,7 +150,7 @@ function getItemsForApp(app: PhoneApp) {
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
-    <div className="flex h-full flex-col rounded-[1.9rem] bg-white px-8 py-10">
+    <div className="flex h-full flex-col overflow-hidden rounded-[2.45rem] bg-white px-8 py-10">
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <h1 className="font-display text-[2.25rem] leading-none text-black">{title}</h1>
         <p className="mt-4 text-[0.95rem] font-medium text-black/42">Coming soon</p>
@@ -400,36 +401,41 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
     />
   );
 
+  const showTopBar = phoneScreen.view !== "detail";
+  const clipScreenShell = phoneScreen.view !== "home";
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[3rem]" style={wallpaperStyle}>
-      <div className="flex items-center justify-between px-7 pb-4 pt-4 text-[14px] font-semibold text-white">
-        <div>
-          <span>{timeLabel}</span>
+      {showTopBar ? (
+        <div className="flex items-center justify-between px-7 pb-4 pt-4 text-[14px] font-semibold text-white">
+          <div>
+            <span>{timeLabel}</span>
+          </div>
+          <div className="mr-[-0.5rem] flex items-center text-[12px] text-white/92">
+            <Image
+              src="/airplane_mode.png"
+              alt="Airplane mode"
+              width={18}
+              height={18}
+              className="h-[18px] w-[15px] object-contain"
+            />
+            <Image
+              src="/wifi.png"
+              alt="Wi-Fi"
+              width={20}
+              height={15}
+              className="ml-[0.32rem] h-[15px] w-[20px] object-contain"
+            />
+            <Image
+              src="/battery.png"
+              alt="Battery"
+              width={36}
+              height={35}
+              className="ml-[0rem] h-[20px] w-[32px] object-contain"
+            />
+          </div>
         </div>
-        <div className="mr-[-0.5rem] flex items-center text-[12px] text-white/92">
-          <Image
-            src="/airplane_mode.png"
-            alt="Airplane mode"
-            width={18}
-            height={18}
-            className="h-[18px] w-[15px] object-contain"
-          />
-          <Image
-            src="/wifi.png"
-            alt="Wi-Fi"
-            width={20}
-            height={15}
-            className="ml-[0.32rem] h-[15px] w-[20px] object-contain"
-          />
-          <Image
-            src="/battery.png"
-            alt="Battery"
-            width={36}
-            height={35}
-            className="ml-[0rem] h-[20px] w-[32px] object-contain"
-          />
-        </div>
-      </div>
+      ) : null}
 
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -438,7 +444,10 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.972 }}
           transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          className="flex min-h-0 flex-1 flex-col px-0 pb-0"
+          className={clsx(
+            "flex min-h-0 flex-1 flex-col px-0 pb-0",
+            clipScreenShell ? "overflow-hidden rounded-[2.35rem]" : null,
+          )}
         >
           {phoneScreen.view === "home" ? (
             homeScreen

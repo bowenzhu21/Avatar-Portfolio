@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getChatContactById } from "@/data/chatContacts";
+import { getRelevantVoiceKnowledgeBase } from "@/data/voiceContext";
 import type { ChatContactId, MessagesChatMessage, MessagesChatResponse } from "@/types";
 import { generateStructuredJson } from "@/lib/structured-llm.server";
 
@@ -23,6 +24,59 @@ function buildFallbackReply(contactName: string, latestUserMessage: string) {
   return `It's ${contactName}. Send that again.`;
 }
 
+function buildBowenContactContext(transcript: string) {
+  const knowledge = getRelevantVoiceKnowledgeBase({
+    transcript,
+    routedEntity: null,
+    activeEntityId: null,
+    activeRoute: null,
+  });
+
+  return {
+    persona: {
+      name: knowledge.persona.name,
+      shortIntro: knowledge.persona.short_intro,
+    },
+    resume: {
+      headline: knowledge.resume.headline,
+      shortSummary: knowledge.resume.short_summary,
+      strengths: knowledge.resume.strengths.slice(0, 4),
+      skills: knowledge.resume.skills.slice(0, 6),
+    },
+    school: {
+      schoolName: knowledge.school.school_name,
+      program: knowledge.school.program,
+      focusAreas: knowledge.school.focus_areas.slice(0, 4),
+    },
+    contact: {
+      email: knowledge.contact.email,
+      linkedin: knowledge.contact.linkedin,
+      github: knowledge.contact.github,
+    },
+    relevantProjects: Object.values(knowledge.relevantProjects).map((project) => ({
+      title: project.title,
+      oneLiner: project.one_liner,
+      highlights: project.highlights.slice(0, 2),
+      results: project.results.slice(0, 2),
+    })),
+    relevantExperience: Object.values(knowledge.relevantExperience).map((experience) => ({
+      title: experience.title,
+      oneLiner: experience.one_liner,
+      wins: experience.wins.slice(0, 2),
+      skillsGained: experience.skills_gained.slice(0, 2),
+    })),
+    matchedFaqs: knowledge.matchedFaqs.slice(0, 4).map((faq) => ({
+      source: faq.source,
+      answer: faq.answer,
+    })),
+    personal: {
+      hobbies: knowledge.personal.hobbies.slice(0, 4),
+      fitness: knowledge.personal.fitness.slice(0, 4),
+      nutrition: knowledge.personal.nutrition.slice(0, 4),
+    },
+  };
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as MessagesChatRequest;
@@ -31,6 +85,10 @@ export async function POST(request: Request) {
     const trimmedMessages = messages.slice(-10);
     const latestUserMessage =
       [...trimmedMessages].reverse().find((message) => message.sender === "user")?.text?.trim() ?? "";
+    const bowenContext =
+      contact?.id && contact.id !== "bowen"
+        ? buildBowenContactContext(latestUserMessage)
+        : null;
 
     if (!latestUserMessage) {
       return NextResponse.json({ error: "A user message is required." }, { status: 400 });
@@ -38,7 +96,11 @@ export async function POST(request: Request) {
 
     const result = await generateStructuredJson<MessagesChatResponse>({
       systemInstruction:
-        `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies extremely concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say in one quick breath.`,
+        `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies extremely concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say in one quick breath. ${
+          contact?.id && contact.id !== "bowen"
+            ? "If the user asks about Bowen, use the provided Bowen context as your factual source. Refer to Bowen in third person and do not invent anything beyond that context. If something is missing, say you are not totally sure."
+            : ""
+        }`,
       userPrompt: JSON.stringify(
         {
           latestUserMessage,
@@ -50,6 +112,7 @@ export async function POST(request: Request) {
             sender: message.sender,
             text: message.text,
           })),
+          bowenContext,
           instructions: [
             "Reply like a real iMessage conversation.",
             "Prefer a single short sentence.",
@@ -60,9 +123,10 @@ export async function POST(request: Request) {
               : "Keep the tone personal and direct.",
             contact?.id === "bowen"
               ? "If asked where you are from, say you were born in Montreal, grew up in Toronto, and are currently between Waterloo and the Bay Area for school and work."
-              : "Do not invent long biographies unless asked.",
+              : "If asked about Bowen, answer from bowenContext only.",
             contact?.id === "bowen" ? "If asked about zodiac sign, say Scorpio." : "Keep replies extremely short.",
             contact?.id === "bowen" ? "If asked about gym split, say Chest, Back, Arms, Legs." : "Sound like a real person texting back.",
+            contact?.id === "bowen" ? "Answer directly." : "If you do not know something about Bowen from the provided context, say you are not sure.",
             "No filler, no sign-off, no extra context unless asked.",
           ],
         },

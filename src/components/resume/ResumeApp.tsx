@@ -4,7 +4,7 @@ import { resumeRecord } from "@/data/resume";
 
 export function ResumeApp() {
   return (
-    <div className="h-full overflow-y-auto bg-[#f5f2ea] px-4 pb-6 pt-4 text-[#1f1d1a]">
+    <div className="h-full overflow-y-auto rounded-[2.45rem] bg-[#f5f2ea] px-4 pb-6 pt-4 text-[#1f1d1a]">
       <div className="mx-auto w-full max-w-[720px] rounded-[1.7rem] border border-black/8 bg-white px-5 pb-8 pt-5 shadow-[0_18px_40px_rgba(25,20,15,0.08)]">
         <ResumeHeader />
         <ResumeSection title="Skills">

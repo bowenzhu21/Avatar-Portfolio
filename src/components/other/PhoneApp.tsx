@@ -59,7 +59,7 @@ export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#f7f7f9] text-[#111111]">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[2.45rem] bg-[#f7f7f9] text-[#111111]">
       {activeCall ? (
         <PhoneCallScreen
           contact={phoneContacts.find((entry) => entry.id === activeCall.contactId) ?? phoneContacts[0]}
