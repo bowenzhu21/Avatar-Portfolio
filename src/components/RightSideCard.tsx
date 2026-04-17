@@ -69,8 +69,7 @@ export function RightSideCard({ children }: RightSideCardProps) {
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           className={clsx(
             "pointer-events-auto relative overflow-hidden rounded-[3.3rem] shadow-[0_35px_120px_rgba(2,6,14,0.62)]",
-            "w-full max-w-[376px] lg:w-[376px] lg:min-w-[376px] lg:max-w-[376px]",
-            "h-[812px] max-h-[calc(100vh-2.25rem)] lg:h-[812px]",
+            "h-[812px] w-[376px] shrink-0 min-w-[376px] max-w-[376px] min-h-[812px] max-h-[812px]",
             "bg-[linear-gradient(180deg,rgba(20,24,31,0.96),rgba(6,9,14,0.98))]",
           )}
           style={{ transformPerspective: 1800 }}
