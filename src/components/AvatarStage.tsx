@@ -13,9 +13,9 @@ export function AvatarStage() {
   const footerLabel = latestUserUtterance ? `Latest prompt: ${latestUserUtterance}` : "";
 
   return (
-    <div className="relative min-h-[445px] overflow-hidden rounded-[2.6rem] border border-white/10 bg-[#050505] shadow-[0_32px_100px_rgba(0,0,0,0.42)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.12),transparent_24%),radial-gradient(circle_at_50%_78%,rgba(0,190,255,0.15),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0)_28%,rgba(255,255,255,0.05)_100%)]" />
-      <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:36px_36px]" />
+    <div className="relative min-h-[445px] overflow-hidden rounded-[2.6rem] border border-white/14 bg-black/28 shadow-[0_32px_100px_rgba(0,0,0,0.42)] backdrop-blur-[6px]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_50%_78%,rgba(0,190,255,0.07),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.006)_28%,rgba(255,255,255,0.015)_100%)]" />
+      <div className="absolute inset-x-10 top-0 h-24 rounded-b-[2.4rem] bg-white/7 blur-3xl" />
 
       <div className="relative z-10 flex h-full min-h-[445px] flex-col justify-between p-8 text-white">
         <div className="flex items-start justify-between gap-4">
