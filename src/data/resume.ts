@@ -91,16 +91,8 @@ export const resumeRecord: ResumeRecord = {
       date: "May. 2026 - Aug. 2026",
       role: "Software Engineer Intern",
       location: "Palo Alto, CA",
-      bullets: [],
-    },
-    {
-      company: "Robinhood",
-      date: "Jan. 2026 - Apr. 2026",
-      role: "Software Engineer Collaborator",
-      location: "New York, NY",
       bullets: [
-        "Architected a customer support agent training platform using RAG and GPT-4o, deployed across Robinhood's support org to score written responses on tone, clarity, and compliance, achieving 96% agreement with QA reviewers.",
-        "Built a voice evaluation pipeline using Deepgram STT and Hume AI to score support responses on tone, empathy, and pacing with 400 ms end-to-end latency.",
+        "AI Data Infra",
       ],
     },
     {
@@ -109,9 +101,7 @@ export const resumeRecord: ResumeRecord = {
       role: "Software Engineer Intern",
       location: "San Francisco, CA",
       bullets: [
-        "Drove $100k order by shipping production C++ firmware and synchronized BLE mobile clients across 50 devices.",
-        "Reduced sensor-to-app latency 73% to 120 ms and improved data capture reliability 25% by preprocessing data packets in TypeScript within the mobile app and implementing offline buffering with backpressure.",
-        "Built an AWS sensor pipeline with FastAPI, PostgreSQL, and Python fusion algorithms for joint-angle estimation.",
+        "ML Motion Sensor",
       ],
     },
     {
@@ -120,9 +110,16 @@ export const resumeRecord: ResumeRecord = {
       role: "Software & ML Engineer Intern",
       location: "Toronto, ON",
       bullets: [
-        "Achieved 160 ms E2E latency for AI voice detection by building a Twilio pipeline with sliding-window buffering.",
-        "Increased inference throughput 8x and supported 100 concurrent call classifications per node by building an inference service using TensorRT on AWS T4 instances.",
-        "Reduced idle GPU capacity 30% and achieved 60 s scale-out via Kubernetes autoscaling on Redis queue depth.",
+        "AI Voice Detection",
+      ],
+    },
+    {
+      company: "JMA Consulting",
+      date: "Jan. 2025 - Apr. 2025",
+      role: "Software Engineer Intern",
+      location: "Toronto, ON",
+      bullets: [
+        "Building & Automation",
       ],
     },
   ],
