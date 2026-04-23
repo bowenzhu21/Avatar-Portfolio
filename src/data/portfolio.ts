@@ -213,6 +213,134 @@ export const portfolioEntities: PortfolioEntity[] = [
     relatedItems: ["aura-dev", "school", "hobbies"],
   },
   {
+    id: "apollo",
+    title: "Apollo",
+    type: "project",
+    route: "/gods/apollo",
+    aliases: ["apollo", "apollo project", "apollo app", "gods apollo"],
+    shortSummary:
+      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+    technicalSummary:
+      "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
+    recruiterSummary:
+      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
+    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Apollo project app preview and visual context.",
+      },
+      {
+        id: "highlights",
+        title: "Highlights",
+        summary: "Key implementation notes for the Apollo app screen.",
+      },
+      {
+        id: "gallery",
+        title: "Gallery",
+        summary: "Apollo visual assets and screenshots.",
+      },
+    ],
+    relatedItems: ["aphrodite", "hermes", "kronos"],
+  },
+  {
+    id: "aphrodite",
+    title: "Aphrodite",
+    type: "project",
+    route: "/gods/aphrodite",
+    aliases: ["aphrodite", "aphrodite project", "aphrodite app", "gods aphrodite"],
+    shortSummary:
+      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+    technicalSummary:
+      "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
+    recruiterSummary:
+      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
+    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Aphrodite project app preview and visual context.",
+      },
+      {
+        id: "highlights",
+        title: "Highlights",
+        summary: "Key implementation notes for the Aphrodite app screen.",
+      },
+      {
+        id: "gallery",
+        title: "Gallery",
+        summary: "Aphrodite visual assets and screenshots.",
+      },
+    ],
+    relatedItems: ["apollo", "hermes", "kronos"],
+  },
+  {
+    id: "hermes",
+    title: "Hermes",
+    type: "project",
+    route: "/gods/hermes",
+    aliases: ["hermes", "hermes project", "hermes app", "gods hermes"],
+    shortSummary:
+      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+    technicalSummary:
+      "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
+    recruiterSummary:
+      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
+    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Hermes project app preview and visual context.",
+      },
+      {
+        id: "highlights",
+        title: "Highlights",
+        summary: "Key implementation notes for the Hermes app screen.",
+      },
+      {
+        id: "gallery",
+        title: "Gallery",
+        summary: "Hermes visual assets and screenshots.",
+      },
+    ],
+    relatedItems: ["apollo", "aphrodite", "kronos"],
+  },
+  {
+    id: "kronos",
+    title: "Kronos",
+    type: "project",
+    route: "/gods/kronos",
+    aliases: ["kronos", "kronos project", "kronos app", "gods kronos"],
+    shortSummary:
+      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+    technicalSummary:
+      "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
+    recruiterSummary:
+      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
+    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Kronos project app preview and visual context.",
+      },
+      {
+        id: "highlights",
+        title: "Highlights",
+        summary: "Key implementation notes for the Kronos app screen.",
+      },
+      {
+        id: "gallery",
+        title: "Gallery",
+        summary: "Kronos visual assets and screenshots.",
+      },
+    ],
+    relatedItems: ["apollo", "aphrodite", "hermes"],
+  },
+  {
     id: "heygen",
     title: "HeyGen",
     type: "experience",

@@ -40,8 +40,8 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     accent: "#8fa8d8",
     textTone: "light",
     bullets: [
-      "Reduced sensor-to-app latency 73% (120 ms) and improved data capture reliability 25% by integrating processing into the mobile app and implementing offline buffering with backpressure.",
-      "Drove $100k order by shipping production C++ firmware and synchronized BLE mobile clients across 50 devices.",
+      "Reduced sensor-to-app latency and improved data capture reliability by integrating processing into the mobile app and implementing offline buffering with backpressure.",
+      "Shipped production C++ firmware and synchronized BLE mobile clients.",
       "Built sensor pipeline with FastAPI + PostgreSQL on AWS, and Python fusion algorithms for joint-angle estimation.",
     ],
   },
@@ -58,8 +58,8 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     accent: "#7b63ff",
     textTone: "light",
     bullets: [
-      "Achieved 160 ms E2E latency for AI voice detection by building a Twilio pipeline with sliding-window buffering.",
-      "Increased inference throughput 8x and supported 100 concurrent call classifications per GPU node by building a TensorRT-optimized GPU inference service on AWS T4 instances.",
+      "Infra for AI voice detection by building a Twilio pipeline with sliding-window buffering.",
+      "Increased inference throughput and supported concurrent call classifications per GPU node by building a TensorRT-optimized GPU inference service on AWS T4 instances.",
       "Reduced GPU over-provisioning and enabled 60 s scale-out with Kubernetes autoscaling on Redis queue depth.",
     ],
   },
@@ -76,8 +76,8 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     accent: "#4b9f78",
     textTone: "light",
     bullets: [
-      "Automated admin workflows for the Python Software Foundation, 8.2M+ users, by shipping 3 MySQL + JavaScript backend extensions (merge, delete, user creation).",
-      "Scaled classification and taxonomy structuring for 10K+ product SKUs by building an LLM + embeddings pipeline for taxonomy classification, entity resolution, and semantic search indexing.",
+      "Automated admin workflows for the Python Software Foundation by shipping MySQL + JavaScript backend extensions.",
+      "Scaled classification and taxonomy structuring for product SKUs.",
     ],
   },
   school: {

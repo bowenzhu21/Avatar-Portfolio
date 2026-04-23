@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { defaultSpotifyTrackId } from "@/data/spotify";
 import { derivePhoneScreen } from "@/utils/phone";
 import type {
   CardType,
@@ -33,6 +34,7 @@ interface PortfolioState {
   phoneScreen: PhoneScreenState;
   latestRouterPayload: VoiceRouterInput | null;
   latestRouterResponse: VoiceRouterOutput | null;
+  selectedSpotifyTrackId: string;
   isCardOpen: boolean;
   setActiveRoute: (route: string) => void;
   setActiveEntity: (entity: PortfolioEntity | null) => void;
@@ -53,6 +55,7 @@ interface PortfolioState {
   syncPhoneScreenFromRoute: (route: string, entity: PortfolioEntity | null, card?: CardType) => void;
   setLatestRouterPayload: (payload: VoiceRouterInput | null) => void;
   setLatestRouterResponse: (payload: VoiceRouterOutput | null) => void;
+  setSelectedSpotifyTrackId: (trackId: string) => void;
   toggleCard: () => void;
   openCard: () => void;
 }
@@ -82,6 +85,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   phoneScreen: derivePhoneScreen({ route: "/" }),
   latestRouterPayload: null,
   latestRouterResponse: null,
+  selectedSpotifyTrackId: defaultSpotifyTrackId,
   isCardOpen: true,
   setActiveRoute: (route) => set({ activeRoute: route }),
   setActiveEntity: (entity) => set({ activeEntity: entity }),
@@ -180,6 +184,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     }),
   setLatestRouterPayload: (latestRouterPayload) => set({ latestRouterPayload }),
   setLatestRouterResponse: (latestRouterResponse) => set({ latestRouterResponse }),
+  setSelectedSpotifyTrackId: (selectedSpotifyTrackId) => set({ selectedSpotifyTrackId }),
   toggleCard: () => set((state) => ({ isCardOpen: !state.isCardOpen })),
   openCard: () => set({ isCardOpen: true }),
 }));

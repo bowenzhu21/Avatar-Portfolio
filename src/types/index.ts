@@ -18,15 +18,15 @@ export type PhoneApp =
   | "phone"
   | "messages"
   | "projects"
+  | "gods"
   | "experience"
+  | "spotify"
   | "safari"
   | "photos"
   | "school"
   | "resume"
   | "contact"
   | "settings"
-  | "nutrition"
-  | "fitness"
   | "hobbies";
 
 export type PhoneScreenView = "home" | "list" | "detail";

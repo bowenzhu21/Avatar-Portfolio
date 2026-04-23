@@ -396,16 +396,22 @@ function GalleryPage({
 function LinksPage({ links }: { links: ProjectAppLink[] }) {
   return (
     <div className="space-y-6">
-      <div className="border-y border-white/10">
-        {links.map((link) => (
-          <ActionRow
-            key={`${link.title}-${link.href}`}
-            title={link.title}
-            href={link.href}
-            iconSrc={link.iconSrc}
-          />
-        ))}
-      </div>
+      {links.length ? (
+        <div className="border-y border-white/10">
+          {links.map((link) => (
+            <ActionRow
+              key={`${link.title}-${link.href}`}
+              title={link.title}
+              href={link.href}
+              iconSrc={link.iconSrc}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-[1.4rem] border border-white/10 bg-black/18 px-4 py-5 text-center backdrop-blur-xl">
+          <p className="text-[0.82rem] font-medium text-white/72">Links coming soon.</p>
+        </div>
+      )}
     </div>
   );
 }

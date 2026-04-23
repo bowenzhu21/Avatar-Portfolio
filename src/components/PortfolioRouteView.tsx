@@ -12,10 +12,12 @@ import { MessagesApp } from "@/components/other/MessagesApp";
 import type { MessagesThreads } from "@/components/other/MessagesApp";
 import { PhoneApp as PhoneAppScreen } from "@/components/other/PhoneApp";
 import { SafariApp } from "@/components/other/SafariApp";
+import { SpotifyApp } from "@/components/other/SpotifyApp";
 import { PhotosApp } from "@/components/photos/PhotosApp";
 import { AdaptApp } from "@/components/projects/AdaptApp";
 import { AuraApp } from "@/components/projects/AuraApp";
 import { ElbowExoApp } from "@/components/projects/ElbowExoApp";
+import { GodProjectApp } from "@/components/projects/GodProjectApp";
 import { GymBroApp } from "@/components/projects/GymBroApp";
 import { MatrixApp } from "@/components/projects/MatrixApp";
 import { RobinTrainApp } from "@/components/projects/RobinTrainApp";
@@ -41,6 +43,10 @@ const entityIconMap: Partial<Record<string, string>> = {
   matrix: "/icons/matrix.png",
   robintrain: "/icons/robintrain.jpeg",
   "adapt-ui": "/icons/adapt.png",
+  apollo: "/icons/apollo_icon.png",
+  aphrodite: "/icons/aphrodite_icon.png",
+  hermes: "/icons/hermes_icon.png",
+  kronos: "/icons/kronos_icon.png",
   "aura-dev": "/icons/aura.jpg",
   "elbow-exo": "/icons/elbow.jpg",
   gymbro: "/icons/gymbro.png",
@@ -52,9 +58,10 @@ const entityIconMap: Partial<Record<string, string>> = {
   resume: "/icons/resume.jpg",
   school: "/icons/school.jpeg",
   contact: "/icons/contact.webp",
-  nutrition: "/icons/nutrition.jpg",
-  fitness: "/icons/fitness.jpg",
 };
+
+const godProjectIds = ["apollo", "aphrodite", "hermes", "kronos"] as const;
+const godProjectIdSet = new Set<string>(godProjectIds);
 
 const homeApps: Array<{
   app: Exclude<PhoneApp, "home">;
@@ -94,17 +101,11 @@ const homeApps: Array<{
     iconImageClassName: "scale-[2] object-contain",
   },
   {
-    app: "nutrition",
-    label: "Nutrition",
-    iconSrc: "/icons/nutrition.jpg",
-    tint: "bg-white",
+    app: "spotify",
+    label: "Spotify",
+    iconSrc: "/icons/spotify.png",
+    tint: "from-[#1ed760] to-[#0b7c35]",
     iconImageClassName: "object-cover",
-  },
-  {
-    app: "fitness",
-    label: "Fitness",
-    iconSrc: "/icons/fitness.jpg",
-    tint: "from-orange-400 via-red-400 to-pink-500",
   },
 ];
 
@@ -114,7 +115,13 @@ function getEntityIconSrc(entityId: string) {
 
 function getItemsForApp(app: PhoneApp) {
   if (app === "projects") {
-    return portfolioEntities.filter((entity) => entity.type === "project");
+    return portfolioEntities.filter(
+      (entity) => entity.type === "project" && !godProjectIdSet.has(entity.id),
+    );
+  }
+
+  if (app === "gods") {
+    return portfolioEntities.filter((entity) => godProjectIdSet.has(entity.id));
   }
 
   if (app === "experience") {
@@ -137,7 +144,11 @@ function getItemsForApp(app: PhoneApp) {
     return portfolioEntities.filter((entity) => entity.route === "/contact");
   }
 
-  if (app === "nutrition" || app === "fitness" || app === "settings") {
+  if (app === "settings") {
+    return [];
+  }
+
+  if (app === "spotify") {
     return [];
   }
 
@@ -229,6 +240,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   ].join(":");
 
   const projectFolderItems = useMemo(() => getItemsForApp("projects").slice(0, 4), []);
+  const godFolderItems = useMemo(() => getItemsForApp("gods").slice(0, 4), []);
   const experienceFolderItems = useMemo(() => getItemsForApp("experience").slice(0, 4), []);
 
   function openMessages(contactId: ChatContactId | null = null) {
@@ -314,7 +326,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       return;
     }
 
-    if (app === "projects" || app === "experience") {
+    if (app === "projects" || app === "gods" || app === "experience") {
       setPhoneScreen(createPhoneListScreen(app));
       return;
     }
@@ -324,16 +336,23 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       return;
     }
 
-    if (app === "nutrition" || app === "fitness" || app === "settings") {
+    if (app === "spotify") {
+      setPhoneScreen({
+        app: "spotify",
+        view: "detail",
+        title: "Spotify",
+        entityId: null,
+        route: null,
+        card: "overview",
+      });
+      return;
+    }
+
+    if (app === "settings") {
       setPhoneScreen({
         app,
         view: "detail",
-        title:
-          app === "nutrition"
-            ? "Nutrition"
-            : app === "fitness"
-              ? "Fitness"
-              : "Settings",
+        title: "Settings",
         entityId: null,
         route: null,
         card: "overview",
@@ -381,6 +400,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       month={month}
       day={day}
       projectFolderItems={projectFolderItems}
+      godFolderItems={godFolderItems}
       experienceFolderItems={experienceFolderItems}
       homeApps={homeApps}
       onOpenApp={openApp}
@@ -465,8 +485,12 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             />
           ) : phoneScreen.app === "safari" ? (
             <SafariApp />
+          ) : phoneScreen.app === "spotify" ? (
+            <SpotifyApp />
           ) : phoneScreen.view === "list" ? (
-            phoneScreen.app === "projects" || phoneScreen.app === "experience" ? (
+            phoneScreen.app === "projects" ||
+            phoneScreen.app === "gods" ||
+            phoneScreen.app === "experience" ? (
               <div className="relative h-full overflow-hidden rounded-[2rem]">
                 <div className="pointer-events-none absolute inset-0 scale-[1.035] blur-[14px] brightness-[0.72]">
                   {homeScreen}
@@ -542,6 +566,14 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
               <AuraApp />
             ) : visibleEntity.id === "adapt-ui" ? (
               <AdaptApp />
+            ) : visibleEntity.id === "apollo" ? (
+              <GodProjectApp projectId="apollo" />
+            ) : visibleEntity.id === "aphrodite" ? (
+              <GodProjectApp projectId="aphrodite" />
+            ) : visibleEntity.id === "hermes" ? (
+              <GodProjectApp projectId="hermes" />
+            ) : visibleEntity.id === "kronos" ? (
+              <GodProjectApp projectId="kronos" />
             ) : visibleEntity.id === "resume" ? (
               <ResumeApp />
             ) : visibleEntity.id === "contact" ? (
@@ -551,10 +583,6 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             ) : (
               <PlaceholderPage title={visibleEntity.title} />
             )
-          ) : phoneScreen.app === "nutrition" ? (
-            <PlaceholderPage title="Nutrition" />
-          ) : phoneScreen.app === "fitness" ? (
-            <PlaceholderPage title="Fitness" />
           ) : phoneScreen.app === "settings" ? (
             <PlaceholderPage title="Settings" />
           ) : (
@@ -576,6 +604,7 @@ function HomeScreen({
   month,
   day,
   projectFolderItems,
+  godFolderItems,
   experienceFolderItems,
   homeApps,
   onOpenApp,
@@ -590,6 +619,7 @@ function HomeScreen({
   month: string;
   day: string;
   projectFolderItems: PortfolioEntity[];
+  godFolderItems: PortfolioEntity[];
   experienceFolderItems: PortfolioEntity[];
   homeApps: Array<{
     app: Exclude<PhoneApp, "home">;
@@ -659,8 +689,7 @@ function HomeScreen({
               (app) =>
                 app.app === "resume" ||
                 app.app === "contact" ||
-                app.app === "nutrition" ||
-                app.app === "fitness",
+                app.app === "spotify",
             )
             .map((app) => (
               <AppIcon
@@ -677,6 +706,16 @@ function HomeScreen({
         </div>
 
         <DateWidget weekday={weekday} month={month} day={day} />
+
+        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-4">
+          <AppIcon label="Gods" tint="from-zinc-700 to-zinc-900" folder onClick={() => onOpenApp("gods")}>
+            {godFolderItems.map((item) => (
+              <MiniFolderTile key={item.id} iconSrc={getEntityIconSrc(item.id)} label={item.title}>
+                {item.title.slice(0, 1)}
+              </MiniFolderTile>
+            ))}
+          </AppIcon>
+        </div>
       </div>
 
       <div className="mt-auto pt-0">

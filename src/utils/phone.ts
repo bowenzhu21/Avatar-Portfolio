@@ -15,6 +15,10 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
     return "projects";
   }
 
+  if (route.startsWith("/gods/")) {
+    return "gods";
+  }
+
   if (route.startsWith("/experience/")) {
     return "experience";
   }
@@ -31,6 +35,10 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
     return "safari";
   }
 
+  if (route === "/spotify") {
+    return "spotify";
+  }
+
   if (route === "/resume") {
     return "resume";
   }
@@ -41,14 +49,6 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
 
   if (route === "/settings") {
     return "settings";
-  }
-
-  if (route === "/nutrition") {
-    return "nutrition";
-  }
-
-  if (route === "/fitness") {
-    return "fitness";
   }
 
   if (route === "/hobbies") {
@@ -94,15 +94,15 @@ export function createPhoneListScreen(
     phone: "Phone",
     messages: "Messages",
     projects: "Projects",
+    gods: "Gods",
     experience: "Experience",
+    spotify: "Spotify",
     safari: "Safari",
     photos: "Photos",
     school: "School",
     resume: "Resume",
     contact: "Contact",
     settings: "Settings",
-    nutrition: "Nutrition",
-    fitness: "Fitness",
     hobbies: "Nutrition & Fitness",
   } as const;
 

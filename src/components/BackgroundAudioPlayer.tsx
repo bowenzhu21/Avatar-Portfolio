@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { getSpotifyTrackById } from "@/data/spotify";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 export function BackgroundAudioPlayer() {
@@ -8,6 +9,8 @@ export function BackgroundAudioPlayer() {
   const wantsPlaybackRef = useRef(true);
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
   const phoneApp = usePortfolioStore((state) => state.phoneScreen.app);
+  const selectedSpotifyTrackId = usePortfolioStore((state) => state.selectedSpotifyTrackId);
+  const activeTrack = getSpotifyTrackById(selectedSpotifyTrackId);
   const shouldPause = phoneApp === "phone" || interactionPhase !== "idle";
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export function BackgroundAudioPlayer() {
       window.removeEventListener("pointerdown", handleUserGesture);
       window.removeEventListener("keydown", handleUserGesture);
     };
-  }, [shouldPause]);
+  }, [activeTrack.audioSrc, shouldPause]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -65,17 +68,16 @@ export function BackgroundAudioPlayer() {
     if (wantsPlaybackRef.current) {
       void audio.play().catch(() => undefined);
     }
-  }, [shouldPause]);
+  }, [activeTrack.audioSrc, shouldPause]);
 
   return (
     <audio
       ref={audioRef}
+      src={activeTrack.audioSrc}
       loop
-      preload="metadata"
+      preload="auto"
       aria-hidden="true"
       className="hidden"
-    >
-      <source src="/background/california.mp4" type="audio/mp4" />
-    </audio>
+    />
   );
 }
