@@ -12,6 +12,19 @@ const adaptBullets = [
   "Achieved 82% prompt-to-render success across 200 prompts via max-iteration budgeting and failure mode logging.",
 ];
 
+const adaptGalleryImages = [
+  {
+    id: 1,
+    src: "/adapt/adapt.png",
+    alt: "Adapt UI gallery image 1",
+  },
+  {
+    id: 2,
+    src: "/adapt/adapt2.png",
+    alt: "Adapt UI gallery image 2",
+  },
+] as const;
+
 const adaptTabs = [
   { id: "overview", label: "Overview", iconSrc: "/appicons/home.webp" },
   { id: "highlights", label: "Highlights", iconSrc: "/appicons/highlights.png" },
@@ -39,6 +52,8 @@ const navGlassStyle = {
 
 export function AdaptApp() {
   const [activeTab, setActiveTab] = useState<AdaptTabId>("overview");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const activeGalleryImage = adaptGalleryImages[activeImageIndex] ?? adaptGalleryImages[0];
 
   return (
     <div
@@ -67,7 +82,11 @@ export function AdaptApp() {
               ) : activeTab === "highlights" ? (
                 <HighlightsPage />
               ) : activeTab === "gallery" ? (
-                <GalleryPage />
+                <GalleryPage
+                  activeImage={activeGalleryImage}
+                  activeImageIndex={activeImageIndex}
+                  onSelectImage={setActiveImageIndex}
+                />
               ) : (
                 <LinksPage />
               )}
@@ -178,14 +197,22 @@ function HighlightsPage() {
   );
 }
 
-function GalleryPage() {
+function GalleryPage({
+  activeImage,
+  activeImageIndex,
+  onSelectImage,
+}: {
+  activeImage: (typeof adaptGalleryImages)[number];
+  activeImageIndex: number;
+  onSelectImage: (index: number) => void;
+}) {
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         <div className="relative aspect-[1.08/1] bg-black/15">
           <Image
-            src="/adapt/adapt.png"
-            alt="Adapt UI preview"
+            src={activeImage.src}
+            alt={activeImage.alt}
             fill
             sizes="(max-width: 768px) 92vw, 360px"
             className="object-contain p-4"
@@ -194,26 +221,38 @@ function GalleryPage() {
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.1)_36%,rgba(0,0,0,0.34)_100%)]" />
         <div className="absolute bottom-4 right-4 rounded-full border border-white/12 bg-black/16 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/58 backdrop-blur-xl">
-          1/1
+          {activeImageIndex + 1}/{adaptGalleryImages.length}
         </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
-        <button
-          type="button"
-          className="relative shrink-0 overflow-hidden rounded-[1rem] border border-cyan-200/50 opacity-100"
-          aria-label="Show Adapt UI image 1"
-        >
-          <div className="relative h-[4.75rem] w-[4.75rem] bg-black/12">
-            <Image
-              src="/adapt/adapt.png"
-              alt="Adapt UI thumbnail"
-              fill
-              sizes="76px"
-              className="object-contain p-2"
-            />
-          </div>
-        </button>
+        {adaptGalleryImages.map((image, index) => {
+          const active = index === activeImageIndex;
+
+          return (
+            <button
+              key={image.id}
+              type="button"
+              onClick={() => onSelectImage(index)}
+              className={`relative shrink-0 overflow-hidden rounded-[1rem] border transition ${
+                active
+                  ? "border-cyan-200/50 opacity-100"
+                  : "border-white/10 opacity-66 hover:opacity-90"
+              }`}
+              aria-label={`Show Adapt UI image ${image.id}`}
+            >
+              <div className="relative h-[4.75rem] w-[4.75rem] bg-black/12">
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  sizes="76px"
+                  className="object-contain p-2"
+                />
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

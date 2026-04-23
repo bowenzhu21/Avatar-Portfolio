@@ -36,7 +36,7 @@ export function AvatarStage() {
               y: isSpeaking ? -level * 6 : 0,
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative flex h-[20.75rem] w-[20.75rem] items-center justify-center"
+            className="relative flex aspect-square w-full max-w-[20.75rem] shrink-0 items-center justify-center"
           >
             {[0, 1, 2, 3].map((ring) => (
               <motion.div
@@ -62,14 +62,14 @@ export function AvatarStage() {
               />
             ))}
 
-            <div className="absolute inset-[1.2rem] rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.18),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03))] blur-md" />
-            <div className="relative h-[16.25rem] w-[16.25rem] overflow-hidden rounded-full border border-white/14 bg-white/6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+            <div className="absolute inset-[5.8%] rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.18),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03))] blur-md" />
+            <div className="relative aspect-square w-[78.3%] overflow-hidden rounded-full border border-white/14 bg-white/6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
               <Image
                 src={avatarConfig.profileImageSrc}
                 alt={avatarConfig.canvasLabel}
                 fill
                 priority
-                sizes="300px"
+                sizes="(max-width: 1024px) min(70vw, 332px), 332px"
                 className="object-cover"
               />
             </div>
