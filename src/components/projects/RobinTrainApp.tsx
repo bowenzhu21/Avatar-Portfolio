@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 
 const robinTrainSummary =
-  "RobinTrain is a customer support agent training platform built for Robinhood that evaluates written and voice responses across quality, compliance, and communication dimensions.";
+  "RobinTrain is a customer support agent training platform that evaluates written and voice responses across quality, compliance, and communication dimensions.";
 
 const robinTrainImages = [
   {
@@ -21,7 +21,7 @@ const robinTrainImages = [
 ] as const;
 
 const robinTrainBullets = [
-  "Architected a customer support agent training platform using RAG and GPT-4o, deployed across Robinhood's support org to score written responses on tone, clarity, and compliance with 96% agreement with QA reviewers.",
+  "Architected a customer support agent training platform using RAG and GPT-4o to score written responses on tone, clarity, and compliance.",
   "Built a voice evaluation pipeline using Deepgram STT and Hume AI to score support responses on tone, empathy, and pacing with 400 ms end-to-end latency.",
 ];
 
