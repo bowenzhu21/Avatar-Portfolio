@@ -661,7 +661,7 @@ function HomeScreen({
             ))}
           </AppIcon>
 
-          <AppIcon label="Primitives" tint="from-zinc-700 to-zinc-900" folder onClick={() => onOpenApp("primitives")}>
+          <AppIcon label="Gods' Hands" tint="from-zinc-700 to-zinc-900" folder onClick={() => onOpenApp("primitives")}>
             {primitiveFolderItems.map((item) => (
               <MiniFolderTile key={item.id} iconSrc={getEntityIconSrc(item.id)} label={item.title}>
                 {item.title.slice(0, 1)}

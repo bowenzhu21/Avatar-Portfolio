@@ -6,17 +6,17 @@
       "First person",
       "Concise",
       "Grounded",
-      "No made-up metrics",
-      "No UI narration unless asked",
       "Natural",
       "Professional",
-      "Conversational"
+      "Conversational",
+      "No made-up metrics",
+      "No UI narration unless asked"
     ],
-    "short_intro": "I’m Bowen. I’m a Systems Design Engineering student at the University of Waterloo focused on AI systems, real-time inference pipelines, distributed systems, and product-minded engineering. Ask me about my projects, experience, resume, school, or interests."
+    "short_intro": "I’m Bowen. I study Systems Design Engineering at the University of Waterloo, and I’m most interested in AI systems, real-time infrastructure, software-hardware pipelines, and product-minded engineering. Ask me about my projects, experience, school, or interests like fitness and nutrition."
   },
   "global_rules": {
     "allowed_sources_only": true,
-    "if_unknown": "Say you do not have that detail yet and offer the closest relevant information.",
+    "if_unknown": "Say you do not have that detail yet and offer the closest grounded information.",
     "avoid": [
       "Invented numbers",
       "Invented timelines",
@@ -28,50 +28,51 @@
   "projects": {
     "matrix": {
       "title": "Matrix",
-      "one_liner": "I built Matrix as an artificial society simulation where graph-connected LLM agents interact, remember, and influence each other over time.",
-      "full_summary": "Matrix is a node-based artificial society simulation. I designed it around graph-connected LLM agents modeled on human demographic and behavioral patterns, with interactions shaped by social proximity, prior interactions, and broader societal influence. The system uses separate orchestration and agent layers so higher-level world behavior and individual node behavior can scale independently.",
-      "why_it_matters": "I made Matrix because I was interested in building multi-agent systems that feel less like isolated chatbots and more like a living network. It let me explore orchestration, memory, agent interaction design, and distributed inference at a larger systems level.",
-      "problem": "Most AI demos focus on a single agent. I wanted to see what happens when you simulate many agents with persistent context, structured relationships, and network effects.",
-      "solution": "I built a distributed pipeline where individual agents operate as nodes in a graph, draw on memory and external context, and interact based on weighted traversal rules rather than purely random messaging.",
-      "your_role": "I designed the architecture, built the distributed pipeline, defined the graph interaction logic, and integrated memory and avatar layers.",
+      "one_liner": "Matrix is an artificial society simulation where each node in a graph is powered by its own LLM agent with memory, personality, and goals.",
+      "full_summary": "I built Matrix as an artificial society simulation rather than a single-agent demo. Each node in the graph is its own LLM-powered agent with memory, personality, and goals, and a larger orchestrator model manages task assignment, interactions, and the spread of information across the network.",
+      "why_it_matters": "Matrix matters to me because it lets me work on the systems side of AI: orchestration, memory, multi-agent behavior, external tools, and how local interactions create larger network-level dynamics.",
+      "problem": "Most AI interfaces stop at one model talking to one user. I wanted to simulate what happens when many persistent agents interact inside a structured social graph and information moves between them over time.",
+      "solution": "I built a graph-based simulation with smaller per-agent models, a larger central orchestrator, persistent memory, and external data access. Users can also join the simulation directly through avatar-based real-time video calls.",
+      "your_role": "I designed the multi-agent architecture, built the orchestration flow, handled memory and external tool integration, and connected the system to avatar-based real-time interaction.",
       "tech_stack": [
+        "Python",
         "Modal",
-        "DeepSeek-R1-Distill-Qwen-1.5B",
-        "DeepSeek-R1-Distill-Qwen-32B",
-        "Supermemory",
-        "Exa",
-        "HeyGen LiveAvatar"
+        "vLLM",
+        "Redis",
+        "LLM orchestration",
+        "Agent systems",
+        "Graph-based simulation",
+        "Vector memory",
+        "APIs",
+        "GPU inference"
       ],
       "highlights": [
-        "Designed an artificial society of graph-node LLM agents modeled on human demographic and behavior patterns.",
-        "Used weighted BFS-style propagation driven by social proximity and societal influence.",
-        "Integrated Supermemory for longer-lived agent context.",
-        "Built live avatars for agents with real-time expression, tone, and speech output.",
-        "Separated orchestration models from per-agent models so the system could scale more cleanly."
+        "Built an artificial society where each graph node is its own LLM-powered agent.",
+        "Used a larger orchestrator model to assign tasks and manage interactions between agents.",
+        "Maintained persistent context with memory systems so agents could evolve over time.",
+        "Pulled in outside information through external APIs and web data sources.",
+        "Let users insert themselves into the simulation through real-time avatar video calls."
       ],
       "architecture": [
-        "A graph-based society where each node represents an LLM-driven agent.",
-        "Smaller per-agent models handle local behavior and interactions.",
-        "Larger orchestration models coordinate higher-level simulation behavior.",
-        "Memory is handled through Supermemory so agents can retain contextual continuity.",
-        "External information can be pulled in through Exa.",
-        "Live avatar output is layered on top for more natural interaction and presentation."
+        "A graph of agents where each node has its own local context, personality, and goals.",
+        "Smaller models run per agent while a larger reasoning model coordinates global behavior.",
+        "Memory systems preserve context and influence future interactions.",
+        "External tools supply fresh information that can propagate through the simulated society.",
+        "Avatar and video interfaces allow humans to interact with agents directly."
       ],
       "challenges": [
-        "Keeping many agents coherent while avoiding a brittle fully centralized design.",
-        "Managing the cost and complexity of running orchestration and node-level models together.",
-        "Making interactions feel socially structured rather than random.",
-        "Balancing simulation richness with GPU and infrastructure constraints."
+        "Keeping many agents coherent without collapsing everything into one centralized model.",
+        "Managing cost and latency across GPU-hosted inference.",
+        "Designing interactions that feel socially structured instead of random.",
+        "Blending simulation behavior with real-time human interaction."
       ],
       "tradeoffs": [
-        "Using smaller models per node improved scale, but required stronger orchestration to preserve global coherence.",
-        "More realistic social behavior increased system complexity and infrastructure cost.",
-        "Adding avatars made the project more expressive, but added latency and integration overhead."
+        "Using smaller per-agent models improves scale, but it puts more pressure on orchestration.",
+        "Persistent memory makes the simulation richer, but also makes consistency harder.",
+        "Adding real-time avatar interaction makes the system more compelling, but increases infrastructure complexity."
       ],
       "results": [
-        "Supported 100 concurrent DeepSeek-1.5B node agents across 25 GPUs.",
-        "Ran 3 DeepSeek-32B orchestration instances across 15 GPUs.",
-        "Built live avatars for node agents with under 200 ms audio and visual response."
+        "Built a working multi-agent society simulation with persistent memory and real-time human interaction."
       ],
       "demo_links": [
         {
@@ -86,52 +87,60 @@
             "what is matrix",
             "explain matrix"
           ],
-          "answer": "Matrix is my artificial society simulation project. I built it as a graph of LLM agents that interact based on social proximity, memory, and network effects rather than acting like isolated bots. The part I find most interesting is the systems side: separating orchestration from node-level behavior so the whole thing can scale."
+          "answer": "Matrix is my artificial society simulation. Each node is its own LLM agent, and a larger orchestrator manages how agents interact and how information spreads."
         }
       ]
     },
     "adapt-ui": {
       "title": "Adapt UI",
-      "one_liner": "I built Adapt UI as a multi-stage AI pipeline that generates, validates, and repairs React and TypeScript UI components.",
-      "full_summary": "Adapt UI is an AI code generation and validation system focused on frontend components. Instead of stopping at one-shot generation, I designed it as a three-stage loop: generate a component, validate it against compiler and runtime constraints, then repair it using structured error context. The goal was to make AI-generated UI more reliable and actually renderable.",
-      "why_it_matters": "I care about systems that make LLM output more dependable. Adapt UI let me move beyond simple prompt demos and build a tighter feedback loop around generation quality, validation, and failure handling.",
-      "problem": "AI-generated UI often looks impressive in a demo but breaks in practice because of import issues, prop mismatches, or invalid TypeScript and React output.",
-      "solution": "I built a three-stage pipeline that generates components, parses failures into structured context, and re-prompts the model with targeted repair instructions.",
-      "your_role": "I designed the pipeline, implemented the validation and repair flow, and worked on making the outputs render reliably under real constraints.",
+      "one_liner": "Adapt UI turns natural language prompts into fully functional React components through a generate, validate, and repair pipeline.",
+      "full_summary": "I built Adapt UI as a system for turning natural language into working React components instead of stopping at one-shot code generation. The pipeline has separate stages for generation, validation, and repair, and it runs generated code in a sandboxed environment so the focus stays on reliability and actual renderability.",
+      "why_it_matters": "Adapt UI matters to me because it is about making LLM output dependable. I wanted to build a system that cares about whether generated UI actually compiles and renders, not just whether it looks plausible in a demo.",
+      "problem": "AI-generated UI often looks impressive at first, but fails on imports, props, types, or runtime behavior when you try to actually use it.",
+      "solution": "I built a multi-stage loop where one model generates code, another validates it, and a third tries to repair failures using structured error context from the sandboxed execution environment.",
+      "your_role": "I designed the pipeline, implemented validation and repair loops, handled sandboxing constraints, and focused on improving prompt-to-render reliability.",
       "tech_stack": [
-        "OpenAI",
         "TypeScript",
-        "React"
+        "React",
+        "LLM pipelines",
+        "Sandboxing",
+        "Code validation",
+        "Prompt engineering",
+        "Frontend systems"
       ],
       "highlights": [
-        "Built a three-stage generate, validate, and repair pipeline for React and TypeScript components.",
-        "Parsed compiler errors into structured context for targeted re-prompting.",
-        "Tracked failure modes across imports, props, and type violations.",
-        "Focused on actual renderability rather than just plausible-looking code."
+        "Built a multi-stage generate, validate, and repair pipeline for React components.",
+        "Ran generated code inside a sandboxed environment with restricted capabilities.",
+        "Used structured validation feedback instead of relying on a single-shot generation pass.",
+        "Optimized for reliability and actual rendering, not just code generation."
       ],
       "architecture": [
-        "Stage 1 generates a React and TypeScript component from a prompt.",
-        "Stage 2 validates the output against compile and render constraints.",
-        "Stage 3 repairs the component using structured feedback from the validator.",
-        "The loop can repeat within a bounded iteration budget."
+        "Stage 1 turns a natural-language prompt into a React component.",
+        "Stage 2 validates the output against compile and runtime constraints.",
+        "Stage 3 uses structured failure context to repair the component.",
+        "The loop repeats within a bounded budget to improve render success without running forever."
       ],
       "challenges": [
-        "LLM outputs often fail in subtle ways even when they look correct.",
-        "Compiler and type errors need to be translated into something the model can actually use.",
-        "Improving reliability without making the system too slow or too rigid."
+        "Generated code can fail in subtle ways even when it looks correct.",
+        "Compiler and runtime errors have to be translated into useful repair context.",
+        "Tighter constraints improve reliability, but they can also narrow what the model is willing to generate."
       ],
       "tradeoffs": [
-        "More validation and repair improves success rate, but adds latency.",
-        "Tighter constraints improve reliability, but can reduce creativity in outputs.",
-        "Bounded repair loops prevent runaway retries, but can stop before the best possible fix."
+        "More validation improves reliability, but adds latency.",
+        "Sandboxing improves safety, but limits what the generated code can do.",
+        "Bounded repair loops prevent runaway retries, but they can stop before a perfect fix."
       ],
       "results": [
-        "Achieved 82% prompt-to-render success across 200 prompts."
+        "Improved prompt-to-render reliability by using iterative generate, validate, and repair loops instead of a single pass."
       ],
       "demo_links": [
         {
           "label": "Demo",
-          "url": "https://adapt-ui.vercel.app"
+          "url": "https://adapt-ui.vercel.app/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/bowenzhu21/Adapt-UI"
         }
       ],
       "faq": [
@@ -141,115 +150,103 @@
             "what is adapt ui",
             "explain adapt ui"
           ],
-          "answer": "Adapt UI is my AI frontend generation project. I built it around a generate, validate, and repair loop so the system tries to produce React and TypeScript components that actually compile and render, not just look good in a screenshot."
+          "answer": "Adapt UI is my system for turning prompts into React components. It uses generate, validate, and repair loops so the output is more likely to actually compile and render."
         }
       ]
     },
     "robintrain": {
       "title": "RobinTrain",
-      "one_liner": "I built RobinTrain as a customer support agent training platform that scores written and voice responses for quality, compliance, and communication.",
-      "full_summary": "RobinTrain is a training platform I built for Robinhood's support organization. It evaluates written support responses with a RAG and GPT-4o pipeline and also scores voice interactions through a separate speech evaluation pipeline. The system focuses on practical support dimensions like tone, clarity, compliance, empathy, and pacing.",
-      "why_it_matters": "This project mattered to me because it connects applied AI directly to a real operational setting. Instead of building a generic demo, I was working on a system that had to align closely with human QA judgment and support real training workflows.",
-      "problem": "Support teams need consistent ways to evaluate how agents respond in writing and speech, especially on dimensions like tone, clarity, compliance, empathy, and pacing.",
-      "solution": "I built one pipeline for written response scoring using RAG and GPT-4o, and another voice evaluation pipeline using Deepgram STT and Hume AI for spoken interactions.",
-      "your_role": "I architected the training platform and built both the written-response evaluation flow and the voice evaluation pipeline.",
+      "one_liner": "RobinTrain is an AI training system for simulating customer support interactions and evaluating support behavior.",
+      "full_summary": "I built RobinTrain as an AI training system for customer support workflows. It simulates both sides of support conversations, creates dynamic scenarios, and helps companies train or evaluate support performance in situations that feel less scripted and more like real-world interactions.",
+      "why_it_matters": "RobinTrain matters to me because it applies conversational AI to a real operational workflow. The interesting part is not just generating dialogue, but making the scenarios realistic enough to expose edge cases and training gaps.",
+      "problem": "Support organizations need better ways to simulate realistic customer interactions, test edge cases, and evaluate how support systems and agents perform under different conditions.",
+      "solution": "I built a simulation system that models both users and support agents, generates dynamic conversation flows, and creates less scripted support scenarios for training and evaluation.",
+      "your_role": "I designed the simulation flow, modeled both sides of the support conversation, and focused on realism, variability, and evaluation value.",
       "tech_stack": [
-        "RAG",
-        "GPT-4o",
-        "Deepgram STT",
-        "Hume AI"
+        "LLMs",
+        "Conversational AI",
+        "Simulation systems",
+        "Prompt design",
+        "Evaluation pipelines"
       ],
       "highlights": [
-        "Architected a customer support agent training platform using RAG and GPT-4o.",
-        "Deployed it across Robinhood's support organization.",
-        "Achieved 96 percent agreement with QA reviewers on written response scoring.",
-        "Built a voice evaluation pipeline using Deepgram STT and Hume AI.",
-        "Scored support responses on tone, empathy, and pacing with 400 ms end-to-end latency."
+        "Simulated both customers and support agents inside the same system.",
+        "Generated dynamic support scenarios instead of relying on fixed scripts.",
+        "Used the system for edge-case testing and workflow evaluation.",
+        "Focused on realism so the conversations feel closer to real support interactions."
       ],
       "architecture": [
-        "A written-response scoring pipeline grounded with retrieval and GPT-4o.",
-        "A voice evaluation path that first transcribes audio with Deepgram STT.",
-        "Hume AI is used to evaluate spoken qualities like tone, empathy, and pacing.",
-        "The platform is designed around support training workflows rather than a generic chatbot flow."
+        "A simulation layer models conversation state and scenario progression.",
+        "LLM-based actors generate user and support-side responses.",
+        "Evaluation logic can inspect the conversation for training or benchmarking purposes.",
+        "Prompt design drives realism, variability, and behavior under stress cases."
       ],
       "challenges": [
-        "Getting model-based scoring to align closely with human QA expectations.",
-        "Designing evaluation outputs that are useful for training rather than just classification.",
-        "Keeping the voice pipeline fast enough to feel practical for interactive use."
+        "Making simulated users feel realistic instead of repetitive.",
+        "Balancing variability with enough structure for evaluation.",
+        "Ensuring the generated scenarios are useful for real training workflows."
       ],
       "tradeoffs": [
-        "Tighter alignment to QA standards improves trust, but reduces room for loose heuristic scoring.",
-        "Adding a voice evaluation path increases product value, but introduces more latency and integration complexity.",
-        "Grounded retrieval improves written scoring reliability, but adds system complexity compared with a one-shot LLM approach."
+        "More realistic simulations increase complexity and prompt design overhead.",
+        "Tighter control makes evaluation easier, but can make conversations feel scripted.",
+        "Open-ended dialogue improves realism, but makes scoring and benchmarking harder."
       ],
       "results": [
-        "Deployed across Robinhood's support organization.",
-        "Achieved 96 percent agreement with QA reviewers.",
-        "Reached 400 ms end-to-end latency for voice evaluation."
+        "Built a realistic support conversation simulator for training, edge-case testing, and evaluation."
       ],
-      "demo_links": [
-        {
-          "label": "Demo",
-          "url": "https://robinhood-training.vercel.app/"
-        },
-        {
-          "label": "GitHub",
-          "url": "https://github.com/bowenzhu21/Robinhood-Training"
-        }
-      ],
+      "demo_links": [],
       "faq": [
         {
           "question_patterns": [
             "tell me about robintrain",
             "what is robintrain",
-            "tell me about robinhood training",
             "explain robintrain"
           ],
-          "answer": "RobinTrain is a support agent training platform I built for Robinhood. It scores written and voice responses across things like tone, clarity, compliance, empathy, and pacing, and it was designed to stay close to how human QA reviewers evaluate support quality."
+          "answer": "RobinTrain is my AI support training system. It simulates both sides of customer support conversations so teams can train on more realistic scenarios and edge cases."
         }
       ]
     },
     "aura-dev": {
       "title": "Aura Dev",
-      "one_liner": "I built Aura Dev as a voice-first coding assistant that listens, reasons through requests, and executes coding tasks through a remote tool chain.",
-      "full_summary": "Aura Dev is a voice-native developer assistant I built around live audio, orchestration, and code execution. The system runs through an iOS app with a wake word flow, streams through LiveKit, uses speech and language models for understanding and response, and routes execution through Claude Code on a remote machine. I built it to feel like a real-time coding copilot rather than a standard chat interface.",
-      "why_it_matters": "Aura Dev brings together a lot of the systems problems I like most: live voice, orchestration, latency, model routing, and agentic execution. It is one of my clearest projects showing how I think about end-to-end AI systems.",
-      "problem": "Most developer assistants are still chat-first and not designed for natural real-time voice interaction with execution in the loop.",
-      "solution": "I built a pipeline that connects voice input, room-based streaming, orchestration, and remote code execution into one system.",
-      "your_role": "I designed and built the full pipeline from client flow through orchestration and execution.",
+      "one_liner": "Aura Dev is a voice-first coding assistant that lets developers interact with code entirely through speech.",
+      "full_summary": "I built Aura Dev as a voice-first coding assistant that connects spoken input to real coding workflows. It captures speech, converts it to text, interprets intent, and executes actions through a coding agent that can modify files, run commands, and respond with text-to-speech.",
+      "why_it_matters": "Aura Dev matters to me because it combines the exact kinds of systems problems I like most: live audio, orchestration, execution tools, and making the interface between language and real work feel low-friction.",
+      "problem": "Most coding assistants are still built around text chat, which makes them less natural for hands-free or live interaction with development workflows.",
+      "solution": "I built a pipeline that connects real-time speech-to-text, LLM orchestration, CLI-based coding tools, and text-to-speech so developers can drive code workflows by talking.",
+      "your_role": "I designed and built the end-to-end voice pipeline, from speech capture through orchestration and coding-agent execution.",
       "tech_stack": [
-        "iOS",
+        "Swift",
         "LiveKit",
-        "EC2",
+        "Deepgram",
         "ElevenLabs",
-        "Gemini",
-        "Claude Code"
+        "LLM orchestration",
+        "CLI integration",
+        "Real-time systems"
       ],
       "highlights": [
-        "Built a voice-first coding assistant with live streaming and remote execution.",
-        "Connected an iOS app to a LiveKit room-based architecture.",
-        "Used Gemini for orchestration and intent normalization.",
-        "Routed coding execution through Claude Code on EC2."
+        "Built a voice-first interface for coding workflows.",
+        "Connected speech input to intent interpretation and CLI-based execution.",
+        "Used real-time STT and TTS to keep the interaction fast and natural.",
+        "Made it possible to modify files, run commands, and get spoken feedback."
       ],
       "architecture": [
-        "An iOS client captures voice input and wake-word style interactions.",
-        "Live audio is streamed through LiveKit.",
-        "Speech understanding and response layers handle transcription and speech output.",
-        "Gemini handles orchestration and intent normalization.",
-        "Claude Code runs remotely on EC2 for execution-heavy coding tasks."
+        "Speech is captured and streamed into a real-time STT pipeline.",
+        "An orchestration layer interprets the spoken request and maps it to an action.",
+        "A coding agent executes commands and edits through CLI tools.",
+        "Text-to-speech closes the loop with spoken responses."
       ],
       "challenges": [
-        "Keeping the interaction feeling real-time while chaining multiple services together.",
-        "Designing orchestration that handles voice ambiguity well.",
-        "Making remote execution feel responsive and safe."
+        "Speech is naturally less precise than typed commands, so intent handling has to be robust.",
+        "Latency compounds quickly when STT, orchestration, execution, and TTS are all in the loop.",
+        "Execution needs to feel capable without becoming unsafe or brittle."
       ],
       "tradeoffs": [
-        "More orchestration depth improves task handling, but adds latency.",
-        "Voice-first interaction feels natural, but is less precise than typed input in some coding scenarios.",
-        "Using multiple external services increases flexibility, but also increases integration overhead."
+        "Voice-first interaction lowers friction, but it also increases ambiguity.",
+        "Real-time feedback makes the system feel natural, but it raises latency pressure across the stack.",
+        "Deeper execution capabilities are powerful, but they require tighter orchestration and safety controls."
       ],
       "results": [
-        "Demonstrated the project at CMU NexHacks."
+        "Built a working voice-native coding assistant that connects spoken language to real development actions."
       ],
       "demo_links": [],
       "faq": [
@@ -259,44 +256,52 @@
             "what is aura dev",
             "explain aura dev"
           ],
-          "answer": "Aura Dev is my voice-first coding assistant project. I built it to connect live voice input, orchestration, and actual code execution, so it feels closer to talking to a real-time engineering copilot than using a normal chat UI."
+          "answer": "Aura Dev is my voice-first coding assistant. It turns speech into coding actions by combining real-time STT, orchestration, CLI execution, and TTS."
         }
       ]
     },
     "elbow-exo": {
       "title": "Elbow Exo",
-      "one_liner": "I built Elbow Exo as a wearable elbow exoskeleton project that combines mechanical design, electronics, and control-focused prototyping.",
-      "full_summary": "Elbow Exo is a wearable assistive device project centered on building an elbow exoskeleton. My work involved the physical system side as much as the software side, including CAD, component selection, enclosure design, and prototyping around sensors, actuation, and wearability.",
-      "why_it_matters": "This project mattered to me because it pushed me into full-stack hardware thinking. I had to care about the mechanical interface, electronics packaging, fabrication constraints, and user comfort, not just code.",
-      "problem": "Wearable assistive systems are hard because the device has to work mechanically, fit a body comfortably, and remain buildable with limited resources.",
-      "solution": "I iterated on the device structure and support components through CAD and prototyping, while thinking about enclosure, mounting, and system integration.",
-      "your_role": "I worked on the design and prototyping side, including CAD casing and supporting build decisions.",
+      "one_liner": "Elbow Exo is a real-time biomechanical tracking system that estimates elbow flexion using dual IMU sensors.",
+      "full_summary": "I built Elbow Exo as a real-time biomechanical tracking system centered on estimating elbow joint angles from dual IMU sensors. The system streams motion data over BLE, processes it continuously, and applies sensor-fusion logic to produce stable elbow flexion estimates that can be visualized or analyzed downstream.",
+      "why_it_matters": "Elbow Exo matters to me because it sits right at the intersection of hardware, signal processing, and real-time software, which is where I like working most.",
+      "problem": "Raw IMU data is noisy and drifts over time, so estimating joint angles accurately in a real-time streaming setting is harder than just reading the sensor values.",
+      "solution": "I built a dual-sensor pipeline that streams over BLE, fuses accelerometer and gyroscope data, filters noise and drift, and computes elbow flexion angles in real time.",
+      "your_role": "I worked on the streaming, estimation, and real-time processing pipeline for joint-angle tracking.",
       "tech_stack": [
-        "Fusion 360",
-        "CAD",
-        "Embedded prototyping"
+        "C++",
+        "Python",
+        "BLE",
+        "IMU sensors",
+        "Signal processing",
+        "Sensor fusion",
+        "Filtering algorithms"
       ],
       "highlights": [
-        "Designed CAD components and casing for the exoskeleton build.",
-        "Worked through fabrication and mounting decisions for a wearable system.",
-        "Balanced functionality with comfort and buildability."
+        "Streamed motion data from dual IMU sensors over BLE.",
+        "Estimated elbow flexion angles continuously in real time.",
+        "Used sensor-fusion and filtering techniques to reduce noise and drift.",
+        "Focused on latency, stability, and accuracy in a continuous pipeline."
       ],
       "architecture": [
-        "Mechanical structure for elbow support and actuation integration.",
-        "Electronics and enclosure considerations for wearable packaging.",
-        "Mounting and fastening decisions shaped by comfort and prototyping constraints."
+        "Two IMU sensors stream accelerometer and gyroscope data.",
+        "BLE transport moves the sensor data into the processing pipeline.",
+        "Sensor-fusion logic combines signals to estimate joint angle more robustly.",
+        "Filtering stages stabilize the output for real-time visualization or downstream use."
       ],
       "challenges": [
-        "Balancing wearability with structural support.",
-        "Packaging components cleanly in a limited form factor.",
-        "Building something practical with accessible parts and fabrication methods."
+        "IMU drift can accumulate quickly in continuous motion tracking.",
+        "Noise and movement artifacts make angle estimation unstable if the pipeline is too naive.",
+        "Low latency matters because the output is meant to feel real-time."
       ],
       "tradeoffs": [
-        "More robust structure can reduce comfort.",
-        "Cleaner packaging can make iteration harder during prototyping.",
-        "Low-cost parts improve accessibility, but can limit polish or performance."
+        "Heavier filtering improves stability, but can hurt responsiveness.",
+        "A more reactive estimate feels better in real time, but can become noisier.",
+        "BLE streaming keeps the setup lightweight, but it also adds communication constraints."
       ],
-      "results": [],
+      "results": [
+        "Built a real-time elbow-angle tracking pipeline based on dual IMU streaming and sensor fusion."
+      ],
       "demo_links": [],
       "faq": [
         {
@@ -305,24 +310,50 @@
             "what is elbow exo",
             "explain elbow exo"
           ],
-          "answer": "Elbow Exo is my wearable exoskeleton project focused on elbow assistance. It pushed me to think across mechanics, packaging, fabrication, and system integration rather than just treating it like a coding project."
+          "answer": "Elbow Exo is my real-time elbow tracking project. It uses dual IMUs, BLE streaming, and sensor fusion to estimate elbow flexion accurately and with low latency."
         }
       ]
     },
     "gymbro": {
       "title": "GymBro",
-      "one_liner": "GymBro is a fitness-related project, but I do not have enough grounded detail yet to describe it more specifically.",
-      "full_summary": "I do not have enough confirmed detail yet to fully summarize GymBro without risking making things up.",
-      "why_it_matters": "It appears to be part of my broader interest in fitness and product-building, but I do not have enough confirmed detail yet.",
-      "problem": "Unknown.",
-      "solution": "Unknown.",
-      "your_role": "Unknown.",
-      "tech_stack": [],
-      "highlights": [],
-      "architecture": [],
-      "challenges": [],
-      "tradeoffs": [],
-      "results": [],
+      "one_liner": "GymBro is a mobile app that matches users with compatible gym partners based on goals, preferences, and schedules.",
+      "full_summary": "I built GymBro as a fitness-focused mobile app for matching people with compatible gym partners. The idea is to combine user goals, preferences, and scheduling information with messaging and matching logic so coordinating workouts feels simple instead of awkward.",
+      "why_it_matters": "GymBro matters to me because it connects a personal interest of mine, fitness, with consumer product design and matching logic.",
+      "problem": "Finding a consistent gym partner is usually informal and inconvenient, even though compatibility around goals, schedule, and training style matters a lot.",
+      "solution": "I built a mobile app with user profiles, matching logic, messaging, and a lightweight social layer to make finding and coordinating with a gym partner easier.",
+      "your_role": "I designed the product around matchmaking, profile data, messaging, and a simple mobile experience.",
+      "tech_stack": [
+        "React Native",
+        "Firebase",
+        "Matchmaking algorithms",
+        "Mobile UI/UX",
+        "Real-time messaging"
+      ],
+      "highlights": [
+        "Matched users based on fitness goals, preferences, and schedules.",
+        "Built profile, messaging, and coordination flows into the app.",
+        "Focused on usability so the social side of working out feels lightweight.",
+        "Connected a consumer mobile interface to real-time messaging and matching logic."
+      ],
+      "architecture": [
+        "User profiles capture fitness goals, preferences, and schedule signals.",
+        "A matching layer ranks compatibility between potential gym partners.",
+        "Firebase handles backend storage and real-time messaging flows.",
+        "The mobile frontend keeps coordination and conversation simple."
+      ],
+      "challenges": [
+        "Compatibility is subjective, so the matching logic has to stay useful without feeling rigid.",
+        "Messaging and coordination matter just as much as the initial match.",
+        "The app has to feel social without turning into a heavy social network."
+      ],
+      "tradeoffs": [
+        "More profile detail can improve matching, but it also raises onboarding friction.",
+        "Simple matching feels lightweight, but can miss nuance around compatibility.",
+        "A richer social layer can improve retention, but it also increases product complexity."
+      ],
+      "results": [
+        "Built a social fitness app focused on gym-partner matching and real-time coordination."
+      ],
       "demo_links": [],
       "faq": [
         {
@@ -331,7 +362,202 @@
             "what is gymbro",
             "explain gymbro"
           ],
-          "answer": "I do not have enough confirmed detail in this portfolio context yet to describe GymBro properly. I’d rather leave it blank than invent specifics."
+          "answer": "GymBro is my gym-partner matching app. It uses profiles, preferences, schedules, and messaging to help users find compatible workout partners."
+        }
+      ]
+    },
+    "apollo": {
+      "title": "Apollo",
+      "one_liner": "Apollo is a generative visual system focused on structure, symmetry, and mathematically controlled motion.",
+      "full_summary": "I built Apollo as a generative visual system centered on structure, symmetry, and precision. The interactions are meant to feel deliberate and controlled, with visuals driven by geometric rules and rhythmic motion rather than organic chaos.",
+      "why_it_matters": "Apollo matters to me because it explores a more ordered side of interactive visuals, where elegance comes from constraint and mathematical structure.",
+      "problem": "Many generative visuals prioritize spectacle over control. I wanted to build something where the output feels clean, balanced, and intentionally constructed.",
+      "solution": "I designed a visual system around symmetry, geometry, and tightly controlled motion so the interaction feels structured instead of random.",
+      "your_role": "I defined the visual rules, interaction feel, and rendering logic for the system.",
+      "tech_stack": [
+        "Creative coding",
+        "Graphics rendering",
+        "Animation systems",
+        "Mathematical modeling"
+      ],
+      "highlights": [
+        "Focused on symmetry, structure, and precision in the visual output.",
+        "Used mathematically driven rules to guide how the visuals evolve.",
+        "Kept the interactions feeling controlled and intentional."
+      ],
+      "architecture": [
+        "Rendering logic is driven by geometric constraints and patterned motion.",
+        "Interaction updates feed into a structured visual system rather than a purely chaotic one.",
+        "Animation timing emphasizes rhythm, balance, and clarity."
+      ],
+      "challenges": [
+        "It is easy for mathematically driven visuals to feel sterile if the motion is too rigid.",
+        "Balance matters, because too much complexity breaks the sense of order.",
+        "Precision in interaction means small implementation decisions are very noticeable."
+      ],
+      "tradeoffs": [
+        "More structure creates clarity, but can reduce spontaneity.",
+        "Tighter constraints improve harmony, but narrow the expressive range."
+      ],
+      "results": [
+        "Built a generative visual piece where structure and symmetry are the core interaction themes."
+      ],
+      "demo_links": [],
+      "faq": [
+        {
+          "question_patterns": [
+            "tell me about apollo",
+            "what is apollo",
+            "explain apollo"
+          ],
+          "answer": "Apollo is my structured generative visual piece. It focuses on symmetry, precision, and mathematically controlled motion."
+        }
+      ]
+    },
+    "aphrodite": {
+      "title": "Aphrodite",
+      "one_liner": "Aphrodite is an interactive visual experience centered on fluidity, softness, and organic motion.",
+      "full_summary": "I built Aphrodite as an interactive visual experience that leans into softness, fluidity, and aesthetic motion. It contrasts with more rigid systems by focusing on organic shapes, smooth transitions, and a feeling of responsiveness that is more sensual than structural.",
+      "why_it_matters": "Aphrodite matters to me because it explores the opposite end of the design space from something like Apollo. The goal is not rigid precision, but beauty, responsiveness, and feel.",
+      "problem": "Highly structured visual systems can feel cold. I wanted to explore a more organic interaction style where user input creates soft, responsive motion.",
+      "solution": "I designed a real-time visual system around organic forms, smooth transitions, and interaction-driven motion so the output feels fluid and immersive.",
+      "your_role": "I defined the interaction feel, motion language, and visual behavior for the piece.",
+      "tech_stack": [
+        "Creative coding",
+        "Particle systems",
+        "Shaders",
+        "Real-time interaction"
+      ],
+      "highlights": [
+        "Built around softness, fluidity, and aesthetic motion.",
+        "Used user input to influence the visuals in real time.",
+        "Focused on organic forms and smooth transitions over rigid geometry."
+      ],
+      "architecture": [
+        "Real-time interaction continuously influences particle and shader-driven visuals.",
+        "Motion logic prioritizes smoothness and organic transformation.",
+        "Rendering emphasizes atmosphere and responsiveness."
+      ],
+      "challenges": [
+        "Organic visuals can quickly become muddy if the motion language is not disciplined.",
+        "Softness still needs enough structure to feel intentional.",
+        "Real-time responsiveness matters because the visual feel depends on it."
+      ],
+      "tradeoffs": [
+        "More fluidity improves atmosphere, but can reduce visual clarity.",
+        "Organic motion feels expressive, but it is harder to control precisely."
+      ],
+      "results": [
+        "Built an interactive visual system that prioritizes softness, fluid motion, and aesthetic responsiveness."
+      ],
+      "demo_links": [],
+      "faq": [
+        {
+          "question_patterns": [
+            "tell me about aphrodite",
+            "what is aphrodite",
+            "explain aphrodite"
+          ],
+          "answer": "Aphrodite is my fluid visual piece. It focuses on organic motion, smooth transitions, and a softer interaction style than my more structured work."
+        }
+      ]
+    },
+    "hermes": {
+      "title": "Hermes",
+      "one_liner": "Hermes is a fast, reactive interaction system focused on speed, feedback, and responsiveness.",
+      "full_summary": "I built Hermes as an interaction system where the main theme is speed. The goal is to make the system feel alive through immediate feedback, tight event handling, and motion that reacts clearly and quickly to user input.",
+      "why_it_matters": "Hermes matters to me because responsiveness is one of the fastest ways a system communicates quality. This project explores how immediate feedback changes the feel of an interaction.",
+      "problem": "Interactive systems often feel flat when input and response are loosely coupled. I wanted to explore what happens when reaction speed becomes the central design principle.",
+      "solution": "I built a reactive system that emphasizes tight feedback loops, event-driven updates, and motion that responds immediately to user actions.",
+      "your_role": "I designed the response behavior, event flow, and motion system.",
+      "tech_stack": [
+        "Real-time systems",
+        "Interaction design",
+        "Event-driven architecture",
+        "Animation"
+      ],
+      "highlights": [
+        "Focused on making the system feel fast and alive.",
+        "Reduced the gap between input and visible response.",
+        "Used immediate motion feedback as the core interaction language."
+      ],
+      "architecture": [
+        "User input feeds directly into a reactive event-driven system.",
+        "Motion logic is tuned for immediate visible feedback.",
+        "The interaction design emphasizes clarity through speed."
+      ],
+      "challenges": [
+        "Fast interactions can feel noisy if feedback is not carefully designed.",
+        "Responsiveness has to improve clarity rather than just creating motion.",
+        "Small delays become much more noticeable when speed is the whole point."
+      ],
+      "tradeoffs": [
+        "Aggressive responsiveness feels energetic, but it can become overwhelming.",
+        "Simpler motion improves clarity, but can reduce expressive range."
+      ],
+      "results": [
+        "Built a reactive interaction piece where speed and responsiveness are the core design ideas."
+      ],
+      "demo_links": [],
+      "faq": [
+        {
+          "question_patterns": [
+            "tell me about hermes",
+            "what is hermes",
+            "explain hermes"
+          ],
+          "answer": "Hermes is my reactive interaction piece. It is about speed, event-driven feedback, and making the system feel immediately responsive."
+        }
+      ]
+    },
+    "kronos": {
+      "title": "Kronos",
+      "one_liner": "Kronos is a hand-tracking interactive particle system inspired by time and destruction.",
+      "full_summary": "I built Kronos as a hand-tracking interactive particle system where computer vision turns hand movement into forces inside a physics-based visual environment. Users can manipulate the particles in real time, so the piece feels like a blend of physical simulation and direct bodily control.",
+      "why_it_matters": "Kronos matters to me because it combines computer vision, physics simulation, and real-time rendering into one interaction loop.",
+      "problem": "I wanted an interactive visual system where human motion does more than trigger effects. It should physically shape the environment in real time.",
+      "solution": "I used hand tracking to detect motion and translate it into forces that drive a particle simulation rendered in real time.",
+      "your_role": "I designed the interaction loop, computer-vision hookup, and particle behavior.",
+      "tech_stack": [
+        "JavaScript",
+        "MediaPipe",
+        "WebGL",
+        "Three.js",
+        "Computer vision",
+        "Particle physics",
+        "Real-time rendering"
+      ],
+      "highlights": [
+        "Tracked hand movement with computer vision.",
+        "Mapped motion into forces inside a particle simulation.",
+        "Let users manipulate a physics-based visual environment directly in real time."
+      ],
+      "architecture": [
+        "MediaPipe detects hand movement and position in real time.",
+        "The input is transformed into force signals for the particle system.",
+        "A physics-based renderer updates the environment continuously in response to the user."
+      ],
+      "challenges": [
+        "Computer-vision input is noisy, so the interaction has to stay stable.",
+        "Physics simulation has to remain responsive while still looking rich.",
+        "The mapping from hand motion to particle behavior needs to feel intuitive."
+      ],
+      "tradeoffs": [
+        "Heavier physics improves visual richness, but can hurt responsiveness.",
+        "More sensitive hand tracking feels expressive, but can become unstable."
+      ],
+      "results": [
+        "Built a real-time hand-tracked particle system driven by computer vision and physics."
+      ],
+      "demo_links": [],
+      "faq": [
+        {
+          "question_patterns": [
+            "tell me about kronos",
+            "what is kronos",
+            "explain kronos"
+          ],
+          "answer": "Kronos is my hand-tracked particle system. It uses computer vision to turn hand motion into forces inside a real-time physics-based visual environment."
         }
       ]
     }
@@ -339,21 +565,24 @@
   "experience": {
     "heygen": {
       "title": "HeyGen",
-      "one_liner": "Incoming Software Engineer Intern on the Core Engineering team.",
-      "full_summary": "HeyGen is an AI video company, and I’m joining as a Software Engineer Intern on the Core Engineering team. The role is especially exciting to me because it sits close to the kinds of systems I care about most: real-time AI products, infrastructure, and product-facing engineering.",
+      "one_liner": "I’ll be joining HeyGen as a Software Engineering Intern working on systems for real-time AI video and streaming avatars.",
+      "full_summary": "I’ll be joining HeyGen as a Software Engineering Intern working on systems that power real-time AI video and streaming avatars. The work sits at the intersection of AI inference, media processing, distributed systems, and low-latency delivery.",
       "company_or_program": "HeyGen",
-      "your_role": "Software Engineer Intern",
+      "your_role": "Software Engineering Intern",
       "scope": [
-        "Incoming role on the Core Engineering team.",
-        "Based around the Palo Alto office."
+        "Incoming role focused on systems behind real-time AI video and streaming avatars.",
+        "Work touches real-time data pipelines, media systems, and reliability at scale.",
+        "The core theme is low-latency generation and delivery."
       ],
       "wins": [
-        "Earned the opportunity after a competitive interview process."
+        "The role is a strong fit with my interest in real-time AI infrastructure, streaming systems, and product-facing systems engineering."
       ],
       "skills_gained": [
-        "Real-time AI product engineering",
-        "Core systems engineering",
-        "Production software engineering in a fast-moving startup"
+        "Real-time streaming",
+        "Distributed systems",
+        "Video pipelines",
+        "AI infrastructure",
+        "Performance optimization"
       ],
       "faq": [
         {
@@ -362,36 +591,33 @@
             "what are you doing at heygen",
             "what is your heygen role"
           ],
-          "answer": "I’m joining HeyGen as a Software Engineer Intern on the Core Engineering team. I have not filled in detailed project work yet because I want the portfolio to stay grounded in confirmed information only."
+          "answer": "I’m joining HeyGen as a Software Engineering Intern working on real-time AI video and streaming avatar systems. It is a strong match for my interest in low-latency AI infrastructure."
         }
       ]
     },
     "hippos-exoskeleton": {
       "title": "Hippos Exoskeleton",
-      "one_liner": "I worked on real-time biomechanical systems spanning firmware, mobile, backend, and data pipelines.",
-      "full_summary": "At Hippos Exoskeleton, I worked on real-time biomechanical systems that connected hardware, firmware, backend infrastructure, and mobile clients. The work involved dual IMU streaming, BLE synchronization, backend ingestion, Python-based angle estimation, and production-minded system integration for knee flexion monitoring.",
+      "one_liner": "At Hippos Exoskeleton, I built a real-time biomechanical system connecting wearable sensors to backend and frontend tooling.",
+      "full_summary": "At Hippos Exoskeleton, I worked on a real-time biomechanical system that connected wearable sensors to a backend and frontend dashboard. The pipeline streamed motion data, processed it continuously, and visualized joint angles in real time across hardware, backend, and client layers.",
       "company_or_program": "Hippos Exoskeleton",
       "your_role": "Software Engineer Intern",
       "scope": [
-        "Worked across firmware, mobile, backend, and data systems.",
-        "Built and supported real-time knee flexion data pipelines.",
-        "Worked on synchronized BLE streaming from dual IMU sensors.",
-        "Built backend and dashboard infrastructure for live biomechanical monitoring."
+        "Worked across BLE communication, firmware integration, backend APIs, and frontend visualization.",
+        "Built and supported real-time motion-data pipelines from sensors through dashboards.",
+        "Focused on continuous data flow, low latency, and stable streaming behavior."
       ],
       "wins": [
-        "Reduced sensor-to-app latency by 73% to 120 ms.",
-        "Improved data capture reliability by 25%.",
-        "Drove a $100k order by shipping production C++ firmware and synchronized BLE mobile clients across 50 devices.",
-        "Built an AWS sensor pipeline with FastAPI, PostgreSQL, and Python fusion algorithms for joint-angle estimation."
+        "Shipped an end-to-end pipeline connecting wearable sensors to backend and frontend systems.",
+        "Improved smoothness and continuity across the real-time streaming path."
       ],
       "skills_gained": [
-        "BLE systems",
-        "Embedded and firmware collaboration",
+        "React Native",
+        "Python",
         "FastAPI",
         "PostgreSQL",
-        "Real-time streaming systems",
-        "Mobile systems thinking",
-        "Biomechanical signal pipelines"
+        "BLE",
+        "Embedded systems",
+        "Real-time streaming"
       ],
       "faq": [
         {
@@ -400,36 +626,33 @@
             "what did you do at hippos",
             "explain your hippos internship"
           ],
-          "answer": "At Hippos, I worked on a real-time biomechanical system built around dual IMU sensors and knee flexion tracking. The work spanned firmware, BLE clients, backend ingestion, and Python angle estimation, so it was a very full-stack systems role."
+          "answer": "At Hippos, I worked on a real-time biomechanical pipeline linking wearable sensors, backend APIs, and a frontend dashboard for live joint-angle tracking."
         }
       ]
     },
     "momenta": {
       "title": "Momenta",
-      "one_liner": "I built a real-time voice AI detection pipeline with low-latency inference and autoscaled GPU infrastructure.",
-      "full_summary": "At Momenta, I worked on AI audio fraud detection for phone calls. I built parts of the real-time pipeline from Twilio streaming through buffering, preprocessing, GPU inference, and autoscaling. The work sat at the intersection of voice systems, inference optimization, and production infrastructure.",
+      "one_liner": "At Momenta, I built a real-time voice AI pipeline for fraud detection on live phone calls.",
+      "full_summary": "At Momenta, I worked on a real-time voice AI pipeline that analyzed live phone calls for fraud detection. Audio was streamed, transformed into features, and passed through ML models for inference, with a big focus on reducing latency, stabilizing predictions, and handling concurrency.",
       "company_or_program": "Momenta",
       "your_role": "Software & ML Engineer Intern",
       "scope": [
-        "Worked on real-time voice AI detection for phone calls.",
-        "Built low-latency streaming and inference infrastructure.",
-        "Worked across Twilio ingestion, buffering, model serving, and autoscaling."
+        "Worked on streaming audio pipelines for live phone-call analysis.",
+        "Optimized inference and latency across the fraud-detection flow.",
+        "Improved prediction stability and system behavior under concurrency."
       ],
       "wins": [
-        "Achieved 160 ms end-to-end latency for AI voice detection.",
-        "Increased inference throughput 8x.",
-        "Supported 100 concurrent call classifications per node.",
-        "Reduced idle GPU capacity by 30%.",
-        "Achieved 60 s scale-out through Kubernetes autoscaling on Redis queue depth."
+        "Built a production-style voice AI pipeline for real-time fraud detection.",
+        "Worked on scaling the system to handle many concurrent calls."
       ],
       "skills_gained": [
-        "Twilio Media Streams",
-        "TensorRT",
-        "AWS T4 deployment",
-        "Kubernetes",
+        "Python",
+        "Flask",
+        "WebSockets",
+        "AWS EC2",
         "Redis",
-        "Real-time audio pipelines",
-        "Inference optimization"
+        "Audio processing",
+        "ML inference pipelines"
       ],
       "faq": [
         {
@@ -438,24 +661,24 @@
             "what did you do at momenta",
             "explain your momenta internship"
           ],
-          "answer": "At Momenta, I worked on a real-time AI voice detection system for phone calls. The part I’m most proud of is that it was not just a model project, it was an end-to-end systems problem involving streaming, buffering, inference optimization, and autoscaled infrastructure."
+          "answer": "At Momenta, I worked on a real-time voice AI fraud-detection system for phone calls. The work was about low-latency audio processing, inference, and scaling the pipeline under load."
         }
       ]
     },
     "jma-consulting": {
       "title": "JMA Consulting",
-      "one_liner": "I worked on backend systems, platform tooling, and automation across client-facing software projects.",
-      "full_summary": "At JMA Consulting, I worked as a junior software developer specializing in the LAMP stack and broader backend and CMS work. My projects included backend extensions, workflow automation, testing infrastructure, and large-scale content migration work.",
+      "one_liner": "At JMA Consulting, I worked as a full-stack developer building web systems, data pipelines, and automation for multiple clients.",
+      "full_summary": "At JMA Consulting, I worked as a full-stack developer building and maintaining web systems for multiple clients. My work spanned backend features, data pipelines, CRM-related systems, automation, and testing, with a focus on reliability and maintainability in production.",
       "company_or_program": "JMA Consulting",
       "your_role": "Software Engineer Intern",
       "scope": [
-        "Built backend extensions and automation workflows.",
-        "Worked on CMS and user-management related systems.",
-        "Contributed to testing and migration pipelines for client projects."
+        "Built backend features and maintained client-facing web systems.",
+        "Worked on CRM systems, data ingestion, and automation.",
+        "Implemented testing and reliability improvements for production workflows."
       ],
       "wins": [
-        "Automated admin workflows for the Python Software Foundation by shipping 3 MySQL and JavaScript backend extensions.",
-        "Scaled classification and taxonomy structuring for 10K+ product SKUs through an LLM and embeddings pipeline for taxonomy classification, entity resolution, and semantic search indexing."
+        "Contributed across backend, data, automation, and testing work for multiple clients.",
+        "Focused on making systems more reliable and maintainable in production."
       ],
       "skills_gained": [
         "PHP",
@@ -463,8 +686,8 @@
         "MySQL",
         "Drupal",
         "CiviCRM",
-        "Testing infrastructure",
-        "Automation workflows"
+        "Cypress",
+        "CI/CD pipelines"
       ],
       "faq": [
         {
@@ -473,64 +696,59 @@
             "what did you do at jma",
             "explain your jma internship"
           ],
-          "answer": "At JMA, I worked on backend systems, workflow automation, and client-facing software infrastructure. It was a good foundation for me because I got exposed to real production systems and shipping work for external organizations early on."
+          "answer": "At JMA, I worked as a full-stack developer building backend features, data pipelines, automation, and testing infrastructure across multiple client systems."
         }
       ]
     }
   },
   "resume": {
-    "headline": "Software Engineer focused on AI systems, inference pipelines, and distributed software.",
-    "short_summary": "I’m a University of Waterloo Systems Design Engineering student focused on AI systems, backend infrastructure, real-time streaming, and product-minded engineering. My recent work spans Robinhood, HeyGen, voice AI, biomechanical systems, and distributed inference.",
+    "headline": "Software engineer focused on AI systems, real-time infrastructure, and end-to-end product systems.",
+    "short_summary": "I’m a Systems Design Engineering student at the University of Waterloo. Most of my work sits at the intersection of AI, real-time systems, distributed infrastructure, software-hardware integration, and product-minded engineering.",
     "education": [
       "University of Waterloo",
       "BASc in Systems Design Engineering (Co-op)",
-      "Sep. 2024 - Apr. 2028",
-      "3.9 GPA"
+      "Sep. 2024 - Apr. 2028"
     ],
     "skills": [
       "Python",
       "C++",
       "TypeScript",
       "JavaScript",
-      "Java",
-      "SQL",
-      "RAG",
-      "LangChain",
+      "Swift",
+      "React",
+      "React Native",
       "FastAPI",
       "Flask",
-      "WebSockets",
-      "Kafka",
       "Redis",
       "PostgreSQL",
-      "MySQL",
-      "AWS",
-      "GCP",
-      "Kubernetes",
-      "Docker",
-      "Linux",
-      "Git",
-      "CI/CD",
-      "TensorRT",
-      "vLLM",
+      "Firebase",
       "Modal",
-      "OpenAI",
-      "Anthropic",
-      "Gemini"
+      "vLLM",
+      "LiveKit",
+      "Deepgram",
+      "ElevenLabs",
+      "BLE",
+      "WebSockets",
+      "GPU inference",
+      "Sensor fusion",
+      "Computer vision",
+      "Real-time rendering",
+      "LLM orchestration"
     ],
     "strengths": [
-      "Real-time AI systems",
-      "Inference pipelines",
+      "AI systems engineering",
+      "Real-time pipelines",
       "Distributed systems thinking",
-      "Full-stack technical range",
-      "Product-minded engineering",
-      "Fast iteration in startup environments"
+      "Software-hardware integration",
+      "Building full pipelines from input to output",
+      "Product-minded technical execution"
     ],
     "job_targets": [
-      "Software engineering roles with strong systems depth",
-      "AI systems engineering roles",
-      "Infrastructure and backend roles tied to real products",
-      "Real-time ML and inference engineering roles",
-      "Startup roles where I can build across the stack"
+      "AI systems engineering",
+      "Backend and infrastructure roles",
+      "Real-time ML and inference systems",
+      "Product engineering with strong systems depth",
+      "Software roles that blend systems, data, and hardware"
     ],
     "faq": [
       {
@@ -539,7 +757,7 @@
           "what do you focus on",
           "how would you describe your background"
         ],
-        "answer": "I’d describe my background as systems-heavy software engineering with a strong AI layer. Most of the work I’m drawn to sits around real-time inference, backend infrastructure, distributed systems, and shipping technical products end to end."
+        "answer": "I’d describe my background as systems-heavy software engineering. I’m most interested in AI systems, real-time pipelines, distributed infrastructure, and software-hardware integration."
       }
     ]
   },
@@ -547,19 +765,19 @@
     "program": "BASc in Systems Design Engineering (Co-op)",
     "school_name": "University of Waterloo",
     "focus_areas": [
-      "AI systems",
-      "Real-time inference",
-      "Distributed systems",
-      "Software engineering",
-      "Product and systems design"
+      "Systems design",
+      "Real-time systems",
+      "AI and ML",
+      "Signal processing",
+      "Software-hardware integration"
     ],
     "notable_courses": [
-      "I do not have a confirmed portfolio-safe course list yet."
+      "I keep the school summary focused on systems thinking rather than a course list."
     ],
     "clubs_or_activities": [
-      "HackIllinois",
-      "NexHacks",
-      "Optiver Trading Competition"
+      "Hackathons",
+      "Technical side projects",
+      "Engineering competitions"
     ],
     "faq": [
       {
@@ -568,7 +786,7 @@
           "tell me about school",
           "what is your program"
         ],
-        "answer": "I study Systems Design Engineering at the University of Waterloo. I like it because it pushes me to think across software, systems, hardware, and product constraints rather than staying boxed into one narrow lane."
+        "answer": "I study Systems Design Engineering at Waterloo. The part I like most is that it pushes me to design full systems instead of isolated pieces."
       }
     ]
   },
@@ -576,29 +794,77 @@
     "email": "bowenzhu66@gmail.com",
     "linkedin": "https://linkedin.com/in/bowenzhu21",
     "github": "https://github.com/bowenzhu21",
-    "website": "",
+    "website": "https://bowenzhu.ca",
     "call_to_action": "The best way to reach me is by email."
   },
   "personal": {
     "hobbies": [
+      "Training",
+      "Nutrition",
       "Hackathons",
-      "Competitive math",
-      "Fitness",
       "Building side projects"
     ],
-    "nutrition": [],
+    "nutrition": [
+      "I’m genuinely interested in nutrition, especially how it affects performance, recovery, and body composition.",
+      "I like thinking about training and nutrition as systems problems with inputs, feedback loops, and long-term adaptation."
+    ],
     "fitness": [
-      "I care a lot about fitness and training.",
-      "I’m interested in building projects around movement, wearables, and performance."
+      "Fitness is a real personal interest for me, not just a side note.",
+      "I like lifting and I think a lot about consistency, performance, recovery, and movement.",
+      "That interest shows up in some of my work too, especially biomechanics, wearables, and movement-related systems."
     ],
     "faq": [
       {
         "question_patterns": [
           "what do you do outside work",
           "what are your interests",
-          "what do you like"
+          "what do you like outside engineering"
         ],
-        "answer": "Outside of work and school, I like building side projects, doing hackathons, and staying active. A lot of my interests sit right at the intersection of engineering, design, and performance."
+        "answer": "Outside engineering, I’m especially into fitness and nutrition. I also like hackathons and building side projects."
+      },
+      {
+        "question_patterns": [
+          "are you into fitness",
+          "do you care about fitness",
+          "what about fitness"
+        ],
+        "answer": "Yes. Fitness is a real personal interest for me, and it also influences some of the systems I like building around movement and performance."
+      },
+      {
+        "question_patterns": [
+          "are you into nutrition",
+          "do you care about nutrition",
+          "what about nutrition"
+        ],
+        "answer": "Yes. I’m genuinely interested in nutrition, especially how it affects performance, recovery, and long-term consistency."
+      },
+      {
+        "question_patterns": [
+          "how old are you",
+          "what is your age"
+        ],
+        "answer": "I’m 19."
+      },
+      {
+        "question_patterns": [
+          "where are you from",
+          "where did you grow up"
+        ],
+        "answer": "I was born in Montreal, grew up in Toronto, and I’m currently between Waterloo and the Bay Area for school and work."
+      },
+      {
+        "question_patterns": [
+          "what is your zodiac sign",
+          "what is your sign"
+        ],
+        "answer": "I’m a Scorpio."
+      },
+      {
+        "question_patterns": [
+          "what is your gym split",
+          "what is your workout split"
+        ],
+        "answer": "My gym split is Chest, Back, Arms, and Legs."
       }
     ]
   },
@@ -609,23 +875,103 @@
           "matrix",
           "adapt-ui"
         ],
-        "answer": "Matrix and Adapt UI are both AI systems projects, but they explore very different problems. Matrix is about multi-agent behavior, orchestration, and distributed simulation at a society level, while Adapt UI is about reliability in AI-generated frontend code through tight validation and repair loops."
+        "answer": "Matrix is a multi-agent society simulation, while Adapt UI is a reliability-focused code generation system for React components. Matrix is about agent interaction and information spread; Adapt UI is about generation, validation, and repair."
+      },
+      {
+        "between": [
+          "robintrain",
+          "momenta"
+        ],
+        "answer": "RobinTrain is about simulating and evaluating support conversations, while Momenta was real-time voice AI for fraud detection on live calls. One is a training and evaluation system; the other is a production-style inference pipeline."
+      },
+      {
+        "between": [
+          "elbow-exo",
+          "hippos-exoskeleton"
+        ],
+        "answer": "Elbow Exo is my project around real-time elbow-angle estimation with IMUs, while Hippos was professional experience building a broader biomechanical pipeline from wearable sensors to backend and frontend systems."
+      },
+      {
+        "between": [
+          "apollo",
+          "aphrodite"
+        ],
+        "answer": "Apollo is the more structured visual system focused on symmetry and control, while Aphrodite is softer and more fluid, with organic motion and a more aesthetic interaction style."
+      },
+      {
+        "between": [
+          "hermes",
+          "kronos"
+        ],
+        "answer": "Hermes is about speed and responsiveness in interaction, while Kronos adds computer vision and particle physics so hand movement directly shapes a real-time visual environment."
       }
     ],
     "top_level_faq": [
       {
         "question_patterns": [
-          "what are you looking for",
-          "what kind of roles do you want"
+          "what projects have you built",
+          "what projects are in your portfolio",
+          "what have you built"
         ],
-        "answer": "I’m looking for roles where I can work on hard technical products with real systems depth. The best fit for me is usually some mix of backend, infrastructure, real-time AI, inference, and product engineering."
+        "answer": "The main projects in my portfolio are Matrix, Adapt UI, RobinTrain, Aura Dev, Elbow Exo, GymBro, Apollo, Aphrodite, Hermes, and Kronos."
+      },
+      {
+        "question_patterns": [
+          "what is gods hands",
+          "what is gods' hands",
+          "tell me about gods hands",
+          "tell me about gods' hands",
+          "what is the gods hands section",
+          "what is the gods' hands section"
+        ],
+        "answer": "Gods' Hands is the creative interactive section of my portfolio. It includes Apollo, Aphrodite, Hermes, and Kronos."
+      },
+      {
+        "question_patterns": [
+          "which projects are most relevant to ai",
+          "which projects show ai systems work",
+          "what projects are ai"
+        ],
+        "answer": "The clearest AI systems projects are Matrix, Adapt UI, RobinTrain, and Aura Dev. They cover multi-agent systems, code generation reliability, conversation simulation, and voice-first coding."
+      },
+      {
+        "question_patterns": [
+          "which projects are most real time",
+          "what projects involve real time systems",
+          "what projects are low latency"
+        ],
+        "answer": "The most real-time work is probably Aura Dev, Elbow Exo, Kronos, and parts of Matrix. My experience at Hippos, Momenta, and HeyGen also fits that pattern."
+      },
+      {
+        "question_patterns": [
+          "what experience do you have",
+          "what internships have you done",
+          "tell me about your experience"
+        ],
+        "answer": "My main experience is JMA Consulting, Momenta, Hippos Exoskeleton, and HeyGen. The common thread is real systems work across backend, AI, streaming, and software-hardware pipelines."
       },
       {
         "question_patterns": [
           "what are you strongest at",
-          "what do you like building"
+          "what do you like building",
+          "what kind of systems do you like"
         ],
-        "answer": "I’m strongest when the problem sits at the intersection of systems and product. I especially like building things involving real-time pipelines, distributed services, AI orchestration, and end-to-end technical ownership."
+        "answer": "I’m strongest when the problem involves full systems design. I especially like AI systems, real-time pipelines, distributed infrastructure, and software-hardware integration."
+      },
+      {
+        "question_patterns": [
+          "what are you looking for",
+          "what kind of roles do you want"
+        ],
+        "answer": "I’m looking for roles with real systems depth, especially around AI systems, backend infrastructure, real-time pipelines, and product engineering."
+      },
+      {
+        "question_patterns": [
+          "what projects connect to fitness",
+          "what projects are related to fitness",
+          "what work relates to movement"
+        ],
+        "answer": "GymBro is the most direct fitness product, and Elbow Exo plus my Hippos experience connect strongly to movement, biomechanics, and wearable systems."
       }
     ]
   }

@@ -21,6 +21,143 @@ import {
   scoreConfidence,
 } from "@/utils/portfolio";
 
+interface AppNavigationTarget {
+  route: string;
+  label: string;
+  patterns: RegExp[];
+  followUpSuggestions: string[];
+}
+
+const appNavigationTargets: AppNavigationTarget[] = [
+  {
+    route: "/",
+    label: "Home",
+    patterns: [
+      /\b(go home|take me home|open home|open the home screen|show the home screen|iphone home|home screen)\b/i,
+    ],
+    followUpSuggestions: ["Open Projects", "Open Spotify", "Open Messages"],
+  },
+  {
+    route: "/projects",
+    label: "Projects",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?projects?\b/i,
+      /\b(open|show)\s+(the\s+)?project folder\b/i,
+      /^projects?$/i,
+    ],
+    followUpSuggestions: ["Show me Matrix", "Show me Adapt UI", "Show me RobinTrain"],
+  },
+  {
+    route: "/experience",
+    label: "Experience",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?experience\b/i,
+      /\b(open|show)\s+(the\s+)?experience folder\b/i,
+      /^experience$/i,
+    ],
+    followUpSuggestions: ["Open HeyGen", "Open Momenta", "Open Hippos Exoskeleton"],
+  },
+  {
+    route: "/primitives",
+    label: "Gods' Hands",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?primitives\b/i,
+      /\b(open|show)\s+(the\s+)?primitives folder\b/i,
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?gods'? hands\b/i,
+      /\b(open|show)\s+(the\s+)?gods'? hands folder\b/i,
+      /^primitives$/i,
+      /^gods'? hands$/i,
+    ],
+    followUpSuggestions: ["Open Apollo", "Open Aphrodite", "Open Kronos"],
+  },
+  {
+    route: "/phone",
+    label: "Phone",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?phone\b/i,
+      /^phone$/i,
+    ],
+    followUpSuggestions: ["Open Messages", "Open Contact", "Go home"],
+  },
+  {
+    route: "/messages",
+    label: "Messages",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?messages\b/i,
+      /\b(open|show)\s+(the\s+)?message app\b/i,
+      /^messages$/i,
+    ],
+    followUpSuggestions: ["Open Phone", "Open Contact", "Go home"],
+  },
+  {
+    route: "/safari",
+    label: "Safari",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?safari\b/i,
+      /\b(open|show)\s+(the\s+)?browser\b/i,
+      /^safari$/i,
+    ],
+    followUpSuggestions: ["Search Matrix", "Search Bowen's projects", "Go home"],
+  },
+  {
+    route: "/spotify",
+    label: "Spotify",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?spotify\b/i,
+      /\b(open|show)\s+(the\s+)?music app\b/i,
+      /^spotify$/i,
+    ],
+    followUpSuggestions: ["Play California", "Pause music", "Go home"],
+  },
+  {
+    route: "/settings",
+    label: "Settings",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?settings\b/i,
+      /^settings$/i,
+    ],
+    followUpSuggestions: ["Open Safari", "Open Spotify", "Go home"],
+  },
+  {
+    route: "/photos",
+    label: "Photos",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?photos\b/i,
+      /^photos$/i,
+    ],
+    followUpSuggestions: ["Go home", "Open Contact", "Open Spotify"],
+  },
+  {
+    route: "/school",
+    label: "School",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?school\b/i,
+      /^school$/i,
+    ],
+    followUpSuggestions: ["Open Resume", "Open Experience", "Go home"],
+  },
+  {
+    route: "/resume",
+    label: "Resume",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?resume\b/i,
+      /\b(open|show)\s+(the\s+)?cv\b/i,
+      /^resume$/i,
+    ],
+    followUpSuggestions: ["Open Experience", "Open Contact", "Go home"],
+  },
+  {
+    route: "/contact",
+    label: "Contact",
+    patterns: [
+      /\b(open|show|launch|go to|take me to|switch to)\s+(the\s+)?contact\b/i,
+      /\b(open|show)\s+(the\s+)?contact app\b/i,
+      /^contact$/i,
+    ],
+    followUpSuggestions: ["Open Resume", "Open Messages", "Go home"],
+  },
+];
+
 function pickCard(intent: OrchestrationIntent, sectionId?: string | null): CardType {
   if (intent === "compare") {
     return "comparison";
@@ -53,6 +190,36 @@ function buildAnswerResponse(
   return {
     ...output,
     confidence,
+  };
+}
+
+function detectAppNavigationTarget(transcript: string) {
+  return (
+    appNavigationTargets.find((target) =>
+      target.patterns.some((pattern) => pattern.test(transcript)),
+    ) ?? null
+  );
+}
+
+function buildAppNavigationResponse(
+  input: VoiceRouterInput,
+  target: AppNavigationTarget,
+): VoiceRouterOutput {
+  const alreadyOpen = input.activeRoute === target.route;
+
+  return {
+    intent: "navigate",
+    entity: null,
+    route: target.route,
+    card: "overview",
+    section: null,
+    spokenResponse: alreadyOpen
+      ? `${target.label} is already open.`
+      : target.route === "/"
+        ? "Taking you back to the iPhone home screen."
+        : `Opening ${target.label}.`,
+    confidence: 0.96,
+    followUpSuggestions: target.followUpSuggestions,
   };
 }
 
@@ -329,6 +496,7 @@ export async function POST(request: Request) {
     });
   }
 
+  const appNavigationTarget = detectAppNavigationTarget(transcript);
   const comparison = detectComparison(transcript);
   const aliasMatch = matchPortfolioAlias(transcript);
   const fallbackEntity =
@@ -337,7 +505,11 @@ export async function POST(request: Request) {
   const followUp = detectFollowUpIntent(input);
 
   let deterministicResult: VoiceRouterOutput | null = null;
-  if (comparison.detected && comparison.entities.length >= 2) {
+  if (appNavigationTarget) {
+    deterministicResult = buildAppNavigationResponse(input, appNavigationTarget);
+  }
+
+  if (!deterministicResult && comparison.detected && comparison.entities.length >= 2) {
     const primary = comparison.entities[0] ?? null;
     deterministicResult = buildAnswerResponse(input, {
         intent: "compare",

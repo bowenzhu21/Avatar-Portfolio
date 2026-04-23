@@ -24,7 +24,7 @@ function buildFallbackReply(contactName: string, latestUserMessage: string) {
   return `It's ${contactName}. Send that again.`;
 }
 
-function buildBowenContactContext(transcript: string) {
+function buildPortfolioChatContext(transcript: string) {
   const knowledge = getRelevantVoiceKnowledgeBase({
     transcript,
     routedEntity: null,
@@ -56,6 +56,7 @@ function buildBowenContactContext(transcript: string) {
     relevantProjects: Object.values(knowledge.relevantProjects).map((project) => ({
       title: project.title,
       oneLiner: project.one_liner,
+      techStack: project.tech_stack.slice(0, 5),
       highlights: project.highlights.slice(0, 2),
       results: project.results.slice(0, 2),
     })),
@@ -64,6 +65,16 @@ function buildBowenContactContext(transcript: string) {
       oneLiner: experience.one_liner,
       wins: experience.wins.slice(0, 2),
       skillsGained: experience.skills_gained.slice(0, 2),
+    })),
+    projectDirectory: knowledge.projectDirectory.map((project) => ({
+      title: project.title,
+      oneLiner: project.oneLiner,
+      techStack: project.techStack,
+    })),
+    experienceDirectory: knowledge.experienceDirectory.map((experience) => ({
+      title: experience.title,
+      oneLiner: experience.oneLiner,
+      focusAreas: experience.focusAreas,
     })),
     matchedFaqs: knowledge.matchedFaqs.slice(0, 4).map((faq) => ({
       source: faq.source,
@@ -85,10 +96,7 @@ export async function POST(request: Request) {
     const trimmedMessages = messages.slice(-10);
     const latestUserMessage =
       [...trimmedMessages].reverse().find((message) => message.sender === "user")?.text?.trim() ?? "";
-    const bowenContext =
-      contact?.id && contact.id !== "bowen"
-        ? buildBowenContactContext(latestUserMessage)
-        : null;
+    const portfolioContext = buildPortfolioChatContext(latestUserMessage);
 
     if (!latestUserMessage) {
       return NextResponse.json({ error: "A user message is required." }, { status: 400 });
@@ -97,9 +105,9 @@ export async function POST(request: Request) {
     const result = await generateStructuredJson<MessagesChatResponse>({
       systemInstruction:
         `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies extremely concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say in one quick breath. ${
-          contact?.id && contact.id !== "bowen"
-            ? "If the user asks about Bowen, use the provided Bowen context as your factual source. Refer to Bowen in third person and do not invent anything beyond that context. If something is missing, say you are not totally sure."
-            : ""
+          contact?.id === "bowen"
+            ? "Use the provided portfolioContext as the factual source for Bowen's projects, experience, school, contact details, and personal interests. Answer in first person when talking about Bowen's own background."
+            : "If the user asks about Bowen, use the provided portfolioContext as your factual source. Refer to Bowen in third person and do not invent anything beyond that context. If something is missing, say you are not totally sure."
         }`,
       userPrompt: JSON.stringify(
         {
@@ -112,7 +120,7 @@ export async function POST(request: Request) {
             sender: message.sender,
             text: message.text,
           })),
-          bowenContext,
+          portfolioContext,
           instructions: [
             "Reply like a real iMessage conversation.",
             "Prefer a single short sentence.",
@@ -123,10 +131,12 @@ export async function POST(request: Request) {
               : "Keep the tone personal and direct.",
             contact?.id === "bowen"
               ? "If asked where you are from, say you were born in Montreal, grew up in Toronto, and are currently between Waterloo and the Bay Area for school and work."
-              : "If asked about Bowen, answer from bowenContext only.",
+              : "If asked about Bowen, answer from portfolioContext only.",
             contact?.id === "bowen" ? "If asked about zodiac sign, say Scorpio." : "Keep replies extremely short.",
             contact?.id === "bowen" ? "If asked about gym split, say Chest, Back, Arms, Legs." : "Sound like a real person texting back.",
-            contact?.id === "bowen" ? "Answer directly." : "If you do not know something about Bowen from the provided context, say you are not sure.",
+            contact?.id === "bowen"
+              ? "Use portfolioContext for factual claims about work, experience, school, interests, and contact details."
+              : "If you do not know something about Bowen from the provided context, say you are not sure.",
             "No filler, no sign-off, no extra context unless asked.",
           ],
         },

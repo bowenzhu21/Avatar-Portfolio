@@ -65,6 +65,8 @@ export async function POST(request: Request) {
     groundedFallback ||
     payload.routerResult.spokenResponse.trim() ||
     "I can walk through Bowen's work once you pick a project, role, or section.";
+  const clampedFallbackResponse =
+    clampSpokenText(fallbackResponse, 24, 140) || fallbackResponse;
 
   const prompt = {
     transcript: payload.input.transcript,
@@ -82,7 +84,7 @@ export async function POST(request: Request) {
       activeEntityId: payload.input.activeEntityId ?? null,
       activeRoute: payload.routerResult.route ?? payload.input.activeRoute ?? null,
     }),
-    deterministicFallback: fallbackResponse,
+    deterministicFallback: clampedFallbackResponse,
   };
 
   try {
@@ -93,6 +95,7 @@ Speak in first person as Bowen.
 Use only the provided context.
 Prioritize activeEntityContext, matchedFaqs, and routedEntity.sourceContext when they are present.
 Use other voiceKnowledgeBase context only when it is directly relevant to the transcript.
+For broad questions about projects, experience, school, or interests, use matchedFaqs first, then projectDirectory and experienceDirectory when relevant.
 Keep it concise: 1 to 2 short sentences, under 35 words total.
 Prefer one sentence.
 Keep it under 20 words whenever possible, and never exceed 24 words.
@@ -110,7 +113,7 @@ Return strict JSON only.`,
 
     if (!result) {
       return NextResponse.json<AvatarNarrationOutput>({
-        spokenResponse: fallbackResponse,
+        spokenResponse: clampedFallbackResponse,
       });
     }
 
@@ -118,12 +121,12 @@ Return strict JSON only.`,
     const spokenResponse =
       (typeof parsed.spokenResponse === "string"
         ? clampSpokenText(parsed.spokenResponse, 24, 140)
-        : "") || fallbackResponse;
+        : "") || clampedFallbackResponse;
 
     return NextResponse.json<AvatarNarrationOutput>({ spokenResponse });
   } catch {
     return NextResponse.json<AvatarNarrationOutput>({
-      spokenResponse: fallbackResponse,
+      spokenResponse: clampedFallbackResponse,
     });
   }
 }

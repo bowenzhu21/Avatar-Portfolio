@@ -2,6 +2,20 @@ import { siteConfig } from "@/config/site";
 import { getEntityByRoute } from "@/utils/portfolio";
 import type { CardType, PhoneScreenState, PortfolioEntity } from "@/types";
 
+const detailAppTitleMap = {
+  phone: "Phone",
+  messages: "Messages",
+  safari: "Safari",
+  spotify: "Spotify",
+  settings: "Settings",
+} as const;
+
+const listAppTitleMap = {
+  projects: "Projects",
+  primitives: "Gods' Hands",
+  experience: "Experience",
+} as const;
+
 function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
   if (route === "/phone") {
     return "phone";
@@ -11,15 +25,15 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
     return "messages";
   }
 
-  if (route.startsWith("/projects/")) {
+  if (route === "/projects" || route.startsWith("/projects/")) {
     return "projects";
   }
 
-  if (route.startsWith("/primitives/")) {
+  if (route === "/primitives" || route.startsWith("/primitives/")) {
     return "primitives";
   }
 
-  if (route.startsWith("/experience/")) {
+  if (route === "/experience" || route.startsWith("/experience/")) {
     return "experience";
   }
 
@@ -61,6 +75,44 @@ export function derivePhoneScreen(args: {
 }): PhoneScreenState {
   const entity = args.entity ?? getEntityByRoute(args.route);
   const app = getPhoneAppFromRoute(args.route);
+  const card = args.card ?? "overview";
+
+  if (args.route === "/") {
+    return {
+      app: "home",
+      view: "home",
+      title: siteConfig.owner,
+      entityId: null,
+      route: args.route,
+      card,
+    };
+  }
+
+  if (app in detailAppTitleMap) {
+    const detailApp = app as keyof typeof detailAppTitleMap;
+
+    return {
+      app,
+      view: "detail",
+      title: detailAppTitleMap[detailApp],
+      entityId: null,
+      route: args.route,
+      card,
+    };
+  }
+
+  if (app in listAppTitleMap && args.route === `/${app}`) {
+    const listApp = app as keyof typeof listAppTitleMap;
+
+    return {
+      app,
+      view: "list",
+      title: listAppTitleMap[listApp],
+      entityId: null,
+      route: args.route,
+      card,
+    };
+  }
 
   if (!entity) {
     return {
@@ -69,7 +121,7 @@ export function derivePhoneScreen(args: {
       title: siteConfig.owner,
       entityId: null,
       route: args.route,
-      card: args.card ?? "overview",
+      card,
     };
   }
 
@@ -79,7 +131,7 @@ export function derivePhoneScreen(args: {
     title: entity.title,
     entityId: entity.id,
     route: entity.route,
-    card: args.card ?? "overview",
+    card,
   };
 }
 
@@ -90,7 +142,7 @@ export function createPhoneListScreen(
     phone: "Phone",
     messages: "Messages",
     projects: "Projects",
-    primitives: "Primitives",
+    primitives: "Gods' Hands",
     experience: "Experience",
     spotify: "Spotify",
     safari: "Safari",

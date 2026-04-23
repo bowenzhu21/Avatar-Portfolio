@@ -19,8 +19,8 @@ export const phoneContacts: ChatContact[] = [
   },
   {
     id: "john",
-    name: "John",
-    avatar: "/phone/John.png",
+    name: "Anderson",
+    avatar: "/phone/Anderson.jpeg",
     favorite: true,
     phoneLabel: "mobile",
     phoneNumber: "(650) 555-0191",

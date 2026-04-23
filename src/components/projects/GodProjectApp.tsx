@@ -32,7 +32,7 @@ const godProjectConfigs: Record<
     title: "Apollo",
     backgroundImageSrc: "/apollo/apollo_bg.jpg",
     summary:
-      "Apollo is part of the Primitives project section, presented in the same mobile app format as the rest of the portfolio.",
+      "Apollo is part of the Gods' Hands section, presented in the same mobile app format as the rest of the portfolio.",
     bullets: [
       "Built a gesture-controlled LLM interface using MediaPipe, mapping hand poses to structured prompt primitives and actions for fully hands-free AI interaction.",
       "Designed a secure inference gateway with Vercel API routes and provider abstraction, adding validation, rate limiting, and timeout handling to prevent API key exposure.",
@@ -72,7 +72,7 @@ const godProjectConfigs: Record<
     title: "Aphrodite",
     backgroundImageSrc: "/aphrodite/aphrodite_bg.jpg",
     summary:
-      "Aphrodite is part of the Primitives project section, presented in the same mobile app format as the rest of the portfolio.",
+      "Aphrodite is part of the Gods' Hands section, presented in the same mobile app format as the rest of the portfolio.",
     bullets: [
       "Built a real-time gesture-controlled audio engine using MediaPipe and the Web Audio API, mapping hand motion to pitch, gain, and effects.",
       "Implemented a custom audio signal chain with oscillators, reverb, delay, envelopes, and frequency quantization to musical scales for coherent synthesis.",
@@ -112,7 +112,7 @@ const godProjectConfigs: Record<
     title: "Hermes",
     backgroundImageSrc: "/hermes/hermes_bg.jpg",
     summary:
-      "Hermes is part of the Primitives project section, presented in the same mobile app format as the rest of the portfolio.",
+      "Hermes is part of the Gods' Hands section, presented in the same mobile app format as the rest of the portfolio.",
     bullets: [
       "Built a real-time hand-tracked game engine with physics-based ball simulation, including arc, spin, bounce, and trajectory modeling.",
       "Translated gesture dynamics into gameplay mechanics, using hand velocity to control shot power, spin, and direction.",
@@ -152,7 +152,7 @@ const godProjectConfigs: Record<
     title: "Kronos",
     backgroundImageSrc: "/kronos/kronos_bg.jpg",
     summary:
-      "Kronos is part of the Primitives project section, presented in the same mobile app format as the rest of the portfolio.",
+      "Kronos is part of the Gods' Hands section, presented in the same mobile app format as the rest of the portfolio.",
     bullets: [
       "Built a vision-driven particle simulation where hand gestures and body segmentation act as dynamic force fields over thousands of particles.",
       "Combined hand tracking and full-body segmentation to create spatial interaction, enabling attraction, repulsion, and wave-based effects.",

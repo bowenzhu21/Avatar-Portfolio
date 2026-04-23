@@ -176,11 +176,15 @@ function getCurrentEntityId(args: {
   activeEntityId?: string | null;
   activeRoute?: string | null;
 }) {
-  return (
-    args.routedEntity?.id ??
-    args.activeEntityId ??
-    getEntityIdFromRoute(args.activeRoute ?? null)
-  );
+  if (args.routedEntity?.id) {
+    return args.routedEntity.id;
+  }
+
+  if (typeof args.activeRoute !== "undefined") {
+    return getEntityIdFromRoute(args.activeRoute ?? null);
+  }
+
+  return args.activeEntityId ?? null;
 }
 
 function matchPattern(normalizedTranscript: string, pattern: string) {
@@ -272,6 +276,36 @@ function isPersonalContext(context: unknown): context is PersonalVoiceContext {
       "fitness" in context &&
       "faq" in context,
   );
+}
+
+function buildProjectDirectory() {
+  return portfolioEntities
+    .filter((entity) => voiceContext.projects[entity.id])
+    .map((entity) => {
+      const project = voiceContext.projects[entity.id];
+
+      return {
+        id: entity.id,
+        title: project.title,
+        oneLiner: project.one_liner,
+        techStack: project.tech_stack.slice(0, 6),
+      };
+    });
+}
+
+function buildExperienceDirectory() {
+  return portfolioEntities
+    .filter((entity) => voiceContext.experience[entity.id])
+    .map((entity) => {
+      const experience = voiceContext.experience[entity.id];
+
+      return {
+        id: entity.id,
+        title: experience.title,
+        oneLiner: experience.one_liner,
+        focusAreas: experience.skills_gained.slice(0, 6),
+      };
+    });
 }
 
 export function getEntityVoiceContext(entityId: string | null | undefined) {
@@ -416,6 +450,8 @@ export function getRelevantVoiceKnowledgeBase(args: {
     contact: voiceContext.contact,
     personal: voiceContext.personal,
     crossEntityQuestions: voiceContext.cross_entity_questions,
+    projectDirectory: buildProjectDirectory(),
+    experienceDirectory: buildExperienceDirectory(),
     matchedFaqs: getMatchedVoiceFaqs(args.transcript, [currentEntityId]),
   };
 }

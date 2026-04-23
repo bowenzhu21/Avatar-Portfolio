@@ -3,10 +3,198 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
+import {
+  findSpotifyTrackByQuery,
+  getNextSpotifyTrackId,
+  getSpotifyTrackById,
+  spotifyTracks,
+} from "@/data/spotify";
 import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
 import { orchestrateWithGemini, routeVoiceIntent } from "@/lib/orchestrator";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityByRoute } from "@/utils/portfolio";
+
+type SpotifyVoiceCommand =
+  | {
+      kind: "play_track" | "next_track" | "resume" | "pause" | "unknown_track";
+      responseText: string;
+      trackId?: string;
+      shouldPause?: boolean;
+      followUpSuggestions: string[];
+    };
+
+const deterministicAppRoutes = new Set([
+  "/",
+  "/phone",
+  "/messages",
+  "/safari",
+  "/spotify",
+  "/settings",
+  "/projects",
+  "/primitives",
+  "/experience",
+]);
+
+function normalizeVoiceCommand(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractSpotifyTrackRequest(transcript: string) {
+  const patterns = [
+    /(?:play|put on|listen to)\s+(.+)$/i,
+    /(?:switch|change)\s+(?:the\s+)?(?:song|track|music)?\s*(?:to)?\s+(.+)$/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = transcript.match(pattern);
+    const target = match?.[1]
+      ?.replace(/\b(?:please|for me|right now|next)\b/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (target) {
+      return target;
+    }
+  }
+
+  return null;
+}
+
+function buildSpotifySuggestions(excludeTrackId?: string) {
+  return spotifyTracks
+    .filter((track) => track.id !== excludeTrackId)
+    .slice(0, 3)
+    .map((track) => `Play ${track.title}`);
+}
+
+function detectSpotifyVoiceCommand(args: {
+  transcript: string;
+  currentTrackId: string;
+  isSpotifyPaused: boolean;
+}): SpotifyVoiceCommand | null {
+  const normalized = normalizeVoiceCommand(args.transcript);
+  const mentionsMusic = /\b(song|track|music|spotify|playlist)\b/.test(normalized);
+  const currentTrack = getSpotifyTrackById(args.currentTrackId);
+  const requestedTrackText = extractSpotifyTrackRequest(args.transcript);
+  const matchedTrack = requestedTrackText
+    ? findSpotifyTrackByQuery(requestedTrackText) ?? findSpotifyTrackByQuery(args.transcript)
+    : findSpotifyTrackByQuery(args.transcript);
+  const usesMusicSpecificVerb = /\b(put on|listen to)\b/i.test(args.transcript);
+
+  if (
+    requestedTrackText &&
+    matchedTrack &&
+    (mentionsMusic || /\b(play|put on|listen to|switch|change)\b/.test(normalized))
+  ) {
+    return {
+      kind: "play_track",
+      trackId: matchedTrack.id,
+      shouldPause: false,
+      responseText:
+        matchedTrack.id === currentTrack.id && !args.isSpotifyPaused
+          ? `${matchedTrack.title} by ${matchedTrack.artist} is already playing.`
+          : `Switching to ${matchedTrack.title} by ${matchedTrack.artist}.`,
+      followUpSuggestions: [
+        "Pause music",
+        "Change the song",
+        ...buildSpotifySuggestions(matchedTrack.id).slice(0, 2),
+      ],
+    };
+  }
+
+  if (
+    matchedTrack &&
+    /\bplay\b/.test(normalized) &&
+    !/\b(play music|play some music)\b/.test(normalized)
+  ) {
+    return {
+      kind: "play_track",
+      trackId: matchedTrack.id,
+      shouldPause: false,
+      responseText:
+        matchedTrack.id === currentTrack.id && !args.isSpotifyPaused
+          ? `${matchedTrack.title} by ${matchedTrack.artist} is already playing.`
+          : `Switching to ${matchedTrack.title} by ${matchedTrack.artist}.`,
+      followUpSuggestions: [
+        "Pause music",
+        "Change the song",
+        ...buildSpotifySuggestions(matchedTrack.id).slice(0, 2),
+      ],
+    };
+  }
+
+  if (
+    requestedTrackText &&
+    !matchedTrack &&
+    (mentionsMusic || usesMusicSpecificVerb)
+  ) {
+    return {
+      kind: "unknown_track",
+      responseText: `I couldn't find that in my playlist. Try ${spotifyTracks
+        .slice(0, 3)
+        .map((track) => track.title)
+        .join(", ")}.`,
+      followUpSuggestions: buildSpotifySuggestions().slice(0, 3),
+    };
+  }
+
+  if (
+    mentionsMusic &&
+    (/\b(next|another|different)\b/.test(normalized) ||
+      /\b(change|switch)\b/.test(normalized))
+  ) {
+    const nextTrack = getSpotifyTrackById(getNextSpotifyTrackId(args.currentTrackId));
+
+    return {
+      kind: "next_track",
+      trackId: nextTrack.id,
+      shouldPause: false,
+      responseText: `Switching to ${nextTrack.title} by ${nextTrack.artist}.`,
+      followUpSuggestions: [
+        "Pause music",
+        ...buildSpotifySuggestions(nextTrack.id).slice(0, 2),
+      ],
+    };
+  }
+
+  if (mentionsMusic && /\b(pause|stop|mute)\b/.test(normalized)) {
+    return {
+      kind: "pause",
+      shouldPause: true,
+      responseText: args.isSpotifyPaused ? "Music is already paused." : "Pausing the music.",
+      followUpSuggestions: [
+        "Resume music",
+        "Change the song",
+        `Play ${currentTrack.title}`,
+      ],
+    };
+  }
+
+  if (
+    (mentionsMusic && /\b(resume|unpause)\b/.test(normalized)) ||
+    /\b(play music|play some music|start the music)\b/.test(normalized)
+  ) {
+    return {
+      kind: "resume",
+      shouldPause: false,
+      responseText: args.isSpotifyPaused
+        ? `Resuming ${currentTrack.title} by ${currentTrack.artist}.`
+        : `${currentTrack.title} by ${currentTrack.artist} is already playing.`,
+      followUpSuggestions: [
+        "Pause music",
+        "Change the song",
+        ...buildSpotifySuggestions(currentTrack.id).slice(0, 1),
+      ],
+    };
+  }
+
+  return null;
+}
 
 export function VoiceRouterProvider() {
   const router = useRouter();
@@ -37,6 +225,10 @@ export function VoiceRouterProvider() {
   const setLatestSpokenResponse = usePortfolioStore((state) => state.setLatestSpokenResponse);
   const setLatestRouterPayload = usePortfolioStore((state) => state.setLatestRouterPayload);
   const setLatestRouterResponse = usePortfolioStore((state) => state.setLatestRouterResponse);
+  const selectedSpotifyTrackId = usePortfolioStore((state) => state.selectedSpotifyTrackId);
+  const isSpotifyPaused = usePortfolioStore((state) => state.isSpotifyPaused);
+  const setSelectedSpotifyTrackId = usePortfolioStore((state) => state.setSelectedSpotifyTrackId);
+  const setSpotifyPaused = usePortfolioStore((state) => state.setSpotifyPaused);
   const acknowledgePendingUtterance = usePortfolioStore(
     (state) => state.acknowledgePendingUtterance,
   );
@@ -80,6 +272,41 @@ export function VoiceRouterProvider() {
       setLatestSpokenResponse("");
 
       try {
+        const spotifyCommand = detectSpotifyVoiceCommand({
+          transcript,
+          currentTrackId: selectedSpotifyTrackId,
+          isSpotifyPaused,
+        });
+
+        if (spotifyCommand) {
+          setLatestRouterResponse(null);
+          setFollowUpSuggestions(spotifyCommand.followUpSuggestions);
+
+          if (spotifyCommand.trackId) {
+            setSelectedSpotifyTrackId(spotifyCommand.trackId);
+          } else if (typeof spotifyCommand.shouldPause === "boolean") {
+            setSpotifyPaused(spotifyCommand.shouldPause);
+          }
+
+          acknowledgePendingUtterance(utterance.id);
+          clearTurnCaption();
+          setLatestSpokenResponse(spotifyCommand.responseText);
+
+          if (spotifyCommand.responseText) {
+            await unlockAudio();
+
+            try {
+              await speak(spotifyCommand.responseText);
+            } catch {
+              setInteractionPhase("idle");
+            }
+          } else {
+            setInteractionPhase("idle");
+          }
+
+          return;
+        }
+
         const result = await routeVoiceIntent(payload);
         setLatestRouterResponse(result);
 
@@ -114,12 +341,16 @@ export function VoiceRouterProvider() {
           syncPhoneScreenFromRoute(activeRoute, nextEntity ?? activeEntity, result.card);
         }
 
-        const narration = await orchestrateWithGemini({
-          input: payload,
-          routerResult: result,
-        }).catch(() => ({
-          spokenResponse: result.spokenResponse,
-        }));
+        const shouldSkipNarrationModel =
+          !result.entity && result.route && deterministicAppRoutes.has(result.route);
+        const narration = shouldSkipNarrationModel
+          ? { spokenResponse: result.spokenResponse }
+          : await orchestrateWithGemini({
+              input: payload,
+              routerResult: result,
+            }).catch(() => ({
+              spokenResponse: result.spokenResponse,
+            }));
         const conciseResponse = narration.spokenResponse
           .replace(/\s+/g, " ")
           .trim()
@@ -160,6 +391,7 @@ export function VoiceRouterProvider() {
     pushRecentEntity,
     recentEntities,
     router,
+    selectedSpotifyTrackId,
     setActiveCard,
     setActiveEntity,
     setActiveRoute,
@@ -171,9 +403,12 @@ export function VoiceRouterProvider() {
     setLatestRouterPayload,
     setLatestRouterResponse,
     setLatestSpokenResponse,
+    setSelectedSpotifyTrackId,
+    setSpotifyPaused,
     speak,
     syncPhoneScreenFromRoute,
     unlockAudio,
+    isSpotifyPaused,
   ]);
 
   return null;

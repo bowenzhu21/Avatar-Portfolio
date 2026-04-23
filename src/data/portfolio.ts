@@ -217,14 +217,21 @@ export const portfolioEntities: PortfolioEntity[] = [
     title: "Apollo",
     type: "project",
     route: "/primitives/apollo",
-    aliases: ["apollo", "apollo project", "apollo app", "primitives apollo"],
+    aliases: [
+      "apollo",
+      "apollo project",
+      "apollo app",
+      "primitives apollo",
+      "gods hands apollo",
+      "gods' hands apollo",
+    ],
     shortSummary:
-      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
+      "A project app in the Gods' Hands section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
-    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Gods' Hands section.",
+    tags: ["Gods' Hands", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",
@@ -254,14 +261,16 @@ export const portfolioEntities: PortfolioEntity[] = [
       "aphrodite project",
       "aphrodite app",
       "primitives aphrodite",
+      "gods hands aphrodite",
+      "gods' hands aphrodite",
     ],
     shortSummary:
-      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
+      "A project app in the Gods' Hands section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
-    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Gods' Hands section.",
+    tags: ["Gods' Hands", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",
@@ -286,14 +295,21 @@ export const portfolioEntities: PortfolioEntity[] = [
     title: "Hermes",
     type: "project",
     route: "/primitives/hermes",
-    aliases: ["hermes", "hermes project", "hermes app", "primitives hermes"],
+    aliases: [
+      "hermes",
+      "hermes project",
+      "hermes app",
+      "primitives hermes",
+      "gods hands hermes",
+      "gods' hands hermes",
+    ],
     shortSummary:
-      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
+      "A project app in the Gods' Hands section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
-    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Gods' Hands section.",
+    tags: ["Gods' Hands", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",
@@ -318,14 +334,21 @@ export const portfolioEntities: PortfolioEntity[] = [
     title: "Kronos",
     type: "project",
     route: "/primitives/kronos",
-    aliases: ["kronos", "kronos project", "kronos app", "primitives kronos"],
+    aliases: [
+      "kronos",
+      "kronos project",
+      "kronos app",
+      "primitives kronos",
+      "gods hands kronos",
+      "gods' hands kronos",
+    ],
     shortSummary:
-      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
+      "A project app in the Gods' Hands section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
-    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Gods' Hands section.",
+    tags: ["Gods' Hands", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",

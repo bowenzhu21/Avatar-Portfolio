@@ -5,10 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { SafariHistoryEntry, SafariQueryResponse } from "@/types";
 
 const startSuggestions = [
-  "How old is Bowen",
-  "What is Bowen's Zodiac Sign",
-  "Where is Bowen From",
-  "What is Bowen's Gym Split",
+  "What projects has Bowen built",
+  "Tell me about Matrix",
+  "What experience does Bowen have",
+  "What is Bowen interested in",
 ];
 
 function isSafariQueryResponse(payload: unknown): payload is SafariQueryResponse {
