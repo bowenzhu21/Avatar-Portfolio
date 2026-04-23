@@ -37,6 +37,7 @@ interface PortfolioState {
   selectedSpotifyTrackId: string;
   isSpotifyPaused: boolean;
   isCardOpen: boolean;
+  portfolioVolume: number;
   setActiveRoute: (route: string) => void;
   setActiveEntity: (entity: PortfolioEntity | null) => void;
   setActiveCard: (card: CardType) => void;
@@ -61,6 +62,7 @@ interface PortfolioState {
   toggleSpotifyPaused: () => void;
   toggleCard: () => void;
   openCard: () => void;
+  setPortfolioVolume: (volume: number) => void;
 }
 
 let utteranceCounter = 0;
@@ -68,6 +70,14 @@ let utteranceCounter = 0;
 function createTurnId(prefix: string) {
   utteranceCounter += 1;
   return `${prefix}-${utteranceCounter}`;
+}
+
+function clampVolume(volume: number) {
+  if (!Number.isFinite(volume)) {
+    return 1;
+  }
+
+  return Math.max(0, Math.min(1, volume));
 }
 
 export const usePortfolioStore = create<PortfolioState>((set, get) => ({
@@ -91,6 +101,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   selectedSpotifyTrackId: defaultSpotifyTrackId,
   isSpotifyPaused: false,
   isCardOpen: true,
+  portfolioVolume: 1,
   setActiveRoute: (route) => set({ activeRoute: route }),
   setActiveEntity: (entity) => set({ activeEntity: entity }),
   setActiveCard: (card) =>
@@ -195,4 +206,6 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     set((state) => ({ isSpotifyPaused: !state.isSpotifyPaused })),
   toggleCard: () => set((state) => ({ isCardOpen: !state.isCardOpen })),
   openCard: () => set({ isCardOpen: true }),
+  setPortfolioVolume: (portfolioVolume) =>
+    set({ portfolioVolume: clampVolume(portfolioVolume) }),
 }));

@@ -5,7 +5,13 @@ import {
   getRelevantVoiceKnowledgeBase,
 } from "@/data/voiceContext";
 import type { SafariQueryResponse } from "@/types";
-import { generateStructuredJson } from "@/lib/structured-llm.server";
+import {
+  fetchInstantAnswer,
+  fetchPageSnapshot,
+  looksLikeUrl,
+  normalizeWebsiteUrl,
+  searchWeb,
+} from "@/lib/safari-web";
 
 interface SafariQueryRequest {
   query?: string;
@@ -21,23 +27,12 @@ function normalizeQuery(value: string) {
     .trim();
 }
 
-const safariQuerySchema = {
-  type: "object",
-  properties: {
-    title: { type: "string" },
-    url: { type: "string" },
-    content: { type: "string" },
-    query: { type: "string" },
-  },
-  required: ["title", "url", "content", "query"],
-} as const;
-
 function buildFallbackPage(query: string): SafariQueryResponse {
   return {
     title: `Results for ${query}`,
-    url: "bowen.ai/search",
+    url: `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
     content:
-      "I could not load a polished answer page for that search right now.\n\nTry reloading the page or rephrasing your search in a shorter way.",
+      "I could not load results for that search right now.\n\nTry reloading the page, searching with fewer words, or entering a direct website URL.",
     query,
   };
 }
@@ -78,62 +73,6 @@ function isExperienceVoiceContext(
       "wins" in context &&
       "skills_gained" in context,
   );
-}
-
-function buildSafariPortfolioContext(query: string) {
-  const knowledge = getRelevantVoiceKnowledgeBase({
-    transcript: query,
-    routedEntity: null,
-    activeEntityId: null,
-    activeRoute: null,
-  });
-
-  return {
-    persona: {
-      name: knowledge.persona.name,
-      shortIntro: knowledge.persona.short_intro,
-    },
-    resume: {
-      headline: knowledge.resume.headline,
-      shortSummary: knowledge.resume.short_summary,
-      strengths: knowledge.resume.strengths.slice(0, 5),
-      skills: knowledge.resume.skills.slice(0, 8),
-    },
-    school: {
-      schoolName: knowledge.school.school_name,
-      program: knowledge.school.program,
-      focusAreas: knowledge.school.focus_areas.slice(0, 5),
-    },
-    contact: {
-      email: knowledge.contact.email,
-      linkedin: knowledge.contact.linkedin,
-      github: knowledge.contact.github,
-      website: knowledge.contact.website,
-    },
-    projectDirectory: knowledge.projectDirectory,
-    experienceDirectory: knowledge.experienceDirectory,
-    relevantProjects: Object.values(knowledge.relevantProjects).map((project) => ({
-      title: project.title,
-      summary: project.full_summary,
-      techStack: project.tech_stack.slice(0, 6),
-      highlights: project.highlights.slice(0, 3),
-    })),
-    relevantExperience: Object.values(knowledge.relevantExperience).map((experience) => ({
-      title: experience.title,
-      summary: experience.full_summary,
-      wins: experience.wins.slice(0, 3),
-      skillsGained: experience.skills_gained.slice(0, 4),
-    })),
-    matchedFaqs: knowledge.matchedFaqs.slice(0, 4).map((faq) => ({
-      source: faq.source,
-      answer: faq.answer,
-    })),
-    personal: {
-      hobbies: knowledge.personal.hobbies.slice(0, 4),
-      fitness: knowledge.personal.fitness.slice(0, 3),
-      nutrition: knowledge.personal.nutrition.slice(0, 3),
-    },
-  };
 }
 
 function buildPortfolioPage(query: string): SafariQueryResponse | null {
@@ -241,6 +180,98 @@ function buildPortfolioPage(query: string): SafariQueryResponse | null {
   return null;
 }
 
+function buildWebSearchContent(args: {
+  query: string;
+  summary: string;
+  sources: Array<{
+    title: string;
+    url: string;
+    displayUrl?: string;
+    snippet?: string;
+  }>;
+}) {
+  const sections: string[] = [];
+
+  if (args.summary) {
+    sections.push(`# Web Overview\n${args.summary}`);
+  }
+
+  if (args.sources.length) {
+    sections.push(
+      `# Top Results\n- ${args.sources
+        .slice(0, 5)
+        .map((source) =>
+          [source.title, source.displayUrl ? `(${source.displayUrl})` : null, source.snippet]
+            .filter(Boolean)
+            .join(": "),
+        )
+        .join("\n- ")}`,
+    );
+  }
+
+  return sections.join("\n\n").trim();
+}
+
+async function buildWebsitePage(query: string): Promise<SafariQueryResponse | null> {
+  const url = normalizeWebsiteUrl(query);
+  const snapshot = await fetchPageSnapshot(url);
+
+  if (!snapshot) {
+    return null;
+  }
+
+  const sections = [
+    snapshot.description,
+    snapshot.highlights.length
+      ? `# Highlights\n- ${snapshot.highlights.join("\n- ")}`
+      : "",
+    snapshot.paragraphs.length ? `# Page Snapshot\n${snapshot.paragraphs.join("\n\n")}` : "",
+  ].filter(Boolean);
+
+  return {
+    title: snapshot.title,
+    url: snapshot.url,
+    query,
+    content: sections.join("\n\n").trim() || "This page loaded, but there was not much readable text to show.",
+  };
+}
+
+async function buildWebSearchPage(query: string): Promise<SafariQueryResponse | null> {
+  const [instantAnswer, sources] = await Promise.all([
+    fetchInstantAnswer(query),
+    searchWeb(query),
+  ]);
+
+  const topSource = sources[0];
+  const topPageSnapshot =
+    !instantAnswer?.summary && topSource ? await fetchPageSnapshot(topSource.url) : null;
+  const summary =
+    instantAnswer?.summary ||
+    topPageSnapshot?.description ||
+    topPageSnapshot?.paragraphs[0] ||
+    topSource?.snippet ||
+    "";
+
+  if (!summary && !sources.length) {
+    return null;
+  }
+
+  return {
+    title:
+      instantAnswer?.title ||
+      topPageSnapshot?.title ||
+      `Results for ${query}`,
+    url: instantAnswer?.url || topPageSnapshot?.url || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+    query,
+    content: buildWebSearchContent({
+      query,
+      summary,
+      sources,
+    }),
+    sources,
+  };
+}
+
 function buildPresetPage(query: string): SafariQueryResponse | null {
   const normalized = normalizeQuery(query);
 
@@ -305,52 +336,26 @@ export async function POST(request: Request) {
       return NextResponse.json(presetPage);
     }
 
+    if (looksLikeUrl(query)) {
+      const websitePage = await buildWebsitePage(query);
+      if (websitePage) {
+        return NextResponse.json(websitePage);
+      }
+    }
+
     const portfolioPage = buildPortfolioPage(query);
 
     if (portfolioPage) {
       return NextResponse.json(portfolioPage);
     }
 
-    const portfolioContext = buildSafariPortfolioContext(query);
+    const webSearchPage = await buildWebSearchPage(query);
 
-    const result = await generateStructuredJson<SafariQueryResponse>({
-      systemInstruction:
-        "You are generating a Safari-style answer page inside Bowen Zhu's portfolio phone UI. Use only the provided portfolioContext for factual claims about Bowen, his projects, experience, school, contact details, and personal interests. If the answer is not in portfolioContext, say that briefly instead of inventing it. Return strict JSON only. Make the answer feel like a polished browser result page, not a chat response. Be concise, well-structured, and readable on a phone. Prefer short headings, short paragraphs, and bullets when useful. Keep the title short. Use a URL-like string such as bowen.ai/search or bowen.ai/result.",
-      userPrompt: JSON.stringify(
-        {
-          query,
-          currentUrl: body.currentUrl ?? null,
-          portfolioContext,
-          outputRequirements: {
-            title: "short page title",
-            url: "compact browser-like URL",
-            content:
-              "formatted answer body with short headings, bullets, and short paragraphs when helpful",
-            query,
-          },
-        },
-        null,
-        2,
-      ),
-      schema: safariQuerySchema,
-      schemaName: "safari_query_page",
-      temperature: 0.5,
-    });
-
-    if (!result) {
-      return NextResponse.json(buildFallbackPage(query), { status: 200 });
+    if (webSearchPage) {
+      return NextResponse.json(webSearchPage);
     }
 
-    const parsed = result.data;
-
-    return NextResponse.json({
-      title: (typeof parsed.title === "string" ? parsed.title.trim() : "") || `Results for ${query}`,
-      url: (typeof parsed.url === "string" ? parsed.url.trim() : "") || "bowen.ai/search",
-      content:
-        (typeof parsed.content === "string" ? parsed.content.trim() : "") ||
-        buildFallbackPage(query).content,
-      query,
-    } satisfies SafariQueryResponse);
+    return NextResponse.json(buildFallbackPage(query), { status: 200 });
   } catch {
     return NextResponse.json(buildFallbackPage(query || "Bowen search"), { status: 200 });
   }

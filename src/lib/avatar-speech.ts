@@ -61,6 +61,7 @@ export class AvatarSpeechClient {
   private levelRafId: number | null = null;
   private playbackToken = 0;
   private lastLevelCommit = 0;
+  private outputVolume = 1;
 
   subscribe(listener: StateListener) {
     this.listeners.add(listener);
@@ -73,6 +74,19 @@ export class AvatarSpeechClient {
 
   getState() {
     return this.state;
+  }
+
+  setOutputVolume(volume: number) {
+    const nextVolume = Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1;
+    this.outputVolume = nextVolume;
+
+    if (this.gainNode) {
+      this.gainNode.gain.value = nextVolume;
+    }
+
+    if (this.currentUtterance) {
+      this.currentUtterance.volume = nextVolume;
+    }
   }
 
   async unlockAudio() {
@@ -243,7 +257,7 @@ export class AvatarSpeechClient {
 
       analyser.fftSize = 1024;
       analyser.smoothingTimeConstant = 0.82;
-      gainNode.gain.value = 1;
+      gainNode.gain.value = this.outputVolume;
 
       analyser.connect(gainNode);
       gainNode.connect(audioContext.destination);
@@ -275,6 +289,7 @@ export class AvatarSpeechClient {
       utterance.voice = englishVoice;
     }
 
+    utterance.volume = this.outputVolume;
     utterance.rate = 0.96;
     utterance.pitch = 1;
 

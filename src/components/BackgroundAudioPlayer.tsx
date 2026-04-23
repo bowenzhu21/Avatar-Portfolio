@@ -11,6 +11,7 @@ export function BackgroundAudioPlayer() {
   const phoneApp = usePortfolioStore((state) => state.phoneScreen.app);
   const selectedSpotifyTrackId = usePortfolioStore((state) => state.selectedSpotifyTrackId);
   const isSpotifyPaused = usePortfolioStore((state) => state.isSpotifyPaused);
+  const portfolioVolume = usePortfolioStore((state) => state.portfolioVolume);
   const activeTrack = getSpotifyTrackById(selectedSpotifyTrackId);
   const shouldPause = isSpotifyPaused || phoneApp === "phone" || interactionPhase !== "idle";
 
@@ -21,7 +22,7 @@ export function BackgroundAudioPlayer() {
       return;
     }
 
-    audio.volume = 0.18;
+    audio.volume = 0.18 * portfolioVolume;
 
     async function attemptPlayback() {
       if (!audioRef.current || shouldPause) {
@@ -50,7 +51,7 @@ export function BackgroundAudioPlayer() {
       window.removeEventListener("pointerdown", handleUserGesture);
       window.removeEventListener("keydown", handleUserGesture);
     };
-  }, [activeTrack.audioSrc, shouldPause]);
+  }, [activeTrack.audioSrc, portfolioVolume, shouldPause]);
 
   useEffect(() => {
     const audio = audioRef.current;

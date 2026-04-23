@@ -11,6 +11,11 @@ export function AvatarStage() {
   const latestUserUtterance = usePortfolioStore((state) => state.latestUserUtterance);
   const level = isSpeaking ? Math.max(audioLevel, 0.08) : 0;
   const footerLabel = latestUserUtterance ? `Latest prompt: ${latestUserUtterance}` : "";
+  const avatarFrameStyle = {
+    width: "min(20.75rem, calc(100vw - 5rem))",
+    aspectRatio: "1 / 1",
+    flex: "0 0 auto",
+  } as const;
 
   return (
     <div className="relative min-h-[445px] overflow-hidden rounded-[2.6rem] border border-white/14 bg-black/28 shadow-[0_32px_100px_rgba(0,0,0,0.42)] backdrop-blur-[6px]">
@@ -36,7 +41,8 @@ export function AvatarStage() {
               y: isSpeaking ? -level * 6 : 0,
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative flex aspect-square w-full max-w-[20.75rem] shrink-0 items-center justify-center"
+            className="relative mx-auto grid max-w-full shrink-0 place-items-center self-center"
+            style={avatarFrameStyle}
           >
             {[0, 1, 2, 3].map((ring) => (
               <motion.div
@@ -63,7 +69,10 @@ export function AvatarStage() {
             ))}
 
             <div className="absolute inset-[5.8%] rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.18),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03))] blur-md" />
-            <div className="relative aspect-square w-[78.3%] overflow-hidden rounded-full border border-white/14 bg-white/6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+            <div
+              className="relative z-10 h-auto shrink-0 overflow-hidden rounded-full border border-white/14 bg-white/6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]"
+              style={{ width: "78.3%", aspectRatio: "1 / 1", flex: "0 0 auto" }}
+            >
               <Image
                 src={avatarConfig.profileImageSrc}
                 alt={avatarConfig.canvasLabel}

@@ -86,7 +86,7 @@ export function RightSideCard({ children }: RightSideCardProps) {
             {showTopChrome ? (
               <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent)]" />
             ) : null}
-            <div className="relative flex-1 overflow-hidden px-[0.625rem] pb-[1.125rem] pt-[0.625rem]">
+            <div className="relative flex-1 overflow-hidden px-[0.45rem] pb-[0.875rem] pt-[0.45rem]">
               <div
                 className="isolate h-full overflow-hidden rounded-[2.5rem] bg-black"
                 style={{ clipPath: "inset(0 round 2.5rem)" }}
@@ -94,7 +94,7 @@ export function RightSideCard({ children }: RightSideCardProps) {
                 {children}
               </div>
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center">
+            <div className="pointer-events-none absolute inset-x-0 bottom-2.5 z-30 flex justify-center">
               <button
                 type="button"
                 onClick={goHome}

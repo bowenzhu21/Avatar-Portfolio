@@ -7,6 +7,7 @@ import {
   type DeepgramRealtimeState,
   DeepgramRealtimeClient,
 } from "@/lib/deepgram";
+import { usePortfolioStore } from "@/store/usePortfolioStore";
 import type {
   ChatContact,
   ChatContactId,
@@ -14,7 +15,6 @@ import type {
   MessagesChatResponse,
 } from "@/types";
 
-type PhoneTab = "favorites" | "contacts";
 type CallMode = "call" | "facetime";
 
 interface PhoneAppProps {
@@ -36,7 +36,6 @@ const INITIAL_CALL_STT_STATE: DeepgramRealtimeState = {
 };
 
 export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
-  const [activeTab, setActiveTab] = useState<PhoneTab>("favorites");
   const [selectedContactId, setSelectedContactId] = useState<ChatContactId | null>(null);
   const [activeCall, setActiveCall] = useState<{ contactId: ChatContactId; mode: CallMode } | null>(null);
   const contact = selectedContactId
@@ -76,32 +75,25 @@ export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
         />
       ) : (
         <>
-          <PhoneHeader activeTab={activeTab} />
+          <PhoneHeader />
           <div className="min-h-0 flex-1 overflow-y-auto bg-[#ffffff]">
-            {activeTab === "favorites" ? <FavoritesScreen onOpenContact={openContact} /> : null}
-            {activeTab === "contacts" ? <ContactsScreen onOpenContact={openContact} /> : null}
+            <ContactsGridScreen onOpenContact={openContact} />
           </div>
-          <PhoneTabBar activeTab={activeTab} onChange={setActiveTab} />
         </>
       )}
     </div>
   );
 }
 
-function PhoneHeader({ activeTab }: { activeTab: PhoneTab }) {
-  const titleMap: Record<PhoneTab, string> = {
-    favorites: "Favorites",
-    contacts: "Contacts",
-  };
-
+function PhoneHeader() {
   return (
     <div className="border-b border-black/6 bg-[rgba(248,248,250,0.94)] px-4 pb-3 pt-4 backdrop-blur-xl">
-      <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#111111]">{titleMap[activeTab]}</h1>
+      <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#111111]">Contacts</h1>
     </div>
   );
 }
 
-function FavoritesScreen({ onOpenContact }: { onOpenContact: (contactId: ChatContactId) => void }) {
+function ContactsGridScreen({ onOpenContact }: { onOpenContact: (contactId: ChatContactId) => void }) {
   return (
     <div className="px-4 pb-6 pt-4">
       <div className="grid grid-cols-2 gap-5">
@@ -111,27 +103,6 @@ function FavoritesScreen({ onOpenContact }: { onOpenContact: (contactId: ChatCon
               <Image src={contact.avatar} alt={contact.name} fill sizes="80px" className="object-cover" />
             </div>
             <p className="mt-3 text-[0.92rem] font-medium text-[#141414]">{contact.name}</p>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ContactsScreen({ onOpenContact }: { onOpenContact: (contactId: ChatContactId) => void }) {
-  return (
-    <div className="px-4 pb-6 pt-3">
-      <div className="rounded-[1rem] bg-[#eef0f4] px-3 py-2 text-[0.82rem] text-[#8b8b92]">Search</div>
-      <div className="mt-4">
-        {phoneContacts.map((contact) => (
-          <button
-            key={contact.id}
-            type="button"
-            onClick={() => onOpenContact(contact.id)}
-            className="flex w-full items-center justify-between border-b border-black/6 py-3 text-left"
-          >
-            <span className="text-[0.92rem] font-medium text-[#171717]">{contact.name}</span>
-            <span className="text-[1.1rem] text-[#c2c2c8]">&#8250;</span>
           </button>
         ))}
       </div>
@@ -518,9 +489,11 @@ async function speakContactReply(text: string, voiceId?: string) {
     const audioBytes = await fetchContactSpeechAudio(trimmed, voiceId);
     const audioBlob = new Blob([audioBytes], { type: "audio/mpeg" });
     const objectUrl = URL.createObjectURL(audioBlob);
+    const portfolioVolume = usePortfolioStore.getState().portfolioVolume;
 
     await new Promise<void>((resolve, reject) => {
       const audio = new Audio(objectUrl);
+      audio.volume = portfolioVolume;
       audio.onended = () => {
         URL.revokeObjectURL(objectUrl);
         resolve();
@@ -561,39 +534,11 @@ async function speakContactReplyWithBrowserFallback(text: string) {
       utterance.voice = englishVoice;
     }
 
+    utterance.volume = usePortfolioStore.getState().portfolioVolume;
     utterance.rate = 0.97;
     utterance.pitch = 1;
     utterance.onend = () => resolve();
     utterance.onerror = () => reject(new Error("Browser speech fallback failed."));
     synthesis.speak(utterance);
   });
-}
-
-function PhoneTabBar({
-  activeTab,
-  onChange,
-}: {
-  activeTab: PhoneTab;
-  onChange: (tab: PhoneTab) => void;
-}) {
-  const tabs: Array<{ id: PhoneTab; label: string; icon: string }> = [
-    { id: "favorites", label: "Favorites", icon: "★" },
-    { id: "contacts", label: "Contacts", icon: "👤" },
-  ];
-
-  return (
-    <div className="border-t border-black/6 bg-[rgba(248,248,250,0.96)] px-2 pb-2 pt-1 backdrop-blur-xl">
-      <div className="mx-auto grid max-w-[13.5rem] grid-cols-2">
-        {tabs.map((tab) => {
-          const active = tab.id === activeTab;
-          return (
-            <button key={tab.id} type="button" onClick={() => onChange(tab.id)} className="flex flex-col items-center gap-0.5 py-1">
-              <span className={`text-[0.95rem] ${active ? "text-[#007aff]" : "text-[#8b8b92]"}`}>{tab.icon}</span>
-              <span className={`text-[0.64rem] ${active ? "font-medium text-[#007aff]" : "text-[#8b8b92]"}`}>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 }

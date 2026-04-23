@@ -12,6 +12,7 @@ import { MessagesApp } from "@/components/other/MessagesApp";
 import type { MessagesThreads } from "@/components/other/MessagesApp";
 import { PhoneApp as PhoneAppScreen } from "@/components/other/PhoneApp";
 import { SafariApp } from "@/components/other/SafariApp";
+import { SettingsApp } from "@/components/other/SettingsApp";
 import { SpotifyApp } from "@/components/other/SpotifyApp";
 import { PhotosApp } from "@/components/photos/PhotosApp";
 import { AdaptApp } from "@/components/projects/AdaptApp";
@@ -483,6 +484,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             <SafariApp />
           ) : phoneScreen.app === "spotify" ? (
             <SpotifyApp />
+          ) : phoneScreen.app === "settings" ? (
+            <SettingsApp />
           ) : phoneScreen.view === "list" ? (
             phoneScreen.app === "projects" ||
             phoneScreen.app === "primitives" ||
@@ -577,8 +580,6 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             ) : (
               <PlaceholderPage title={visibleEntity.title} />
             )
-          ) : phoneScreen.app === "settings" ? (
-            <PlaceholderPage title="Settings" />
           ) : (
             <div className="flex h-full flex-col justify-center rounded-[1.9rem] border border-white/12 bg-black/30 p-6 text-center backdrop-blur-xl">
               <p className="text-sm font-medium text-white/82">
@@ -632,8 +633,8 @@ function HomeScreen({
   onOpenSettings: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col px-2 pb-4 pt-1">
-      <div className="grid auto-rows-[64px] grid-cols-4 gap-x-3 gap-y-4">
+    <div className="flex h-full flex-col px-3 pb-4 pt-2">
+      <div className="grid auto-rows-[64px] grid-cols-4 gap-x-3 gap-y-[1.45rem]">
         <div className="col-span-2 row-span-2 mx-auto w-[90%] rounded-[1.32rem] border border-white/12 bg-black/68 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
           <div className="flex h-full flex-col items-center justify-center text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/72">PT</p>
@@ -644,7 +645,7 @@ function HomeScreen({
           </div>
         </div>
 
-        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-x-3 gap-y-4">
+        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-x-2.5 gap-y-4">
           <AppIcon label="Projects" tint="from-zinc-700 to-zinc-900" folder onClick={() => onOpenApp("projects")}>
             {projectFolderItems.map((item) => (
               <MiniFolderTile key={item.id} iconSrc={getEntityIconSrc(item.id)} label={item.title}>
@@ -685,7 +686,7 @@ function HomeScreen({
             ))}
         </div>
 
-        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-x-3 gap-y-4">
+        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-x-2.5 gap-y-4">
           {(["contact", "spotify", "resume", "photos"] as const).map((appId) => {
             const app = homeApps.find((item) => item.app === appId);
 
@@ -712,7 +713,7 @@ function HomeScreen({
       </div>
 
       <div className="mt-auto pt-0">
-        <div className="grid grid-cols-4 gap-x-2 gap-y-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
+        <div className="grid grid-cols-4 gap-x-1.5 gap-y-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
           {[
             { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onOpenMessages },
             { label: "Phone", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onOpenPhone },

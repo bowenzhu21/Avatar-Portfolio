@@ -121,11 +121,19 @@ export interface SafariQueryResponse {
   url: string;
   content: string;
   query: string;
+  sources?: SafariSource[];
 }
 
 export interface SafariHistoryEntry extends SafariQueryResponse {
   type: "result" | "error";
   errorMessage?: string;
+}
+
+export interface SafariSource {
+  title: string;
+  url: string;
+  displayUrl?: string;
+  snippet?: string;
 }
 
 export interface MessagesChatMessage {

@@ -2,13 +2,13 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import type { SafariHistoryEntry, SafariQueryResponse } from "@/types";
+import type { SafariHistoryEntry, SafariQueryResponse, SafariSource } from "@/types";
 
 const startSuggestions = [
   "What projects has Bowen built",
   "Tell me about Matrix",
-  "What experience does Bowen have",
-  "What is Bowen interested in",
+  "OpenAI",
+  "openai.com",
 ];
 
 function isSafariQueryResponse(payload: unknown): payload is SafariQueryResponse {
@@ -77,6 +77,7 @@ export function SafariApp() {
         url: payload.url,
         content: payload.content,
         query: payload.query,
+        sources: Array.isArray(payload.sources) ? payload.sources : [],
         type: "result",
       };
 
@@ -165,7 +166,10 @@ export function SafariApp() {
             ) : currentPage?.type === "error" ? (
               <SafariErrorPage page={currentPage} onRetry={reload} />
             ) : currentPage ? (
-              <SafariResultPage page={currentPage} />
+              <SafariResultPage
+                page={currentPage}
+                onOpenSource={(url) => void submitQuery(url)}
+              />
             ) : null}
           </motion.div>
         </AnimatePresence>
@@ -217,7 +221,7 @@ function SafariChrome({
             <input
               value={inputValue}
               onChange={(event) => onChange(event.target.value)}
-              placeholder="Search"
+              placeholder="Search or enter website name"
               className="w-full bg-transparent text-[0.82rem] text-[#111111] outline-none placeholder:text-[#8b8b92]"
             />
           </div>
@@ -321,7 +325,13 @@ function SafariErrorPage({
   );
 }
 
-function SafariResultPage({ page }: { page: SafariHistoryEntry }) {
+function SafariResultPage({
+  page,
+  onOpenSource,
+}: {
+  page: SafariHistoryEntry;
+  onOpenSource: (url: string) => void;
+}) {
   const blocks = useMemo(() => parseSafariContent(page.content), [page.content]);
 
   return (
@@ -361,8 +371,51 @@ function SafariResultPage({ page }: { page: SafariHistoryEntry }) {
             </p>
           );
         })}
+
+        {page.sources?.length ? (
+          <section className="space-y-3 border-t border-black/6 pt-5">
+            <h2 className="text-[1.02rem] font-semibold tracking-[-0.03em] text-[#151515]">
+              Search Results
+            </h2>
+            <div className="space-y-2.5">
+              {page.sources.map((source) => (
+                <SafariSourceCard
+                  key={`${source.url}-${source.title}`}
+                  source={source}
+                  onOpen={() => onOpenSource(source.url)}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
+  );
+}
+
+function SafariSourceCard({
+  source,
+  onOpen,
+}: {
+  source: SafariSource;
+  onOpen: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="block w-full rounded-[1.2rem] border border-black/6 bg-[#fafafc] px-4 py-3 text-left transition hover:bg-white"
+    >
+      <p className="text-[0.7rem] uppercase tracking-[0.16em] text-[#6d6d74]">
+        {source.displayUrl || source.url}
+      </p>
+      <p className="mt-1 text-[0.94rem] font-semibold tracking-[-0.02em] text-[#111111]">
+        {source.title}
+      </p>
+      {source.snippet ? (
+        <p className="mt-1 text-[0.8rem] leading-6 text-[#3b3b41]">{source.snippet}</p>
+      ) : null}
+    </button>
   );
 }
 
