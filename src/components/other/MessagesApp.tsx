@@ -321,6 +321,20 @@ function MessageComposer({
   disabled: boolean;
   error: string | null;
 }) {
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (!draft.trim() || disabled) {
+      return;
+    }
+
+    void onSend();
+  }
+
   return (
     <div className="border-t border-black/6 bg-[rgba(248,248,250,0.98)] px-3 pb-4 pt-2 backdrop-blur-xl">
       {error ? <p className="pb-2 text-[0.72rem] text-[#c24b4b]">{error}</p> : null}
@@ -335,6 +349,7 @@ function MessageComposer({
           <textarea
             value={draft}
             onChange={(event) => onChange(event.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="iMessage"
             rows={1}
             className="max-h-28 min-h-[1.2rem] w-full resize-none bg-transparent text-[0.9rem] leading-5 text-[#111111] outline-none placeholder:text-[#9a9aa1]"

@@ -10,6 +10,7 @@ import {
   spotifyTracks,
 } from "@/data/spotify";
 import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
+import { stopRealtimeSTTListening } from "@/hooks/useRealtimeSTT";
 import { orchestrateWithGemini, routeVoiceIntent } from "@/lib/orchestrator";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityByRoute } from "@/utils/portfolio";
@@ -44,10 +45,24 @@ function normalizeVoiceCommand(value: string) {
     .trim();
 }
 
+function isGenericSpotifyTrackSwitchRequest(normalizedTranscript: string) {
+  return (
+    /\b(?:switch|change)\b(?:\s+\w+){0,4}\s+\b(?:song|songs|sogn|sogns|track|tracks|music|tune|tunes)\b/.test(
+      normalizedTranscript,
+    ) ||
+    /\b(?:play|put on|listen to)\b(?:\s+\w+){0,4}\s+\b(?:another|different|new)\b(?:\s+\w+){0,3}\s+\b(?:song|songs|sogn|sogns|track|tracks|music|tune|tunes)\b/.test(
+      normalizedTranscript,
+    ) ||
+    /\b(?:another|different|new)\b(?:\s+\w+){0,3}\s+\b(?:song|songs|sogn|sogns|track|tracks|music|tune|tunes)\b/.test(
+      normalizedTranscript,
+    )
+  );
+}
+
 function extractSpotifyTrackRequest(transcript: string) {
   const patterns = [
     /(?:play|put on|listen to)\s+(.+)$/i,
-    /(?:switch|change)\s+(?:the\s+)?(?:song|track|music)?\s*(?:to)?\s+(.+)$/i,
+    /(?:switch|change)\s+(?:the\s+)?(?:song|songs|track|tracks|music|tune|tunes)?\s*(?:to)?\s+(.+)$/i,
   ];
 
   for (const pattern of patterns) {
@@ -78,9 +93,12 @@ function detectSpotifyVoiceCommand(args: {
   isSpotifyPaused: boolean;
 }): SpotifyVoiceCommand | null {
   const normalized = normalizeVoiceCommand(args.transcript);
-  const mentionsMusic = /\b(song|track|music|spotify|playlist)\b/.test(normalized);
+  const mentionsMusic = /\b(song|songs|sogn|sogns|track|tracks|music|spotify|playlist|tune|tunes)\b/.test(
+    normalized,
+  );
   const currentTrack = getSpotifyTrackById(args.currentTrackId);
   const requestedTrackText = extractSpotifyTrackRequest(args.transcript);
+  const isGenericTrackSwitchRequest = isGenericSpotifyTrackSwitchRequest(normalized);
   const matchedTrack = requestedTrackText
     ? findSpotifyTrackByQuery(requestedTrackText) ?? findSpotifyTrackByQuery(args.transcript)
     : findSpotifyTrackByQuery(args.transcript);
@@ -131,6 +149,7 @@ function detectSpotifyVoiceCommand(args: {
   if (
     requestedTrackText &&
     !matchedTrack &&
+    !isGenericTrackSwitchRequest &&
     (mentionsMusic || usesMusicSpecificVerb)
   ) {
     return {
@@ -144,9 +163,10 @@ function detectSpotifyVoiceCommand(args: {
   }
 
   if (
-    mentionsMusic &&
-    (/\b(next|another|different)\b/.test(normalized) ||
-      /\b(change|switch)\b/.test(normalized))
+    isGenericTrackSwitchRequest ||
+    (mentionsMusic &&
+      (/\b(next|another|different|new)\b/.test(normalized) ||
+        /\b(change|switch)\b/.test(normalized)))
   ) {
     const nextTrack = getSpotifyTrackById(getNextSpotifyTrackId(args.currentTrackId));
 
@@ -293,6 +313,7 @@ export function VoiceRouterProvider() {
           setLatestSpokenResponse(spotifyCommand.responseText);
 
           if (spotifyCommand.responseText) {
+            await stopRealtimeSTTListening();
             await unlockAudio();
 
             try {
@@ -361,6 +382,7 @@ export function VoiceRouterProvider() {
         setLatestSpokenResponse(conciseResponse);
 
         if (conciseResponse) {
+          await stopRealtimeSTTListening();
           await unlockAudio();
           await speak(conciseResponse);
         } else {

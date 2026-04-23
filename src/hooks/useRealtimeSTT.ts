@@ -24,6 +24,10 @@ const INITIAL_STATE: DeepgramRealtimeState = {
 
 const sharedRealtimeSTTClient = new DeepgramRealtimeClient();
 
+export async function stopRealtimeSTTListening() {
+  await sharedRealtimeSTTClient.stopListening();
+}
+
 export function useRealtimeSTT() {
   const [state, setState] = useState<DeepgramRealtimeState>(INITIAL_STATE);
   const previousFinalTranscriptRef = useRef("");
