@@ -6,8 +6,7 @@ export type CardType =
   | "stack"
   | "comparison"
   | "contact"
-  | "resume"
-  | "hobbies";
+  | "resume";
 
 export type ConversationMode = "default" | "recruiter" | "technical" | "concise";
 
@@ -18,7 +17,7 @@ export type PhoneApp =
   | "phone"
   | "messages"
   | "projects"
-  | "gods"
+  | "primitives"
   | "experience"
   | "spotify"
   | "safari"
@@ -26,8 +25,7 @@ export type PhoneApp =
   | "school"
   | "resume"
   | "contact"
-  | "settings"
-  | "hobbies";
+  | "settings";
 
 export type PhoneScreenView = "home" | "list" | "detail";
 

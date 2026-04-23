@@ -25,6 +25,7 @@ interface ProjectGalleryImage extends ProjectPreview {
 interface ProjectAppShellProps {
   title: string;
   backgroundImageSrc: string;
+  backgroundOverlayClassName?: string;
   summary: string;
   bullets: string[];
   preview: ProjectPreview;
@@ -55,6 +56,7 @@ const navGlassStyle = {
 export function ProjectAppShell({
   title,
   backgroundImageSrc,
+  backgroundOverlayClassName,
   summary,
   bullets,
   preview,
@@ -95,6 +97,10 @@ export function ProjectAppShell({
         backgroundPosition: "center",
       }}
     >
+      {backgroundOverlayClassName ? (
+        <div className={`pointer-events-none absolute inset-0 ${backgroundOverlayClassName}`} />
+      ) : null}
+
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         <header
           className={`px-5 pb-5 pt-5 backdrop-blur-[18px] ${

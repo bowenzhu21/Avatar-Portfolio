@@ -15,8 +15,8 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
     return "projects";
   }
 
-  if (route.startsWith("/gods/")) {
-    return "gods";
+  if (route.startsWith("/primitives/")) {
+    return "primitives";
   }
 
   if (route.startsWith("/experience/")) {
@@ -49,10 +49,6 @@ function getPhoneAppFromRoute(route: string): PhoneScreenState["app"] {
 
   if (route === "/settings") {
     return "settings";
-  }
-
-  if (route === "/hobbies") {
-    return "hobbies";
   }
 
   return "home";
@@ -94,7 +90,7 @@ export function createPhoneListScreen(
     phone: "Phone",
     messages: "Messages",
     projects: "Projects",
-    gods: "Gods",
+    primitives: "Primitives",
     experience: "Experience",
     spotify: "Spotify",
     safari: "Safari",
@@ -103,7 +99,6 @@ export function createPhoneListScreen(
     resume: "Resume",
     contact: "Contact",
     settings: "Settings",
-    hobbies: "Nutrition & Fitness",
   } as const;
 
   return {

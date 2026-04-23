@@ -60,8 +60,8 @@ const entityIconMap: Partial<Record<string, string>> = {
   contact: "/icons/contact.webp",
 };
 
-const godProjectIds = ["apollo", "aphrodite", "hermes", "kronos"] as const;
-const godProjectIdSet = new Set<string>(godProjectIds);
+const primitiveProjectIds = ["apollo", "aphrodite", "hermes", "kronos"] as const;
+const primitiveProjectIdSet = new Set<string>(primitiveProjectIds);
 
 const homeApps: Array<{
   app: Exclude<PhoneApp, "home">;
@@ -105,7 +105,7 @@ const homeApps: Array<{
     label: "Spotify",
     iconSrc: "/icons/spotify.png",
     tint: "from-[#1ed760] to-[#0b7c35]",
-    iconImageClassName: "object-cover",
+    iconImageClassName: "scale-[1.6] object-cover",
   },
 ];
 
@@ -116,12 +116,12 @@ function getEntityIconSrc(entityId: string) {
 function getItemsForApp(app: PhoneApp) {
   if (app === "projects") {
     return portfolioEntities.filter(
-      (entity) => entity.type === "project" && !godProjectIdSet.has(entity.id),
+      (entity) => entity.type === "project" && !primitiveProjectIdSet.has(entity.id),
     );
   }
 
-  if (app === "gods") {
-    return portfolioEntities.filter((entity) => godProjectIdSet.has(entity.id));
+  if (app === "primitives") {
+    return portfolioEntities.filter((entity) => primitiveProjectIdSet.has(entity.id));
   }
 
   if (app === "experience") {
@@ -150,10 +150,6 @@ function getItemsForApp(app: PhoneApp) {
 
   if (app === "spotify") {
     return [];
-  }
-
-  if (app === "hobbies") {
-    return portfolioEntities.filter((entity) => entity.route === "/hobbies");
   }
 
   return [];
@@ -240,7 +236,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   ].join(":");
 
   const projectFolderItems = useMemo(() => getItemsForApp("projects").slice(0, 4), []);
-  const godFolderItems = useMemo(() => getItemsForApp("gods").slice(0, 4), []);
+  const primitiveFolderItems = useMemo(() => getItemsForApp("primitives").slice(0, 4), []);
   const experienceFolderItems = useMemo(() => getItemsForApp("experience").slice(0, 4), []);
 
   function openMessages(contactId: ChatContactId | null = null) {
@@ -326,7 +322,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       return;
     }
 
-    if (app === "projects" || app === "gods" || app === "experience") {
+    if (app === "projects" || app === "primitives" || app === "experience") {
       setPhoneScreen(createPhoneListScreen(app));
       return;
     }
@@ -400,7 +396,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       month={month}
       day={day}
       projectFolderItems={projectFolderItems}
-      godFolderItems={godFolderItems}
+      primitiveFolderItems={primitiveFolderItems}
       experienceFolderItems={experienceFolderItems}
       homeApps={homeApps}
       onOpenApp={openApp}
@@ -489,7 +485,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             <SpotifyApp />
           ) : phoneScreen.view === "list" ? (
             phoneScreen.app === "projects" ||
-            phoneScreen.app === "gods" ||
+            phoneScreen.app === "primitives" ||
             phoneScreen.app === "experience" ? (
               <div className="relative h-full overflow-hidden rounded-[2rem]">
                 <div className="pointer-events-none absolute inset-0 scale-[1.035] blur-[14px] brightness-[0.72]">
@@ -578,8 +574,6 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
               <ResumeApp />
             ) : visibleEntity.id === "contact" ? (
               <ContactApp />
-            ) : visibleEntity.id === "hobbies" ? (
-              <PlaceholderPage title="Fitness" />
             ) : (
               <PlaceholderPage title={visibleEntity.title} />
             )
@@ -604,7 +598,7 @@ function HomeScreen({
   month,
   day,
   projectFolderItems,
-  godFolderItems,
+  primitiveFolderItems,
   experienceFolderItems,
   homeApps,
   onOpenApp,
@@ -619,7 +613,7 @@ function HomeScreen({
   month: string;
   day: string;
   projectFolderItems: PortfolioEntity[];
-  godFolderItems: PortfolioEntity[];
+  primitiveFolderItems: PortfolioEntity[];
   experienceFolderItems: PortfolioEntity[];
   homeApps: Array<{
     app: Exclude<PhoneApp, "home">;
@@ -639,8 +633,8 @@ function HomeScreen({
 }) {
   return (
     <div className="flex h-full flex-col px-2 pb-4 pt-1">
-      <div className="grid auto-rows-[64px] grid-cols-4 gap-x-4 gap-y-4">
-        <div className="col-span-2 row-span-2 mx-auto w-[86%] rounded-[1.32rem] border border-white/12 bg-black/68 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
+      <div className="grid auto-rows-[64px] grid-cols-4 gap-x-3 gap-y-4">
+        <div className="col-span-2 row-span-2 mx-auto w-[90%] rounded-[1.32rem] border border-white/12 bg-black/68 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
           <div className="flex h-full flex-col items-center justify-center text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/72">PT</p>
             <p className="mt-1 font-display text-[2.1rem] leading-none tracking-tight text-white">
@@ -650,7 +644,7 @@ function HomeScreen({
           </div>
         </div>
 
-        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-4">
+        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-x-3 gap-y-4">
           <AppIcon label="Projects" tint="from-zinc-700 to-zinc-900" folder onClick={() => onOpenApp("projects")}>
             {projectFolderItems.map((item) => (
               <MiniFolderTile key={item.id} iconSrc={getEntityIconSrc(item.id)} label={item.title}>
@@ -667,59 +661,58 @@ function HomeScreen({
             ))}
           </AppIcon>
 
-          {homeApps
-            .filter((app) => app.app === "photos" || app.app === "school")
-            .map((app) => (
-              <AppIcon
-                key={app.app}
-                label={app.label}
-                icon={app.icon}
-                iconSrc={app.iconSrc}
-                iconBackgroundClass={app.iconBackgroundClass}
-                iconImageClassName={app.iconImageClassName}
-                tint={app.tint}
-                onClick={() => onOpenApp(app.app)}
-              />
-            ))}
-        </div>
-
-        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-4">
-          {homeApps
-            .filter(
-              (app) =>
-                app.app === "resume" ||
-                app.app === "contact" ||
-                app.app === "spotify",
-            )
-            .map((app) => (
-              <AppIcon
-                key={app.app}
-                label={app.label}
-                icon={app.icon}
-                iconSrc={app.iconSrc}
-                iconBackgroundClass={app.iconBackgroundClass}
-                iconImageClassName={app.iconImageClassName}
-                tint={app.tint}
-                onClick={() => onOpenApp(app.app)}
-              />
-            ))}
-        </div>
-
-        <DateWidget weekday={weekday} month={month} day={day} />
-
-        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-4">
-          <AppIcon label="Gods" tint="from-zinc-700 to-zinc-900" folder onClick={() => onOpenApp("gods")}>
-            {godFolderItems.map((item) => (
+          <AppIcon label="Primitives" tint="from-zinc-700 to-zinc-900" folder onClick={() => onOpenApp("primitives")}>
+            {primitiveFolderItems.map((item) => (
               <MiniFolderTile key={item.id} iconSrc={getEntityIconSrc(item.id)} label={item.title}>
                 {item.title.slice(0, 1)}
               </MiniFolderTile>
             ))}
           </AppIcon>
+
+          {homeApps
+            .filter((app) => app.app === "school")
+            .map((app) => (
+              <AppIcon
+                key={app.app}
+                label={app.label}
+                icon={app.icon}
+                iconSrc={app.iconSrc}
+                iconBackgroundClass={app.iconBackgroundClass}
+                iconImageClassName={app.iconImageClassName}
+                tint={app.tint}
+                onClick={() => onOpenApp(app.app)}
+              />
+            ))}
         </div>
+
+        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-x-3 gap-y-4">
+          {(["contact", "spotify", "resume", "photos"] as const).map((appId) => {
+            const app = homeApps.find((item) => item.app === appId);
+
+            if (!app) {
+              return null;
+            }
+
+            return (
+              <AppIcon
+                key={app.app}
+                label={app.label}
+                icon={app.icon}
+                iconSrc={app.iconSrc}
+                iconBackgroundClass={app.iconBackgroundClass}
+                iconImageClassName={app.iconImageClassName}
+                tint={app.tint}
+                onClick={() => onOpenApp(app.app)}
+              />
+            );
+          })}
+        </div>
+
+        <DateWidget weekday={weekday} month={month} day={day} />
       </div>
 
       <div className="mt-auto pt-0">
-        <div className="grid grid-cols-4 gap-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
           {[
             { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onOpenMessages },
             { label: "Phone", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onOpenPhone },
@@ -827,7 +820,7 @@ function DateWidget({
   day: string;
 }) {
   return (
-    <div className="col-span-2 row-span-2 mx-auto w-[86%] rounded-[1.32rem] border border-white/12 bg-black/74 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
+    <div className="col-span-2 row-span-2 mx-auto w-[90%] rounded-[1.32rem] border border-white/12 bg-black/74 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
       <div className="flex h-full flex-col items-center justify-center text-center">
         <div className="flex items-center justify-center gap-2 text-[0.8rem] font-semibold">
           <span className="text-red-400">{weekday}</span>

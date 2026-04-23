@@ -8,9 +8,12 @@ import { usePortfolioStore } from "@/store/usePortfolioStore";
 export function SpotifyApp() {
   const selectedTrackId = usePortfolioStore((state) => state.selectedSpotifyTrackId);
   const setSelectedTrackId = usePortfolioStore((state) => state.setSelectedSpotifyTrackId);
+  const isSpotifyPaused = usePortfolioStore((state) => state.isSpotifyPaused);
+  const toggleSpotifyPaused = usePortfolioStore((state) => state.toggleSpotifyPaused);
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
   const activeTrack = getSpotifyTrackById(selectedTrackId);
   const pausedForVoice = interactionPhase !== "idle";
+  const isPlaybackPaused = isSpotifyPaused || pausedForVoice;
 
   return (
     <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2.45rem] bg-[#050505] text-white">
@@ -53,19 +56,34 @@ export function SpotifyApp() {
                 {activeTrack.artist}
               </p>
             </div>
-            <div
+            <button
+              type="button"
+              onClick={toggleSpotifyPaused}
+              disabled={pausedForVoice}
               className={clsx(
-                "flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[1rem] font-black text-black shadow-[0_12px_24px_rgba(30,215,96,0.24)]",
-                pausedForVoice ? "bg-white/82" : "bg-[#1ed760]",
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-black shadow-[0_12px_24px_rgba(30,215,96,0.24)] transition",
+                "bg-[#1ed760]",
+                pausedForVoice
+                  ? "cursor-not-allowed opacity-70"
+                  : "hover:scale-[1.04] active:scale-[0.98]",
               )}
-              aria-hidden="true"
+              aria-label={
+                pausedForVoice
+                  ? "Music paused while Bowen is speaking"
+                  : isSpotifyPaused
+                    ? "Resume music"
+                    : "Pause music"
+              }
             >
-              {pausedForVoice ? (
-                <span className="text-[0.82rem] tracking-[-0.16em]">II</span>
-              ) : (
+              {isPlaybackPaused ? (
                 <span className="ml-1 h-0 w-0 border-y-[7px] border-l-[11px] border-y-transparent border-l-black" />
+              ) : (
+                <span className="flex h-4 items-center gap-[3px]" aria-hidden="true">
+                  <span className="h-4 w-[4px] rounded-full bg-black" />
+                  <span className="h-4 w-[4px] rounded-full bg-black" />
+                </span>
               )}
-            </div>
+            </button>
           </div>
 
           <div className="mt-5">
@@ -126,7 +144,7 @@ export function SpotifyApp() {
                       {track.artist}
                     </p>
                   </div>
-                  {active ? (
+                  {active && !isPlaybackPaused ? (
                     <div className="flex h-5 items-end gap-[2px]" aria-hidden="true">
                       <span className="h-2 w-[3px] animate-pulse rounded-full bg-[#1ed760]" />
                       <span className="h-4 w-[3px] animate-pulse rounded-full bg-[#1ed760] [animation-delay:120ms]" />

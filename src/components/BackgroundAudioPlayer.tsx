@@ -10,8 +10,9 @@ export function BackgroundAudioPlayer() {
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
   const phoneApp = usePortfolioStore((state) => state.phoneScreen.app);
   const selectedSpotifyTrackId = usePortfolioStore((state) => state.selectedSpotifyTrackId);
+  const isSpotifyPaused = usePortfolioStore((state) => state.isSpotifyPaused);
   const activeTrack = getSpotifyTrackById(selectedSpotifyTrackId);
-  const shouldPause = phoneApp === "phone" || interactionPhase !== "idle";
+  const shouldPause = isSpotifyPaused || phoneApp === "phone" || interactionPhase !== "idle";
 
   useEffect(() => {
     const audio = audioRef.current;

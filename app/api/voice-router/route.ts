@@ -118,10 +118,6 @@ function inferFollowUpCard(
     return "resume";
   }
 
-  if (/\b(hobbies|interests|nutrition|fitness)\b/.test(normalized)) {
-    return "hobbies";
-  }
-
   if (/\b(go deeper|more detail|expand)\b/.test(normalized)) {
     return activeCard ?? "overview";
   }
@@ -206,10 +202,6 @@ function buildContextualResponse(args: {
 
   if (args.card === "resume") {
     return "I’ll open the resume view for a compact summary of Bowen's background.";
-  }
-
-  if (args.card === "hobbies") {
-    return "I’ll switch to nutrition and fitness to add some personal context beyond work and projects.";
   }
 
   if (args.mode === "recruiter") {

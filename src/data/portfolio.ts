@@ -210,21 +210,21 @@ export const portfolioEntities: PortfolioEntity[] = [
         summary: "Ideas for reminders, streaks, and lightweight accountability loops.",
       },
     ],
-    relatedItems: ["aura-dev", "school", "hobbies"],
+    relatedItems: ["aura-dev", "school", "contact"],
   },
   {
     id: "apollo",
     title: "Apollo",
     type: "project",
-    route: "/gods/apollo",
-    aliases: ["apollo", "apollo project", "apollo app", "gods apollo"],
+    route: "/primitives/apollo",
+    aliases: ["apollo", "apollo project", "apollo app", "primitives apollo"],
     shortSummary:
-      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
-    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
+    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",
@@ -248,15 +248,20 @@ export const portfolioEntities: PortfolioEntity[] = [
     id: "aphrodite",
     title: "Aphrodite",
     type: "project",
-    route: "/gods/aphrodite",
-    aliases: ["aphrodite", "aphrodite project", "aphrodite app", "gods aphrodite"],
+    route: "/primitives/aphrodite",
+    aliases: [
+      "aphrodite",
+      "aphrodite project",
+      "aphrodite app",
+      "primitives aphrodite",
+    ],
     shortSummary:
-      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
-    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
+    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",
@@ -280,15 +285,15 @@ export const portfolioEntities: PortfolioEntity[] = [
     id: "hermes",
     title: "Hermes",
     type: "project",
-    route: "/gods/hermes",
-    aliases: ["hermes", "hermes project", "hermes app", "gods hermes"],
+    route: "/primitives/hermes",
+    aliases: ["hermes", "hermes project", "hermes app", "primitives hermes"],
     shortSummary:
-      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
-    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
+    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",
@@ -312,15 +317,15 @@ export const portfolioEntities: PortfolioEntity[] = [
     id: "kronos",
     title: "Kronos",
     type: "project",
-    route: "/gods/kronos",
-    aliases: ["kronos", "kronos project", "kronos app", "gods kronos"],
+    route: "/primitives/kronos",
+    aliases: ["kronos", "kronos project", "kronos app", "primitives kronos"],
     shortSummary:
-      "A project app in the Gods section, using its own icon, background, and gallery assets.",
+      "A project app in the Primitives section, using its own icon, background, and gallery assets.",
     technicalSummary:
       "Implemented with the same mobile project-app shell used across the portfolio, including tabbed navigation and image gallery support.",
     recruiterSummary:
-      "Shows the portfolio's app-native project presentation system extended into a new themed section.",
-    tags: ["Gods", "Project App", "Gallery", "Portfolio"],
+      "Shows the portfolio's app-native project presentation system extended into the Primitives section.",
+    tags: ["Primitives", "Project App", "Gallery", "Portfolio"],
     sections: [
       {
         id: "overview",
@@ -577,41 +582,6 @@ export const portfolioEntities: PortfolioEntity[] = [
       },
     ],
     relatedItems: ["resume", "heygen", "jma-consulting"],
-  },
-  {
-    id: "hobbies",
-    title: "Nutrition & Fitness",
-    type: "other",
-    route: "/hobbies",
-    aliases: [
-      "nutrition and fitness",
-      "nutrition",
-      "fitness",
-      "hobbies",
-      "interests",
-      "outside work",
-      "personal interests",
-    ],
-    shortSummary:
-      "A personal view into training, nutrition, and the routines that support consistency outside of work.",
-    technicalSummary:
-      "Useful for connecting discipline, routine design, and personal systems beyond core engineering work.",
-    recruiterSummary:
-      "Adds a more human layer to the portfolio by showing discipline and lifestyle habits outside work.",
-    tags: ["Nutrition", "Fitness", "Lifestyle"],
-    sections: [
-      {
-        id: "activities",
-        title: "Routines",
-        summary: "Nutrition, training, and the routines that matter outside formal work.",
-      },
-      {
-        id: "mindset",
-        title: "Mindset",
-        summary: "How training and nutrition reflect discipline, consistency, and energy management.",
-      },
-    ],
-    relatedItems: ["gymbro", "contact", "school"],
   },
 ];
 
