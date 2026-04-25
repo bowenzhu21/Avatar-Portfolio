@@ -84,7 +84,7 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
     id: "school",
     title: "University of Waterloo",
     role: "BASc in Systems Design Engineering (Co-op)",
-    date: "Sep. 2024 - Apr. 2028",
+    date: "Sep. 2024 - Apr. 2029",
     iconSrc: "/icons/school.jpeg",
     background:
       "radial-gradient(circle at 16% 12%, rgba(255,255,255,0.42), transparent 28%), radial-gradient(circle at 84% 20%, rgba(191,146,62,0.3), transparent 30%), linear-gradient(180deg, rgba(247,239,216,0.98) 0%, rgba(236,217,165,0.97) 44%, rgba(216,187,113,0.95) 100%)",

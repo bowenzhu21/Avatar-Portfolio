@@ -148,7 +148,7 @@ export const resumeRecord: ResumeRecord = {
     {
       school: "University of Waterloo",
       degree: "BASc in Systems Design Engineering (Co-op)",
-      date: "Sep. 2024 - Apr. 2028",
+      date: "Sep. 2024 - Apr. 2029",
       bullets: [
         "Bill Harvey Scholar (1 of 1) | Lloyd Auckland Invitational | AIME Qualifier | 5x CEMC National Honour (Top 3%)",
         "3.9 GPA | Competitions: Optiver Trading Comp | HackIllinois | NexHacks | 1st Place - Toronto Model UN",
