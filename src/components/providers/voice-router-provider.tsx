@@ -75,7 +75,7 @@ function buildContactMatchers(
     const aliases = Array.from(
       new Set([
         normalizeVoiceCommand(contact.name),
-        ...contactAliasMap[contact.id],
+        ...contactAliasMap[contact.id].map((alias) => normalizeVoiceCommand(alias)),
       ]),
     ).filter(Boolean);
 
@@ -88,6 +88,23 @@ function buildContactMatchers(
 
 const messageContactMatchers = buildContactMatchers(allChatContacts);
 const callableContactMatchers = buildContactMatchers(phoneContacts);
+
+const contactTargetStopWords = new Set([
+  "a",
+  "an",
+  "and",
+  "chat",
+  "friend",
+  "for",
+  "hey",
+  "my",
+  "now",
+  "please",
+  "the",
+  "to",
+  "up",
+  "with",
+]);
 
 function findMentionedContact(
   normalizedTranscript: string,
@@ -123,6 +140,181 @@ function findMentionedContact(
   return matches[0]?.contact ?? null;
 }
 
+function levenshteinDistance(left: string, right: string) {
+  if (left === right) {
+    return 0;
+  }
+
+  if (!left.length) {
+    return right.length;
+  }
+
+  if (!right.length) {
+    return left.length;
+  }
+
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+
+  for (let row = 1; row <= left.length; row += 1) {
+    let diagonal = previous[0];
+    previous[0] = row;
+
+    for (let column = 1; column <= right.length; column += 1) {
+      const nextDiagonal = previous[column];
+      const cost = left[row - 1] === right[column - 1] ? 0 : 1;
+
+      previous[column] = Math.min(
+        previous[column] + 1,
+        previous[column - 1] + 1,
+        diagonal + cost,
+      );
+      diagonal = nextDiagonal;
+    }
+  }
+
+  return previous[right.length];
+}
+
+function cleanContactTarget(value: string) {
+  return normalizeVoiceCommand(value)
+    .split(" ")
+    .filter((token) => token && !contactTargetStopWords.has(token))
+    .join(" ")
+    .trim();
+}
+
+function buildContactTargetCandidates(target: string) {
+  const tokens = target.split(" ").filter(Boolean);
+  const candidates = new Set<string>();
+
+  if (target) {
+    candidates.add(target);
+  }
+
+  if (tokens.length >= 2) {
+    candidates.add(tokens.slice(-2).join(" "));
+  }
+
+  if (tokens.length >= 1) {
+    candidates.add(tokens[tokens.length - 1]);
+  }
+
+  tokens.forEach((token) => {
+    if (token.length >= 3) {
+      candidates.add(token);
+    }
+  });
+
+  return [...candidates];
+}
+
+function getAllowedEditDistance(length: number) {
+  if (length <= 4) {
+    return 1;
+  }
+
+  if (length <= 7) {
+    return 2;
+  }
+
+  return 3;
+}
+
+function findFuzzyContactMatch(
+  target: string | null,
+  contacts: ReturnType<typeof buildContactMatchers>,
+) {
+  if (!target) {
+    return null;
+  }
+
+  const cleanedTarget = cleanContactTarget(target);
+
+  if (!cleanedTarget) {
+    return null;
+  }
+
+  const candidates = buildContactTargetCandidates(cleanedTarget);
+  let bestMatch:
+    | {
+        contact: ReturnType<typeof buildContactMatchers>[number];
+        similarity: number;
+        distance: number;
+        aliasLength: number;
+      }
+    | null = null;
+
+  for (const contact of contacts) {
+    for (const alias of contact.aliases) {
+      for (const candidate of candidates) {
+        if (!candidate || candidate[0] !== alias[0]) {
+          continue;
+        }
+
+        if (
+          Math.min(candidate.length, alias.length) <= 5 &&
+          candidate.slice(0, 2) !== alias.slice(0, 2)
+        ) {
+          continue;
+        }
+
+        const distance = levenshteinDistance(candidate, alias);
+        const longestLength = Math.max(candidate.length, alias.length);
+        const similarity = 1 - distance / longestLength;
+
+        if (distance > getAllowedEditDistance(longestLength) || similarity < 0.64) {
+          continue;
+        }
+
+        if (
+          !bestMatch ||
+          similarity > bestMatch.similarity ||
+          (similarity === bestMatch.similarity && distance < bestMatch.distance) ||
+          (similarity === bestMatch.similarity &&
+            distance === bestMatch.distance &&
+            alias.length > bestMatch.aliasLength)
+        ) {
+          bestMatch = {
+            contact,
+            similarity,
+            distance,
+            aliasLength: alias.length,
+          };
+        }
+      }
+    }
+  }
+
+  return bestMatch?.contact ?? null;
+}
+
+function extractContactTarget(args: {
+  normalizedTranscript: string;
+  mode: "call" | "message";
+}) {
+  const patterns =
+    args.mode === "call"
+      ? [
+          /\b(?:call|phone|dial|ring)\s+(.+)$/,
+          /\b(?:facetime|face time|video call|video chat)\s+(.+)$/,
+        ]
+      : [
+          /\b(?:text|message|messages|imessage|dm)\s+(?:to\s+)?(.+)$/,
+          /\bsend(?:\s+\w+){0,3}\s+(?:a\s+)?(?:text|message)\s+(?:to\s+)?(.+)$/,
+        ];
+
+  for (const pattern of patterns) {
+    const match = args.normalizedTranscript.match(pattern);
+    const target = cleanContactTarget(match?.[1] ?? "");
+
+    if (target) {
+      return target;
+    }
+  }
+
+  return null;
+}
+
 function buildContactSuggestions(contactName: string) {
   const suggestions = [`Text ${contactName}`];
 
@@ -149,7 +341,15 @@ function detectContactVoiceCommand(transcript: string): ContactVoiceCommand | nu
   const wantsCall = wantsFaceTime || /\b(?:call|phone|dial|ring)\b/.test(normalized);
 
   if (wantsMessage) {
-    const contact = findMentionedContact(normalized, messageContactMatchers);
+    const contact =
+      findMentionedContact(normalized, messageContactMatchers) ??
+      findFuzzyContactMatch(
+        extractContactTarget({
+          normalizedTranscript: normalized,
+          mode: "message",
+        }),
+        messageContactMatchers,
+      );
 
     if (contact) {
       return {
@@ -163,7 +363,15 @@ function detectContactVoiceCommand(transcript: string): ContactVoiceCommand | nu
   }
 
   if (wantsCall) {
-    const contact = findMentionedContact(normalized, callableContactMatchers);
+    const contact =
+      findMentionedContact(normalized, callableContactMatchers) ??
+      findFuzzyContactMatch(
+        extractContactTarget({
+          normalizedTranscript: normalized,
+          mode: "call",
+        }),
+        callableContactMatchers,
+      );
 
     if (contact) {
       const callMode: PhoneCallMode = wantsFaceTime ? "facetime" : "call";
