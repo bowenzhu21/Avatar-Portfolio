@@ -13,12 +13,17 @@ import type {
   ChatContactId,
   MessagesChatMessage,
   MessagesChatResponse,
+  PhoneCallMode,
 } from "@/types";
 
-type CallMode = "call" | "facetime";
-
 interface PhoneAppProps {
+  initialContactId: ChatContactId | null;
+  initialCallMode: PhoneCallMode | null;
   onOpenMessages: (contactId: ChatContactId) => void;
+  onUpdateTarget: (
+    contactId: ChatContactId | null,
+    callMode: PhoneCallMode | null,
+  ) => void;
 }
 
 const INITIAL_CALL_STT_STATE: DeepgramRealtimeState = {
@@ -35,26 +40,55 @@ const INITIAL_CALL_STT_STATE: DeepgramRealtimeState = {
   microphonePermission: "unknown",
 };
 
-export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
+export function PhoneApp({
+  initialContactId,
+  initialCallMode,
+  onOpenMessages,
+  onUpdateTarget,
+}: PhoneAppProps) {
   const [selectedContactId, setSelectedContactId] = useState<ChatContactId | null>(null);
-  const [activeCall, setActiveCall] = useState<{ contactId: ChatContactId; mode: CallMode } | null>(null);
+  const [activeCall, setActiveCall] = useState<{
+    contactId: ChatContactId;
+    mode: PhoneCallMode;
+  } | null>(null);
   const contact = selectedContactId
     ? phoneContacts.find((entry) => entry.id === selectedContactId) ?? null
     : null;
 
+  useEffect(() => {
+    if (!initialContactId) {
+      setSelectedContactId(null);
+      setActiveCall(null);
+      return;
+    }
+
+    setSelectedContactId(initialContactId);
+    setActiveCall(
+      initialCallMode
+        ? {
+            contactId: initialContactId,
+            mode: initialCallMode,
+          }
+        : null,
+    );
+  }, [initialCallMode, initialContactId]);
+
   function openContact(contactId: ChatContactId) {
     setSelectedContactId(contactId);
     setActiveCall(null);
+    onUpdateTarget(contactId, null);
   }
 
-  function openCall(contactId: ChatContactId, mode: CallMode) {
+  function openCall(contactId: ChatContactId, mode: PhoneCallMode) {
     setSelectedContactId(contactId);
     setActiveCall({ contactId, mode });
+    onUpdateTarget(contactId, mode);
   }
 
   function closeDetail() {
     setSelectedContactId(null);
     setActiveCall(null);
+    onUpdateTarget(null, null);
   }
 
   return (
@@ -70,7 +104,7 @@ export function PhoneApp({ onOpenMessages }: PhoneAppProps) {
           contact={contact}
           onBack={closeDetail}
           onCall={() => openCall(contact.id, "call")}
-          onFaceTime={() => openCall(contact.id, "call")}
+          onFaceTime={() => openCall(contact.id, "facetime")}
           onMessage={() => onOpenMessages(contact.id)}
         />
       ) : (
@@ -197,7 +231,7 @@ function PhoneCallScreen({
   onHangUp,
 }: {
   contact: ChatContact;
-  mode: CallMode;
+  mode: PhoneCallMode;
   onHangUp: () => void;
 }) {
   const [messages, setMessages] = useState<MessagesChatMessage[]>([]);

@@ -85,6 +85,8 @@ export function derivePhoneScreen(args: {
       entityId: null,
       route: args.route,
       card,
+      contactId: null,
+      callMode: null,
     };
   }
 
@@ -98,6 +100,8 @@ export function derivePhoneScreen(args: {
       entityId: null,
       route: args.route,
       card,
+      contactId: null,
+      callMode: null,
     };
   }
 
@@ -111,6 +115,8 @@ export function derivePhoneScreen(args: {
       entityId: null,
       route: args.route,
       card,
+      contactId: null,
+      callMode: null,
     };
   }
 
@@ -122,6 +128,8 @@ export function derivePhoneScreen(args: {
       entityId: null,
       route: args.route,
       card,
+      contactId: null,
+      callMode: null,
     };
   }
 
@@ -132,6 +140,8 @@ export function derivePhoneScreen(args: {
     entityId: entity.id,
     route: entity.route,
     card,
+    contactId: null,
+    callMode: null,
   };
 }
 
@@ -160,5 +170,7 @@ export function createPhoneListScreen(
     entityId: null,
     route: null,
     card: "overview",
+    contactId: null,
+    callMode: null,
   };
 }

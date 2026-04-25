@@ -29,6 +29,8 @@ export type PhoneApp =
 
 export type PhoneScreenView = "home" | "list" | "detail";
 
+export type PhoneCallMode = "call" | "facetime";
+
 export interface PhoneScreenState {
   app: PhoneApp;
   view: PhoneScreenView;
@@ -36,6 +38,8 @@ export interface PhoneScreenState {
   entityId: string | null;
   route: string | null;
   card: CardType;
+  contactId: ChatContactId | null;
+  callMode: PhoneCallMode | null;
 }
 
 export type OrchestrationIntent =
@@ -147,7 +151,13 @@ export interface MessagesChatResponse {
   reply: string;
 }
 
-export type ChatContactId = "bowen" | "lara" | "john";
+export type ChatContactId =
+  | "bowen"
+  | "lara"
+  | "john"
+  | "yalda"
+  | "alisha"
+  | "pious";
 
 export interface ChatContact {
   id: ChatContactId;
@@ -157,4 +167,6 @@ export interface ChatContact {
   phoneLabel?: string;
   phoneNumber?: string;
   voiceId?: string;
+  promptStyle?: string;
+  promptRules?: string[];
 }

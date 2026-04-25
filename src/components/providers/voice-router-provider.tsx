@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
+import { allChatContacts, phoneContacts } from "@/data/chatContacts";
 import {
   findSpotifyTrackByQuery,
   getNextSpotifyTrackId,
@@ -13,6 +14,7 @@ import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
 import { stopRealtimeSTTListening } from "@/hooks/useRealtimeSTT";
 import { orchestrateWithGemini, routeVoiceIntent } from "@/lib/orchestrator";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
+import type { ChatContactId, PhoneCallMode } from "@/types";
 import { getEntityByRoute } from "@/utils/portfolio";
 
 type SpotifyVoiceCommand =
@@ -23,6 +25,14 @@ type SpotifyVoiceCommand =
       shouldPause?: boolean;
       followUpSuggestions: string[];
     };
+
+type ContactVoiceCommand = {
+  app: "phone" | "messages";
+  contactId: ChatContactId;
+  callMode: PhoneCallMode | null;
+  responseText: string;
+  followUpSuggestions: string[];
+};
 
 const deterministicAppRoutes = new Set([
   "/",
@@ -36,6 +46,15 @@ const deterministicAppRoutes = new Set([
   "/experience",
 ]);
 
+const contactAliasMap: Record<ChatContactId, string[]> = {
+  bowen: ["bowen"],
+  lara: ["lara"],
+  john: ["anderson", "john"],
+  yalda: ["yalda"],
+  alisha: ["alisha"],
+  pious: ["pious"],
+};
+
 function normalizeVoiceCommand(value: string) {
   return value
     .toLowerCase()
@@ -43,6 +62,126 @@ function normalizeVoiceCommand(value: string) {
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildContactMatchers(
+  contacts: Array<{ id: ChatContactId; name: string }>,
+) {
+  return contacts.map((contact) => {
+    const aliases = Array.from(
+      new Set([
+        normalizeVoiceCommand(contact.name),
+        ...contactAliasMap[contact.id],
+      ]),
+    ).filter(Boolean);
+
+    return {
+      ...contact,
+      aliases,
+    };
+  });
+}
+
+const messageContactMatchers = buildContactMatchers(allChatContacts);
+const callableContactMatchers = buildContactMatchers(phoneContacts);
+
+function findMentionedContact(
+  normalizedTranscript: string,
+  contacts: ReturnType<typeof buildContactMatchers>,
+) {
+  const matches = contacts
+    .flatMap((contact) =>
+      contact.aliases
+        .map((alias) => {
+          const pattern = new RegExp(`\\b${escapeRegex(alias).replace(/\s+/g, "\\s+")}\\b`);
+          const match = pattern.exec(normalizedTranscript);
+
+          if (!match) {
+            return null;
+          }
+
+          return {
+            contact,
+            index: match.index,
+            aliasLength: alias.length,
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry)),
+    )
+    .sort((left, right) => {
+      if (left.index !== right.index) {
+        return left.index - right.index;
+      }
+
+      return right.aliasLength - left.aliasLength;
+    });
+
+  return matches[0]?.contact ?? null;
+}
+
+function buildContactSuggestions(contactName: string) {
+  const suggestions = [`Text ${contactName}`];
+
+  if (phoneContacts.some((contact) => contact.name === contactName)) {
+    suggestions.push(`Call ${contactName}`);
+  }
+
+  suggestions.push(
+    ...phoneContacts
+      .filter((contact) => contact.name !== contactName)
+      .slice(0, 2)
+      .map((contact) => `Call ${contact.name}`),
+  );
+
+  return suggestions.slice(0, 3);
+}
+
+function detectContactVoiceCommand(transcript: string): ContactVoiceCommand | null {
+  const normalized = normalizeVoiceCommand(transcript);
+  const wantsMessage =
+    /\b(?:text|message|messages|imessage|dm)\b/.test(normalized) ||
+    /\bsend(?:\s+\w+){0,3}\s+(?:a\s+)?(?:text|message)\b/.test(normalized);
+  const wantsFaceTime = /\b(?:facetime|face time|video call|video chat)\b/.test(normalized);
+  const wantsCall = wantsFaceTime || /\b(?:call|phone|dial|ring)\b/.test(normalized);
+
+  if (wantsMessage) {
+    const contact = findMentionedContact(normalized, messageContactMatchers);
+
+    if (contact) {
+      return {
+        app: "messages",
+        contactId: contact.id,
+        callMode: null,
+        responseText: `Opening messages with ${contact.name}.`,
+        followUpSuggestions: buildContactSuggestions(contact.name),
+      };
+    }
+  }
+
+  if (wantsCall) {
+    const contact = findMentionedContact(normalized, callableContactMatchers);
+
+    if (contact) {
+      const callMode: PhoneCallMode = wantsFaceTime ? "facetime" : "call";
+
+      return {
+        app: "phone",
+        contactId: contact.id,
+        callMode,
+        responseText:
+          callMode === "facetime"
+            ? `Starting FaceTime with ${contact.name}.`
+            : `Calling ${contact.name}.`,
+        followUpSuggestions: buildContactSuggestions(contact.name),
+      };
+    }
+  }
+
+  return null;
 }
 
 function isGenericSpotifyTrackSwitchRequest(normalizedTranscript: string) {
@@ -245,6 +384,7 @@ export function VoiceRouterProvider() {
   const setLatestSpokenResponse = usePortfolioStore((state) => state.setLatestSpokenResponse);
   const setLatestRouterPayload = usePortfolioStore((state) => state.setLatestRouterPayload);
   const setLatestRouterResponse = usePortfolioStore((state) => state.setLatestRouterResponse);
+  const setPhoneScreen = usePortfolioStore((state) => state.setPhoneScreen);
   const selectedSpotifyTrackId = usePortfolioStore((state) => state.selectedSpotifyTrackId);
   const isSpotifyPaused = usePortfolioStore((state) => state.isSpotifyPaused);
   const setSelectedSpotifyTrackId = usePortfolioStore((state) => state.setSelectedSpotifyTrackId);
@@ -292,6 +432,47 @@ export function VoiceRouterProvider() {
       setLatestSpokenResponse("");
 
       try {
+        const contactCommand = detectContactVoiceCommand(transcript);
+
+        if (contactCommand) {
+          setLatestRouterResponse(null);
+          openCard();
+          setActiveCard("overview");
+          setActiveEntity(null);
+          setActiveSection(null);
+          setLastIntent("navigate");
+          setFollowUpSuggestions(contactCommand.followUpSuggestions);
+          setPhoneScreen({
+            app: contactCommand.app,
+            view: "detail",
+            title: contactCommand.app === "phone" ? "Phone" : "Messages",
+            entityId: null,
+            route: null,
+            card: "overview",
+            contactId: contactCommand.contactId,
+            callMode: contactCommand.callMode,
+          });
+
+          acknowledgePendingUtterance(utterance.id);
+          clearTurnCaption();
+          setLatestSpokenResponse(contactCommand.responseText);
+
+          if (contactCommand.responseText) {
+            await stopRealtimeSTTListening();
+            await unlockAudio();
+
+            try {
+              await speak(contactCommand.responseText);
+            } catch {
+              setInteractionPhase("idle");
+            }
+          } else {
+            setInteractionPhase("idle");
+          }
+
+          return;
+        }
+
         const spotifyCommand = detectSpotifyVoiceCommand({
           transcript,
           currentTrackId: selectedSpotifyTrackId,
@@ -425,6 +606,7 @@ export function VoiceRouterProvider() {
     setLatestRouterPayload,
     setLatestRouterResponse,
     setLatestSpokenResponse,
+    setPhoneScreen,
     setSelectedSpotifyTrackId,
     setSpotifyPaused,
     speak,

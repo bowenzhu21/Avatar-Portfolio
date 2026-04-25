@@ -31,6 +31,8 @@ export function RightSideCard({ children }: RightSideCardProps) {
       entityId: null,
       route: "/",
       card: "overview",
+      contactId: null,
+      callMode: null,
     });
     setActiveRoute("/");
     setActiveEntity(null);

@@ -22,7 +22,7 @@ export function BackgroundAudioPlayer() {
       return;
     }
 
-    audio.volume = 0.18 * portfolioVolume;
+    audio.volume = 0.2 * portfolioVolume;
 
     async function attemptPlayback() {
       if (!audioRef.current || shouldPause) {

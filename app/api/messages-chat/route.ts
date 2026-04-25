@@ -88,6 +88,46 @@ function buildPortfolioChatContext(transcript: string) {
   };
 }
 
+function buildContactSystemInstruction(contactName: string, contactStyle?: string) {
+  const baseInstruction = `You are ${contactName} replying inside an iPhone Messages thread. Respond in first person as ${contactName}. Keep replies extremely concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say in one quick breath.`;
+
+  if (!contactStyle) {
+    return baseInstruction;
+  }
+
+  return `${baseInstruction} Personality and tone: ${contactStyle}`;
+}
+
+function buildContactInstructions(contact?: ReturnType<typeof getChatContactById>) {
+  const baseInstructions = [
+    "Reply like a real iMessage conversation.",
+    "Prefer a single short sentence.",
+    "Keep most replies under 18 words.",
+    "Never exceed 22 words unless the user explicitly asks for detail.",
+    "No filler, no sign-off, no extra context unless asked.",
+  ];
+
+  if (!contact || contact.id === "bowen") {
+    return [
+      ...baseInstructions,
+      "If asked about age, say you are 19 and were born November 21, 2006.",
+      "If asked where you are from, say you were born in Montreal, grew up in Toronto, and are currently between Waterloo and the Bay Area for school and work.",
+      "If asked about zodiac sign, say Scorpio.",
+      "If asked about gym split, say Chest, Back, Arms, Legs.",
+      "Use portfolioContext for factual claims about work, experience, school, interests, and contact details.",
+    ];
+  }
+
+  return [
+    ...baseInstructions,
+    "Keep the tone personal and direct.",
+    "If asked about Bowen, answer from portfolioContext only.",
+    "If you do not know something about Bowen from the provided context, say you are not sure.",
+    "Sound like a real person texting back.",
+    ...(contact.promptRules ?? []),
+  ];
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as MessagesChatRequest;
@@ -103,12 +143,14 @@ export async function POST(request: Request) {
     }
 
     const result = await generateStructuredJson<MessagesChatResponse>({
-      systemInstruction:
-        `You are ${contact?.name ?? "Bowen"} replying inside an iPhone Messages thread. Respond in first person as ${contact?.name ?? "Bowen"}. Keep replies extremely concise, natural, and text-like. Do not mention being an AI. Avoid essay formatting unless the user explicitly asks for detail. If the reply may be spoken aloud, keep it short enough to say in one quick breath. ${
-          contact?.id === "bowen"
-            ? "Use the provided portfolioContext as the factual source for Bowen's projects, experience, school, contact details, and personal interests. Answer in first person when talking about Bowen's own background."
-            : "If the user asks about Bowen, use the provided portfolioContext as your factual source. Refer to Bowen in third person and do not invent anything beyond that context. If something is missing, say you are not totally sure."
-        }`,
+      systemInstruction: `${buildContactSystemInstruction(
+        contact?.name ?? "Bowen",
+        contact?.promptStyle,
+      )} ${
+        contact?.id === "bowen"
+          ? "Use the provided portfolioContext as the factual source for Bowen's projects, experience, school, contact details, and personal interests. Answer in first person when talking about Bowen's own background."
+          : "If the user asks about Bowen, use the provided portfolioContext as your factual source. Refer to Bowen in third person and do not invent anything beyond that context. If something is missing, say you are not totally sure."
+      }`,
       userPrompt: JSON.stringify(
         {
           latestUserMessage,
@@ -121,24 +163,7 @@ export async function POST(request: Request) {
             text: message.text,
           })),
           portfolioContext,
-          instructions: [
-            "Reply like a real iMessage conversation.",
-            "Prefer a single short sentence.",
-            "Keep most replies under 18 words.",
-            "Never exceed 22 words unless the user explicitly asks for detail.",
-            contact?.id === "bowen"
-              ? "If asked about age, say you are 19 and were born November 21, 2006."
-              : "Keep the tone personal and direct.",
-            contact?.id === "bowen"
-              ? "If asked where you are from, say you were born in Montreal, grew up in Toronto, and are currently between Waterloo and the Bay Area for school and work."
-              : "If asked about Bowen, answer from portfolioContext only.",
-            contact?.id === "bowen" ? "If asked about zodiac sign, say Scorpio." : "Keep replies extremely short.",
-            contact?.id === "bowen" ? "If asked about gym split, say Chest, Back, Arms, Legs." : "Sound like a real person texting back.",
-            contact?.id === "bowen"
-              ? "Use portfolioContext for factual claims about work, experience, school, interests, and contact details."
-              : "If you do not know something about Bowen from the provided context, say you are not sure.",
-            "No filler, no sign-off, no extra context unless asked.",
-          ],
+          instructions: buildContactInstructions(contact),
         },
         null,
         2,

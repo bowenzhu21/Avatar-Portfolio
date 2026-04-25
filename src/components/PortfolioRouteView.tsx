@@ -27,7 +27,14 @@ import { portfolioEntities } from "@/data/portfolio";
 import { createPhoneListScreen } from "@/utils/phone";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityById, getEntityByRoute } from "@/utils/portfolio";
-import type { ChatContactId, MessagesChatMessage, MessagesChatResponse, PhoneApp, PortfolioEntity } from "@/types";
+import type {
+  ChatContactId,
+  MessagesChatMessage,
+  MessagesChatResponse,
+  PhoneApp,
+  PhoneCallMode,
+  PortfolioEntity,
+} from "@/types";
 
 interface PortfolioRouteViewProps {
   route: string;
@@ -219,17 +226,21 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const setActiveSection = usePortfolioStore((state) => state.setActiveSection);
   const syncPhoneScreenFromRoute = usePortfolioStore((state) => state.syncPhoneScreenFromRoute);
   const { timeLabel, weekday, month, day } = usePacificTime();
-  const [selectedMessageContactId, setSelectedMessageContactId] = useState<ChatContactId | null>(null);
   const [sendingMessageContactId, setSendingMessageContactId] = useState<ChatContactId | null>(null);
   const [messagesError, setMessagesError] = useState<string | null>(null);
   const [messageThreads, setMessageThreads] = useState<MessagesThreads>({
     bowen: [],
     lara: [],
     john: [],
+    yalda: [],
+    alisha: [],
+    pious: [],
   });
 
   const visibleEntity =
     (phoneScreen.entityId ? getEntityById(phoneScreen.entityId) : null) ?? entity;
+  const selectedMessageContactId =
+    phoneScreen.app === "messages" ? phoneScreen.contactId : null;
   const currentScreenKey = [
     phoneScreen.app,
     phoneScreen.view,
@@ -240,8 +251,23 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const primitiveFolderItems = useMemo(() => getItemsForApp("primitives").slice(0, 4), []);
   const experienceFolderItems = useMemo(() => getItemsForApp("experience").slice(0, 4), []);
 
+  function openPhone(
+    contactId: ChatContactId | null = null,
+    callMode: PhoneCallMode | null = null,
+  ) {
+    setPhoneScreen({
+      app: "phone",
+      view: "detail",
+      title: "Phone",
+      entityId: null,
+      route: null,
+      card: "overview",
+      contactId,
+      callMode,
+    });
+  }
+
   function openMessages(contactId: ChatContactId | null = null) {
-    setSelectedMessageContactId(contactId);
     setPhoneScreen({
       app: "messages",
       view: "detail",
@@ -249,6 +275,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       entityId: null,
       route: null,
       card: "overview",
+      contactId,
+      callMode: null,
     });
   }
 
@@ -312,14 +340,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
 
   function openApp(app: Exclude<PhoneApp, "home">) {
     if (app === "phone") {
-      setPhoneScreen({
-        app: "phone",
-        view: "detail",
-        title: "Phone",
-        entityId: null,
-        route: null,
-        card: "overview",
-      });
+      openPhone();
       return;
     }
 
@@ -341,6 +362,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
         entityId: null,
         route: null,
         card: "overview",
+        contactId: null,
+        callMode: null,
       });
       return;
     }
@@ -353,6 +376,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
         entityId: null,
         route: null,
         card: "overview",
+        contactId: null,
+        callMode: null,
       });
       return;
     }
@@ -375,6 +400,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
       entityId: null,
       route: "/",
       card: "overview",
+      contactId: null,
+      callMode: null,
     });
     setActiveRoute("/");
     setActiveEntity(null);
@@ -412,6 +439,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
           entityId: null,
           route: null,
           card: "overview",
+          contactId: null,
+          callMode: null,
         })
       }
       onOpenSettings={() => openApp("settings")}
@@ -469,13 +498,18 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
           {phoneScreen.view === "home" ? (
             homeScreen
           ) : phoneScreen.app === "phone" ? (
-            <PhoneAppScreen onOpenMessages={(contactId) => openMessages(contactId)} />
+            <PhoneAppScreen
+              initialContactId={phoneScreen.contactId}
+              initialCallMode={phoneScreen.callMode}
+              onOpenMessages={(contactId) => openMessages(contactId)}
+              onUpdateTarget={(contactId, callMode) => openPhone(contactId, callMode)}
+            />
           ) : phoneScreen.app === "messages" ? (
             <MessagesApp
               selectedContactId={selectedMessageContactId}
               threads={messageThreads}
-              onOpenThread={(contactId) => setSelectedMessageContactId(contactId)}
-              onCloseThread={() => setSelectedMessageContactId(null)}
+              onOpenThread={(contactId) => openMessages(contactId)}
+              onCloseThread={() => openMessages(null)}
               onSendMessage={sendChatMessage}
               sendingContactId={sendingMessageContactId}
               error={messagesError}
