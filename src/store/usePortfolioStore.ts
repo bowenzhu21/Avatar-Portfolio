@@ -66,6 +66,7 @@ interface PortfolioState {
 }
 
 let utteranceCounter = 0;
+const DEFAULT_PORTFOLIO_VOLUME = 0.2;
 
 function createTurnId(prefix: string) {
   utteranceCounter += 1;
@@ -74,7 +75,7 @@ function createTurnId(prefix: string) {
 
 function clampVolume(volume: number) {
   if (!Number.isFinite(volume)) {
-    return 1;
+    return DEFAULT_PORTFOLIO_VOLUME;
   }
 
   return Math.max(0, Math.min(1, volume));
@@ -101,7 +102,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   selectedSpotifyTrackId: defaultSpotifyTrackId,
   isSpotifyPaused: false,
   isCardOpen: true,
-  portfolioVolume: 1,
+  portfolioVolume: DEFAULT_PORTFOLIO_VOLUME,
   setActiveRoute: (route) => set({ activeRoute: route }),
   setActiveEntity: (entity) => set({ activeEntity: entity }),
   setActiveCard: (card) =>
