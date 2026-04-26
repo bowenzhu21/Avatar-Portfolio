@@ -6,10 +6,13 @@ import {
 } from "@/data/voiceContext";
 import type { SafariQueryResponse } from "@/types";
 import {
+  extractWeatherLocation,
+  fetchWeatherSnapshot,
   fetchInstantAnswer,
   fetchPageSnapshot,
   looksLikeUrl,
   normalizeWebsiteUrl,
+  searchWikipedia,
   searchWeb,
 } from "@/lib/safari-web";
 
@@ -237,38 +240,46 @@ async function buildWebsitePage(query: string): Promise<SafariQueryResponse | nu
 }
 
 async function buildWebSearchPage(query: string): Promise<SafariQueryResponse | null> {
-  const [instantAnswer, sources] = await Promise.all([
+  const [instantAnswer, sources, wikipediaResult] = await Promise.all([
     fetchInstantAnswer(query),
     searchWeb(query),
+    searchWikipedia(query),
   ]);
 
-  const topSource = sources[0];
+  const resolvedSources = sources.length ? sources : (wikipediaResult?.sources ?? []);
+  const topSource = resolvedSources[0];
   const topPageSnapshot =
     !instantAnswer?.summary && topSource ? await fetchPageSnapshot(topSource.url) : null;
   const summary =
     instantAnswer?.summary ||
+    wikipediaResult?.summary ||
     topPageSnapshot?.description ||
     topPageSnapshot?.paragraphs[0] ||
     topSource?.snippet ||
     "";
 
-  if (!summary && !sources.length) {
+  if (!summary && !resolvedSources.length) {
     return null;
   }
 
   return {
     title:
       instantAnswer?.title ||
+      wikipediaResult?.title ||
       topPageSnapshot?.title ||
       `Results for ${query}`,
-    url: instantAnswer?.url || topPageSnapshot?.url || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+    url:
+      instantAnswer?.url ||
+      topPageSnapshot?.url ||
+      wikipediaResult?.sources[0]?.url ||
+      `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
     query,
     content: buildWebSearchContent({
       query,
       summary,
-      sources,
+      sources: resolvedSources,
     }),
-    sources,
+    sources: resolvedSources,
   };
 }
 
@@ -347,6 +358,26 @@ export async function POST(request: Request) {
 
     if (portfolioPage) {
       return NextResponse.json(portfolioPage);
+    }
+
+    const weatherLocation = extractWeatherLocation(query);
+
+    if (weatherLocation) {
+      const weatherPage = await fetchWeatherSnapshot(weatherLocation);
+
+      if (weatherPage) {
+        return NextResponse.json({
+          title: weatherPage.title,
+          url: weatherPage.url,
+          query,
+          content: buildWebSearchContent({
+            query,
+            summary: weatherPage.summary,
+            sources: weatherPage.sources,
+          }),
+          sources: weatherPage.sources,
+        } satisfies SafariQueryResponse);
+      }
     }
 
     const webSearchPage = await buildWebSearchPage(query);

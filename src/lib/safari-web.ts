@@ -63,6 +63,19 @@ export interface SafariPageSnapshot {
   paragraphs: string[];
 }
 
+export interface SafariWeatherSnapshot {
+  title: string;
+  url: string;
+  summary: string;
+  sources: SafariSource[];
+}
+
+export interface SafariWikiSearchResult {
+  title: string;
+  summary: string;
+  sources: SafariSource[];
+}
+
 const BROWSER_HEADERS = {
   "User-Agent":
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -178,6 +191,35 @@ export function normalizeWebsiteUrl(value: string) {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
+export function extractWeatherLocation(query: string) {
+  const trimmed = query.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const patterns = [
+    /\bweather\s+(?:in|for|at)\s+(.+)$/i,
+    /\bforecast\s+(?:in|for|at)\s+(.+)$/i,
+    /\btemperature\s+(?:in|for|at)\s+(.+)$/i,
+    /^(?:what(?:'s| is)\s+)?the\s+weather\s+(?:in|for|at)\s+(.+)$/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    const location = match?.[1]
+      ?.replace(/[?.!]+$/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (location) {
+      return location;
+    }
+  }
+
+  return null;
+}
+
 export async function fetchInstantAnswer(query: string): Promise<SafariInstantAnswer | null> {
   try {
     const url = new URL("https://api.duckduckgo.com/");
@@ -219,6 +261,97 @@ export async function fetchInstantAnswer(query: string): Promise<SafariInstantAn
       title: payload.Heading?.trim() || query,
       url: directUrl || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
       summary: trimText(directSummary, 420),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchWeatherSnapshot(
+  location: string,
+): Promise<SafariWeatherSnapshot | null> {
+  try {
+    const url = new URL(`https://wttr.in/${encodeURIComponent(location)}`);
+    url.searchParams.set("format", "j1");
+
+    const response = await fetch(url, {
+      headers: BROWSER_HEADERS,
+      signal: AbortSignal.timeout(7000),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as {
+      current_condition?: Array<{
+        temp_C?: string;
+        temp_F?: string;
+        FeelsLikeC?: string;
+        FeelsLikeF?: string;
+        humidity?: string;
+        windspeedKmph?: string;
+        weatherDesc?: Array<{ value?: string }>;
+      }>;
+      nearest_area?: Array<{
+        areaName?: Array<{ value?: string }>;
+        region?: Array<{ value?: string }>;
+        country?: Array<{ value?: string }>;
+      }>;
+      weather?: Array<{
+        date?: string;
+        maxtempC?: string;
+        mintempC?: string;
+        hourly?: Array<{
+          weatherDesc?: Array<{ value?: string }>;
+        }>;
+      }>;
+    };
+
+    const current = payload.current_condition?.[0];
+    if (!current) {
+      return null;
+    }
+
+    const nearest = payload.nearest_area?.[0];
+    const areaName = nearest?.areaName?.[0]?.value || location;
+    const region = nearest?.region?.[0]?.value;
+    const country = nearest?.country?.[0]?.value;
+    const locationLabel = [areaName, region, country].filter(Boolean).join(", ");
+    const condition = current.weatherDesc?.[0]?.value || "Current conditions unavailable";
+    const today = payload.weather?.[0];
+    const todayCondition = today?.hourly?.[0]?.weatherDesc?.[0]?.value;
+
+    const summary = [
+      `${locationLabel}: ${condition}.`,
+      current.temp_C && current.temp_F
+        ? `Current temperature is ${current.temp_C}°C (${current.temp_F}°F).`
+        : "",
+      current.FeelsLikeC && current.FeelsLikeF
+        ? `Feels like ${current.FeelsLikeC}°C (${current.FeelsLikeF}°F).`
+        : "",
+      current.humidity ? `Humidity is ${current.humidity}%.` : "",
+      current.windspeedKmph ? `Wind is ${current.windspeedKmph} km/h.` : "",
+      today?.maxtempC && today?.mintempC
+        ? `Today's range is ${today.mintempC}°C to ${today.maxtempC}°C${todayCondition ? ` with ${todayCondition.toLowerCase()}` : ""}.`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return {
+      title: `Weather in ${locationLabel}`,
+      url: `https://wttr.in/${encodeURIComponent(location)}`,
+      summary: trimText(summary, 420),
+      sources: [
+        {
+          title: `Weather for ${locationLabel}`,
+          url: `https://wttr.in/${encodeURIComponent(location)}`,
+          displayUrl: "wttr.in",
+          snippet: trimText(summary, 180),
+        },
+      ],
     };
   } catch {
     return null;
@@ -277,6 +410,70 @@ export async function searchWeb(query: string): Promise<SafariSource[]> {
     return results;
   } catch {
     return [];
+  }
+}
+
+export async function searchWikipedia(
+  query: string,
+): Promise<SafariWikiSearchResult | null> {
+  try {
+    const url = new URL("https://en.wikipedia.org/w/api.php");
+    url.searchParams.set("action", "opensearch");
+    url.searchParams.set("search", query);
+    url.searchParams.set("limit", "5");
+    url.searchParams.set("namespace", "0");
+    url.searchParams.set("format", "json");
+
+    const response = await fetch(url, {
+      headers: BROWSER_HEADERS,
+      signal: AbortSignal.timeout(7000),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as [
+      string,
+      string[],
+      string[],
+      string[],
+    ];
+
+    const titles = Array.isArray(payload?.[1]) ? payload[1] : [];
+    const urls = Array.isArray(payload?.[3]) ? payload[3] : [];
+
+    if (!titles.length || !urls.length) {
+      return null;
+    }
+
+    const sources = titles
+      .map((title, index) => ({
+        title,
+        url: urls[index] ?? "",
+        displayUrl: "wikipedia.org",
+      }))
+      .filter((source) => source.title && source.url)
+      .slice(0, 5);
+
+    if (!sources.length) {
+      return null;
+    }
+
+    const topPage = await fetchPageSnapshot(sources[0].url);
+    const summary =
+      topPage?.description ||
+      topPage?.paragraphs[0] ||
+      `Top Wikipedia results for ${query}.`;
+
+    return {
+      title: topPage?.title || sources[0].title,
+      summary: trimText(summary, 420),
+      sources,
+    };
+  } catch {
+    return null;
   }
 }
 
