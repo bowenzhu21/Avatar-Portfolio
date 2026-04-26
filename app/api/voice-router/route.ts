@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { portfolioEntities, portfolioEntityMap } from "@/data/portfolio";
+import { defaultSpotifyTrackId, getSpotifyTrackById } from "@/data/spotify";
 import {
   buildGeminiVoiceRouterPrompt,
   geminiVoiceRouterSchema,
@@ -27,6 +28,8 @@ interface AppNavigationTarget {
   patterns: RegExp[];
   followUpSuggestions: string[];
 }
+
+const defaultSpotifyTrack = getSpotifyTrackById(defaultSpotifyTrackId);
 
 const appNavigationTargets: AppNavigationTarget[] = [
   {
@@ -107,7 +110,7 @@ const appNavigationTargets: AppNavigationTarget[] = [
       /\b(open|show)\s+(the\s+)?music app\b/i,
       /^spotify$/i,
     ],
-    followUpSuggestions: ["Play California", "Pause music", "Go home"],
+    followUpSuggestions: [`Play ${defaultSpotifyTrack.title}`, "Pause music", "Go home"],
   },
   {
     route: "/settings",

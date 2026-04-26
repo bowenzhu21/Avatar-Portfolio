@@ -66,7 +66,7 @@ interface PortfolioState {
 }
 
 let utteranceCounter = 0;
-const DEFAULT_PORTFOLIO_VOLUME = 0.1;
+const DEFAULT_PORTFOLIO_VOLUME = 0.4;
 
 function createTurnId(prefix: string) {
   utteranceCounter += 1;
