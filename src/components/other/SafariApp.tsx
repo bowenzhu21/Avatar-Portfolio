@@ -7,8 +7,7 @@ import type { SafariHistoryEntry, SafariQueryResponse, SafariSource } from "@/ty
 const startSuggestions = [
   "What projects has Bowen built",
   "Tell me about Matrix",
-  "OpenAI",
-  "openai.com",
+  "What is Bowen's zodiac sign",
 ];
 
 function isSafariQueryResponse(payload: unknown): payload is SafariQueryResponse {
