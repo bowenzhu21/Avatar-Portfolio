@@ -11,6 +11,7 @@ import {
   getRelevantVoiceKnowledgeBase,
 } from "@/data/voiceContext";
 import { generateStructuredJson } from "@/lib/structured-llm.server";
+import { boundReply } from "@/lib/bounded-reply";
 
 const narrationSchema = {
   type: "object",
@@ -40,13 +41,6 @@ function getEntityContext(entity: PortfolioEntity | null) {
   };
 }
 
-function clampSpokenText(text: string, maxWords: number, maxChars: number) {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  const wordLimited = normalized.split(" ").slice(0, maxWords).join(" ");
-
-  return wordLimited.slice(0, maxChars).trim();
-}
-
 export async function POST(request: Request) {
   const payload = (await request.json()) as AvatarNarrationInput;
   const recentUserTranscripts = Array.isArray(payload.input.recentUserTranscripts)
@@ -72,7 +66,7 @@ export async function POST(request: Request) {
     payload.routerResult.spokenResponse.trim() ||
     "I can walk through Bowen's work once you pick a project, role, or section.";
   const clampedFallbackResponse =
-    clampSpokenText(fallbackResponse, 24, 140) || fallbackResponse;
+    boundReply(fallbackResponse, 24, 140) || fallbackResponse;
 
   const prompt = {
     transcript: payload.input.transcript,
@@ -131,7 +125,7 @@ Return strict JSON only.`,
     const parsed = result.data;
     const spokenResponse =
       (typeof parsed.spokenResponse === "string"
-        ? clampSpokenText(parsed.spokenResponse, 24, 140)
+        ? boundReply(parsed.spokenResponse, 24, 140)
         : "") || clampedFallbackResponse;
 
     return NextResponse.json<AvatarNarrationOutput>({ spokenResponse });

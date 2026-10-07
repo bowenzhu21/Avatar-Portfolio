@@ -635,7 +635,7 @@
             "tell me about clearinghouse",
             "explain clearinghouse"
           ],
-          "answer": "Clearinghouse is my payment-event ledger. It keeps double-entry accounting balanced through duplicate requests, early refunds, crashes, and delivery retries, with a real API and an interactive report showing the evidence."
+          "answer": "Clearinghouse keeps payment accounting balanced through duplicate events, early refunds, crashes, and retries."
         },
         {
           "question_patterns": [
@@ -778,7 +778,7 @@
             "tell me about model gate",
             "explain modelgate"
           ],
-          "answer": "ModelGate is my model-release system. It trains real geometry classifiers, checks their behavior under several distribution shifts, and only promotes a model when its artifacts, evaluation evidence, and release policy agree."
+          "answer": "ModelGate trains geometry classifiers and blocks model releases when their evaluation evidence fails the release policy."
         },
         {
           "question_patterns": [
@@ -924,7 +924,7 @@
             "tell me about flight deck",
             "explain flightdeck"
           ],
-          "answer": "FlightDeck is my C++ telemetry recorder and replay engine. It handles bounded out-of-order events, checks vehicle state and motion, and turns the findings into an interactive mission map and timeline."
+          "answer": "FlightDeck records and replays vehicle telemetry, then turns state and motion faults into an interactive mission report."
         },
         {
           "question_patterns": [

@@ -3,17 +3,11 @@ import { getChatContactById } from "@/data/chatContacts";
 import { getRelevantVoiceKnowledgeBase } from "@/data/voiceContext";
 import type { ChatContactId, MessagesChatMessage, MessagesChatResponse } from "@/types";
 import { generateStructuredJson } from "@/lib/structured-llm.server";
+import { boundReply } from "@/lib/bounded-reply";
 
 interface MessagesChatRequest {
   messages?: MessagesChatMessage[];
   contactId?: ChatContactId;
-}
-
-function clampReply(text: string, maxWords: number, maxChars: number) {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  const wordLimited = normalized.split(" ").slice(0, maxWords).join(" ");
-
-  return wordLimited.slice(0, maxChars).trim();
 }
 
 function buildFallbackReply(contactName: string, latestUserMessage: string) {
@@ -209,7 +203,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       reply:
-        (typeof parsed.reply === "string" ? clampReply(parsed.reply, 22, 120) : "") ||
+        (typeof parsed.reply === "string" ? boundReply(parsed.reply, 22, 120) : "") ||
         buildFallbackReply(contact?.name ?? "Bowen", latestUserMessage),
     } satisfies MessagesChatResponse);
   } catch {
