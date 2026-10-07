@@ -560,6 +560,434 @@
           "answer": "Kronos is my hand-tracked particle system. It uses computer vision to turn hand motion into forces inside a real-time physics-based visual environment."
         }
       ]
+    },
+    "clearinghouse": {
+      "title": "Clearinghouse",
+      "one_liner": "Clearinghouse is a durable payment-event ledger that keeps accounting balanced through duplicate requests, out-of-order refunds, and delivery failures.",
+      "full_summary": "I built Clearinghouse to make the failure cases in payment processing inspectable. It commits a validated provider event, an immutable double-entry journal, the idempotency response, and an outbox message together in SQLite. A leased worker delivers to an example consumer inbox, while strict CSV reconciliation explains settlement discrepancies. The real HTTP API and interactive operations report are backed by executable synthetic scenarios; the project does not move real money or connect to a payment provider.",
+      "why_it_matters": "It demonstrates correctness at transaction boundaries: preserving accounting invariants, making retries safe, separating a committed payment event from its delivery, and explaining discrepancies with evidence.",
+      "problem": "Duplicate payment webhooks, refunds arriving before captures, and crashes between a database commit and downstream delivery can cause repeated postings, missing notifications, or inconsistent settlement records.",
+      "solution": "I combined strict integer-cent validation, request-hash idempotency, event-ID deduplication, balanced immutable journals, a transactional outbox, and a consumer inbox. A reconciliation pass classifies mismatched settlement rows without editing the ledger.",
+      "your_role": "I built the Python service, SQLite accounting constraints, HTTP adapter, recovery worker, reconciliation flow, failure scenarios, tests, and interactive evidence report.",
+      "tech_stack": [
+        "Python 3.11+",
+        "SQLite WAL",
+        "SQL transactions and triggers",
+        "Standard-library HTTP server",
+        "Double-entry accounting",
+        "Transactional outbox",
+        "unittest",
+        "HTML and JavaScript"
+      ],
+      "highlights": [
+        "Commits the event, journal, cached idempotency response, and outbox message in one local transaction.",
+        "Protects both request retries and provider event identity, including retries that use a new request key.",
+        "Enforces balanced integer-cent journals in the database and records corrections as offsetting entries.",
+        "Parks early refunds until their capture arrives and rejects refunds that exceed the captured amount.",
+        "Uses leased jobs, token fencing, retry backoff, dead-letter handling, and audited replay.",
+        "Provides an interactive journal inspector and filters for event state and reconciliation category."
+      ],
+      "architecture": [
+        "The HTTP adapter validates exact JSON fields, integer cents, identifiers, timestamps, and supported two-decimal currencies before ingestion.",
+        "A SQLite BEGIN IMMEDIATE transaction checks request and event hashes, applies the payment state transition, posts a balanced journal, and writes the outbox and response record.",
+        "Journal lines are inserted with a deferred foreign key; a trigger checks balance when the header seals them. Posted headers and lines cannot be updated, deleted, or extended.",
+        "An outbox worker claims a time-limited lease. A unique token fences stale acknowledgments, and failed delivery can be retried or explicitly replayed after dead-letter handling.",
+        "The example consumer records each delivery ID atomically in a separate SQLite inbox. Settlement reconciliation compares signed provider-event amounts and currencies with strict CSV rows.",
+        "The demo exercises failure windows, saves raw JSON evidence, and renders a self-contained HTML report from that evidence."
+      ],
+      "challenges": [
+        "Keeping concurrent retries from posting the same event twice while still rejecting changed payloads.",
+        "Recovering after a producer commit or consumer receipt succeeds but the following delivery or acknowledgment does not.",
+        "Handling early refunds without letting an invalid pending refund block a valid capture.",
+        "Keeping provider event history distinct from internal accounting corrections."
+      ],
+      "tradeoffs": [
+        "SQLite WAL makes local durability and concurrency behavior inspectable, but there is one writer and no distributed consensus or multi-host database design.",
+        "Delivery is at least once. The sample inbox deduplicates its durable receipt; arbitrary external side effects do not gain an end-to-end exactly-once guarantee.",
+        "An accounting reversal offsets the books but does not issue a provider refund, restore refund capacity, or change expected provider settlements.",
+        "The example worker uses a local inbox. External provider integration, webhook signatures, tenant authorization, automated backups, and pending-refund expiry are outside scope.",
+        "The published page is a static report from synthetic events, and local commit timings exclude HTTP, delivery, and network storage."
+      ],
+      "results": [
+        "The executable synthetic demo passes eight scenarios, creates nine balanced journals across USD, CAD, EUR, and GBP, and finishes with ten unique consumer receipts.",
+        "The 35-test suite covers real HTTP requests, concurrent duplicate ingestion, transaction rollback, process termination after commit, stale leases, consumer deduplication, immutable journals, and strict JSON and CSV validation.",
+        "The saved reconciliation evidence contains four exact matches and one each of duplicate, missing, amount mismatch, currency mismatch, and unexpected provider event.",
+        "The published 200-capture local benchmark records 0.784 ms p50 and 1.215 ms p95 ingestion latency, with all 200 journals balanced, on Python 3.13.5 and SQLite 3.49.1 on macOS arm64. This measures sequential local commits, not production service capacity."
+      ],
+      "demo_links": [
+        {
+          "label": "Interactive operations report",
+          "url": "https://bowenzhu21.github.io/clearinghouse/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/bowenzhu21/clearinghouse"
+        },
+        {
+          "label": "Recorded demo evidence",
+          "url": "https://bowenzhu21.github.io/clearinghouse/report.json"
+        }
+      ],
+      "faq": [
+        {
+          "question_patterns": [
+            "what is clearinghouse",
+            "tell me about clearinghouse",
+            "explain clearinghouse"
+          ],
+          "answer": "Clearinghouse is my payment-event ledger. It keeps double-entry accounting balanced through duplicate requests, early refunds, crashes, and delivery retries, with a real API and an interactive report showing the evidence."
+        },
+        {
+          "question_patterns": [
+            "why did you build clearinghouse",
+            "what problem does clearinghouse solve"
+          ],
+          "answer": "I wanted to make payment failure cases concrete. The core problem is ensuring that retrying a request or recovering from a crash does not create a second posting or lose a committed event."
+        },
+        {
+          "question_patterns": [
+            "clearinghouse architecture",
+            "how does clearinghouse work",
+            "clearinghouse transaction boundary"
+          ],
+          "answer": "The event, journal, idempotency response, and outbox message commit in one SQLite transaction. A separate worker retries delivery, and a consumer inbox records delivery IDs so a repeated delivery does not create another receipt."
+        },
+        {
+          "question_patterns": [
+            "clearinghouse idempotency",
+            "clearinghouse duplicate requests",
+            "clearinghouse out of order refunds"
+          ],
+          "answer": "Request keys and provider event IDs both protect against duplicates, and changed payloads conflict. Refunds arriving before their capture wait durably; once the capture arrives, they post or receive an explicit rejection."
+        },
+        {
+          "question_patterns": [
+            "clearinghouse results",
+            "clearinghouse tests",
+            "what did clearinghouse demonstrate"
+          ],
+          "answer": "The synthetic demo passes eight scenarios, creates nine balanced journals, and ends with ten unique consumer receipts. The 35-test suite also checks HTTP behavior, concurrency, rollback, crashes, leases, and malformed inputs."
+        },
+        {
+          "question_patterns": [
+            "clearinghouse performance",
+            "clearinghouse benchmark",
+            "how fast is clearinghouse"
+          ],
+          "answer": "The saved 200-capture local run records about 0.78 milliseconds median and 1.22 milliseconds p95 per ingestion. That is sequential SQLite commit timing on macOS arm64, excluding HTTP and delivery, so I do not present it as production capacity."
+        },
+        {
+          "question_patterns": [
+            "is clearinghouse production ready",
+            "does clearinghouse move real money",
+            "clearinghouse limitations",
+            "clearinghouse exactly once"
+          ],
+          "answer": "It is a single-host reference implementation using synthetic payments, not a live payment processor. Delivery is at least once; the example inbox deduplicates its receipt, but that is not a general exactly-once guarantee for external side effects."
+        },
+        {
+          "question_patterns": [
+            "clearinghouse demo",
+            "clearinghouse github",
+            "where can i see clearinghouse"
+          ],
+          "answer": "The GitHub repository is bowenzhu21/clearinghouse, with an interactive operations report linked in the README. From the checkout, python3 -m clearinghouse demo regenerates the scenarios and evidence."
+        }
+      ],
+      "aliases": [
+        "clearing house",
+        "clearinghouse ledger",
+        "payment ledger"
+      ]
+    },
+    "modelgate": {
+      "title": "ModelGate",
+      "one_liner": "ModelGate is an evidence-driven model release system that trains geometry classifiers and blocks promotion when a model, its evaluation, or its release policy does not agree.",
+      "full_summary": "I built ModelGate around the contract between a model artifact, evaluation evidence, release policy, and the active release. It trains real CPU softmax classifiers on synthetic cube, sphere, and cylinder point clouds, checks performance across clean, noisy, rotated, and scaled conditions, and re-evaluates the exact artifacts before promotion. A local content-addressed registry supports concurrent publication and rollback, while an interactive report exposes the model behavior and rejected releases.",
+      "why_it_matters": "An acceptable average score can hide an important failure. ModelGate makes a release depend on validated slice-level evidence and a consistent comparison baseline, not just a favorable headline metric.",
+      "problem": "A model can clear an overall accuracy threshold while failing a particular class under a distribution shift. Tampered reports, data leakage between transformed examples, or stale baselines can also make promotion decisions unreliable.",
+      "solution": "I built grouped data validation, train-only preprocessing, reproducible classifiers, slice and class evaluation, a fail-closed policy, exact evidence recomputation, and an atomic local registry with rollback history.",
+      "your_role": "I built the synthetic dataset generator, geometric features and classifiers, evaluation and policy checks, artifact validation, release registry, failure drills, and interactive model report.",
+      "tech_stack": [
+        "Python 3.11–3.13",
+        "NumPy 2.2.6",
+        "Softmax classification",
+        "Point-cloud geometry",
+        "Grouped bootstrap",
+        "SHA-256 content addressing",
+        "POSIX file locking and atomic rename",
+        "HTML and JavaScript"
+      ],
+      "highlights": [
+        "Trains learned classifiers on actual generated point clouds instead of supplying report scores by hand.",
+        "Keeps all transformed versions of a latent shape in the same train or holdout group.",
+        "Checks overall and slice accuracy, class recall, log loss, paired group-bootstrap improvement, and feature drift.",
+        "Blocks a controlled model defect that still clears the overall accuracy floor but fails noisy-cylinder recall.",
+        "Rejects malformed or tampered evidence and requires later releases to compare against the active model.",
+        "Uses inspectable JSON weights, content hashes, immutable release objects, and an atomic current pointer.",
+        "Includes interactive confusion matrices and a 3D point-cloud preview in an offline report."
+      ],
+      "architecture": [
+        "A seeded generator creates surface point clouds for three shape classes and clean, noisy, rotated, and scaled variants. Whole latent groups define the train/test split.",
+        "A standardizer and three-class softmax linear classifier fit only clean training records. The baseline uses axis-dependent features; the candidate uses normalized geometric invariants.",
+        "Evaluation runs both artifacts on the same held-out groups and computes confusion matrices, per-slice and class recall, log loss, group-bootstrap differences, and training-referenced feature PSI.",
+        "Strict JSON schemas and SHA-256 hashes bind the dataset, fitting subset, model, and report. Missing or nonfinite evidence fails validation rather than becoming a passing score.",
+        "Promotion recomputes evidence, checks exact agreement, takes a writer lock, verifies the active baseline, and publishes immutable objects before atomically replacing the release pointer.",
+        "Rollback records a new immutable event restoring the preceding approved release; reports retain the evidence behind both accepted and blocked candidates."
+      ],
+      "challenges": [
+        "Preventing transformed copies of one shape from leaking across the train/test boundary.",
+        "Detecting failures that aggregate accuracy hides without treating correlated variants as independent observations.",
+        "Keeping release evidence, model content, and the active comparison baseline consistent during concurrent promotion.",
+        "Making deterministic artifacts useful while acknowledging floating-point differences across numerical environments."
+      ],
+      "tradeoffs": [
+        "Simple CPU classifiers make the release machinery inspectable, but the axis-dependent baseline is intentionally weak and this is not a comparison with strong point-cloud learning methods.",
+        "The seed-42 fixture is synthetic and was used during feature and policy development. Its scores are regression evidence, not untouched external validation or claims about real CAD or manufacturing data.",
+        "There are 54 independent held-out shape groups with four correlated variants each; the 216 evaluated samples are not 216 independent observations.",
+        "Exact report comparison helps catch changed evidence, but floating-point differences can require regeneration in the promotion environment. Cross-platform bit-identical hashes are not promised.",
+        "The registry targets a local POSIX filesystem. Remote model serving, distributed storage, authentication, multi-tenancy, signed provenance, and retention management are outside scope.",
+        "Content hashes establish consistency, not who trained a model or whether its claimed training history is authentic."
+      ],
+      "results": [
+        "The saved seed-42 run records 97.22% accuracy for the invariant classifier versus 58.33% for the axis-dependent baseline on 216 variants of 54 held-out synthetic shape groups.",
+        "A controlled +0.5 cube-class bias change still achieves 92.13% overall accuracy but only 72.22% noisy-cylinder recall, so the policy blocks promotion despite clearing the 88% overall floor.",
+        "The executed demo verifies bad-candidate rejection, tampered-evidence rejection, successor promotion, and rollback to the approved prior model.",
+        "Three saved local CPU timing runs have a median total generation, two-model training, and evaluation time of about 1.856 seconds on macOS arm64 with Python 3.13.5 and NumPy 2.2.6. Timing excludes networking, GPUs, and registry writes and is not a serving-throughput claim."
+      ],
+      "demo_links": [
+        {
+          "label": "Interactive release explorer",
+          "url": "https://bowenzhu21.github.io/modelgate/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/bowenzhu21/modelgate"
+        },
+        {
+          "label": "Reproducible demo summary",
+          "url": "https://github.com/bowenzhu21/modelgate/blob/main/demo-output/summary.json"
+        }
+      ],
+      "faq": [
+        {
+          "question_patterns": [
+            "what is modelgate",
+            "what is model gate",
+            "tell me about modelgate",
+            "tell me about model gate",
+            "explain modelgate"
+          ],
+          "answer": "ModelGate is my model-release system. It trains real geometry classifiers, checks their behavior under several distribution shifts, and only promotes a model when its artifacts, evaluation evidence, and release policy agree."
+        },
+        {
+          "question_patterns": [
+            "why did you build modelgate",
+            "what problem does modelgate solve",
+            "modelgate slice failure"
+          ],
+          "answer": "A good average score can hide a bad failure. In the demo, a modified model still gets 92.13% overall accuracy, but noisy-cylinder recall drops to 72.22%, so ModelGate blocks it."
+        },
+        {
+          "question_patterns": [
+            "modelgate architecture",
+            "how does modelgate work",
+            "modelgate promotion"
+          ],
+          "answer": "It connects validated point-cloud data, JSON model weights, grouped evaluation, and a release policy. Promotion recomputes the evidence and updates a locked local registry only after checking the model and active baseline."
+        },
+        {
+          "question_patterns": [
+            "modelgate data leakage",
+            "modelgate train test split",
+            "modelgate grouped evaluation"
+          ],
+          "answer": "All transformed versions of a latent shape stay in the same split, and preprocessing fits only training records. There are 54 independent holdout groups, so uncertainty is estimated by resampling groups rather than treating all 216 variants as independent."
+        },
+        {
+          "question_patterns": [
+            "modelgate results",
+            "modelgate accuracy",
+            "how accurate is modelgate"
+          ],
+          "answer": "On the saved synthetic fixture, the invariant classifier gets 97.22% accuracy versus 58.33% for a deliberately simple axis-dependent baseline. Those numbers demonstrate this regression fixture, not generalization to real CAD or production data."
+        },
+        {
+          "question_patterns": [
+            "modelgate performance",
+            "modelgate benchmark",
+            "how fast is modelgate"
+          ],
+          "answer": "The saved three-run CPU benchmark has a median of about 1.86 seconds for dataset generation, training both classifiers, and evaluation. It excludes network and registry work and does not measure a deployed model-serving service."
+        },
+        {
+          "question_patterns": [
+            "modelgate limitations",
+            "is modelgate production ready",
+            "modelgate real cad",
+            "modelgate rollback"
+          ],
+          "answer": "ModelGate is a local release-engineering project using small synthetic point clouds. The registry supports an explicit rollback to the prior release, but remote serving, distributed storage, signed provenance, and production-calibrated acceptance policy are outside scope."
+        },
+        {
+          "question_patterns": [
+            "modelgate demo",
+            "modelgate github",
+            "where can i see modelgate"
+          ],
+          "answer": "The repository is bowenzhu21/modelgate, and its README links the interactive release explorer. The local demo trains, evaluates, rejects bad releases, promotes a successor, and exercises rollback."
+        }
+      ],
+      "aliases": [
+        "model gate",
+        "geometry release gate"
+      ]
+    },
+    "flightdeck": {
+      "title": "FlightDeck",
+      "one_liner": "FlightDeck is a C++17 telemetry recorder and deterministic replay engine that finds state and motion faults in noisy, out-of-order vehicle streams.",
+      "full_summary": "I built FlightDeck to inspect the gaps between individual telemetry packets. It reads a strict streaming CSV, records a checksummed binary log, reorders a bounded window of events, and checks each vehicle for clock, sequence, state, motion, battery, and heartbeat problems. Replay restores the original rules and reproduces the findings, while a self-contained mission report links the map, tracks, faults, and timeline. The demonstrations are synthetic; this is a simulation toolkit rather than certified flight software.",
+      "why_it_matters": "It connects systems-level constraints with observable behavior: explicit memory limits, deterministic ordering, corruption detection, reproducible replay, and explanations of which packets were dropped or flagged.",
+      "problem": "Telemetry can repeat packets, arrive late, jump its clock, disappear, or report an impossible transition. A recorder alone does not explain those failures, and replay with changed rules can make incidents difficult to reproduce.",
+      "solution": "I built a bounded event processor with explicit drop counters, per-vehicle state checks, a binary recording format that stores configuration and validates corruption, and a replay/report workflow that preserves the evidence.",
+      "your_role": "I built the C++ processor and binary format, strict CLI, synthetic fixtures, corruption and boundary checks, local benchmarks, and interactive telemetry report.",
+      "tech_stack": [
+        "C++17",
+        "STL",
+        "Event-time watermarks",
+        "Bounded priority queue",
+        "CRC-32 binary framing",
+        "Python fixture and report tooling",
+        "AddressSanitizer and UndefinedBehaviorSanitizer",
+        "HTML and JavaScript"
+      ],
+      "highlights": [
+        "Uses an explicit event-time reorder window and deterministic packet ordering.",
+        "Bounds pending events, tracked vehicles, and duplicate history instead of growing memory with stream duration.",
+        "Keeps queued sequences protected against duplicates even after their recent-history entry is evicted.",
+        "Stores the rule configuration in the log so replay reproduces the original checks.",
+        "Detects damaged frames and frame-boundary truncation, with explicitly partial prefix salvage.",
+        "Provides a scrubbable mission map, linked fault markers, vehicle and rule filters, text search, and a fault timeline."
+      ],
+      "architecture": [
+        "A bounded CSV reader validates field counts, identifiers, numeric ranges, and finite values before admitting an event.",
+        "The append-only log contains configuration, CRC-32-framed events, and a terminal event-count seal. Strict replay validates these before completing its report.",
+        "Clock guards, bounded duplicate tracking, and lateness admission feed a bounded min-heap ordered by event time, vehicle, sequence, and ingress ordinal.",
+        "The watermark is the maximum eligible event time minus allowed lateness. Eligible packets update per-vehicle state and motion checks, and end of file drains remaining events.",
+        "Runtime state is O(B + V·D), where B bounds pending events, V tracked vehicles, and D recent sequence history. Findings are streamed to JSON rather than accumulated indefinitely.",
+        "The report renders positions from the recorded CSV without interpolation and links the findings to their source packets and time."
+      ],
+      "challenges": [
+        "Keeping replay deterministic across different arrivals within the allowed reorder window.",
+        "Maintaining explicit memory bounds without silently forgetting tracked vehicles or admitting queued duplicates.",
+        "Distinguishing a valid partial recovery from a complete mission when a log is truncated or corrupted.",
+        "Making fault evidence readable while preserving the actual packet values, including rejected observations."
+      ],
+      "tradeoffs": [
+        "A larger lateness window can accept more out-of-order telemetry but retains more pending state and delays event emission.",
+        "Duplicate history is bounded. Reuse of an old emitted sequence outside that window can be admitted and flagged; this is not unbounded exactly-once processing.",
+        "CRC-32 detects accidental corruption, not authenticity. The recorder flushes frames but does not call fsync or promise power-loss durability.",
+        "Heartbeat checks depend on watermark progress; a completely silent stream would require an external tick source that the finite-file tool does not provide.",
+        "Motion checks use a spherical haversine approximation and a circular fence. There is no flight control, navigation system, authenticated telemetry, or certification.",
+        "The saved performance measurements exclude CSV parsing, binary recorder I/O, and JSON serialization, so they do not measure end-to-end telemetry ingestion."
+      ],
+      "results": [
+        "The seed-2026 synthetic fixture records 721 packets from six vehicles over thirty seconds, emits 706, and records 12 duplicate drops, one late drop, and two clock drops.",
+        "The saved demo reports 46 findings across 14 categories, with a peak of six pending packets and six retained vehicle states.",
+        "The documented local verification passes 1,254 assertions and 30 CLI scenarios, covering order permutations, duplicate eviction, truncation, corruption, rule boundaries, and report preservation on failure.",
+        "Five-run local processor benchmarks record medians of about 5.63 million events per second with a zero-millisecond reorder window and 5.47 million with a 250-millisecond window on macOS arm64 and Apple Clang 21 at -O2. The measurements use synthetic events and exclude parsing, recorder I/O, and serialization; they are not operational flight or end-to-end throughput results."
+      ],
+      "demo_links": [
+        {
+          "label": "Interactive mission report",
+          "url": "https://bowenzhu21.github.io/flightdeck/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/bowenzhu21/flightdeck"
+        },
+        {
+          "label": "Recorded telemetry findings",
+          "url": "https://bowenzhu21.github.io/flightdeck/report.json"
+        },
+        {
+          "label": "Raw local measurements",
+          "url": "https://bowenzhu21.github.io/flightdeck/benchmark.json"
+        }
+      ],
+      "faq": [
+        {
+          "question_patterns": [
+            "what is flightdeck",
+            "what is flight deck",
+            "tell me about flightdeck",
+            "tell me about flight deck",
+            "explain flightdeck"
+          ],
+          "answer": "FlightDeck is my C++ telemetry recorder and replay engine. It handles bounded out-of-order events, checks vehicle state and motion, and turns the findings into an interactive mission map and timeline."
+        },
+        {
+          "question_patterns": [
+            "why did you build flightdeck",
+            "what problem does flightdeck solve"
+          ],
+          "answer": "Telemetry faults often only become visible across packets: a missing heartbeat, a clock jump, a repeated sequence, or an impossible transition. I wanted a recorder and replay tool that explains those failures and reproduces them."
+        },
+        {
+          "question_patterns": [
+            "flightdeck architecture",
+            "how does flightdeck work",
+            "flightdeck bounded memory"
+          ],
+          "answer": "Clock and duplicate checks feed a bounded reorder heap, then a watermark releases packets into per-vehicle state checks. Pending events, vehicle records, and duplicate history all have explicit limits, so processor memory does not grow with stream duration."
+        },
+        {
+          "question_patterns": [
+            "flightdeck replay",
+            "flightdeck corruption",
+            "flightdeck salvage"
+          ],
+          "answer": "The log stores the original rules and checksummed event frames, plus a seal that detects incomplete recordings. Strict replay fails on corruption; salvage returns only the intact prefix and labels it incomplete."
+        },
+        {
+          "question_patterns": [
+            "flightdeck results",
+            "flightdeck tests",
+            "what did flightdeck demonstrate"
+          ],
+          "answer": "The synthetic demo records 721 packets and finds 46 issues across 14 categories. The documented local checks pass 1,254 assertions and 30 CLI scenarios, including replay consistency, memory boundaries, and corrupted logs."
+        },
+        {
+          "question_patterns": [
+            "flightdeck performance",
+            "flightdeck benchmark",
+            "how fast is flightdeck"
+          ],
+          "answer": "The saved local processor benchmark measures about 5.47 million synthetic events per second with a 250-millisecond reorder window on macOS arm64. That excludes CSV parsing, binary recording, and JSON output, so it is not an end-to-end or flight-hardware claim."
+        },
+        {
+          "question_patterns": [
+            "is flightdeck flight software",
+            "is flightdeck production ready",
+            "flightdeck limitations",
+            "flightdeck safety"
+          ],
+          "answer": "It is a simulation engineering toolkit, not certified flight software, and it does not control aircraft. The examples are synthetic, telemetry is not authenticated, and frame flushing is not a power-loss durability guarantee."
+        },
+        {
+          "question_patterns": [
+            "flightdeck demo",
+            "flightdeck github",
+            "where can i see flightdeck"
+          ],
+          "answer": "The repository is bowenzhu21/flightdeck, with a linked mission report you can scrub and filter. Running make demo regenerates the synthetic recording, replay results, and report locally."
+        }
+      ],
+      "aliases": [
+        "flight deck",
+        "telemetry replay",
+        "telemetry recorder"
+      ]
     }
   },
   "experience": {
@@ -609,6 +1037,51 @@
             "heygen achievements"
           ],
           "answer": "On a 449-case evaluation, the Gemma 2B classifier reached 99.6% accuracy with latency under 300 ms. Repository retrieval used 71 times less context and cut inference cost by 54% in controlled A/B evaluations. Graph construction took 8 minutes 19 seconds versus 42 minutes for GitNexus. These are evaluation and benchmark results, not production-wide guarantees."
+        },
+        {
+          "question_patterns": [
+            "heygen guardrails",
+            "heygen security classifier",
+            "autonomous agent guardrails",
+            "fast guardrails for autonomous agents",
+            "what were the guardrails at heygen"
+          ],
+          "answer": "I evaluated eight classifiers on 449 cases and optimized a Gemma 2B security classifier with llama.cpp for agent data security. It reached 99.6% accuracy with latency under 300 milliseconds in evaluation; those are measured evaluation results, not production-wide guarantees."
+        },
+        {
+          "question_patterns": [
+            "heygen codebase map",
+            "heygen codebase knowledge",
+            "heygen repository knowledge graph",
+            "coding agents a deeper map",
+            "heygen mcp retrieval",
+            "codebase map at heygen"
+          ],
+          "answer": "I shipped an MCP repository knowledge graph to give coding agents better codebase context. In controlled A/B evaluations, retrieval used 71 times less context and reduced inference cost by 54%."
+        },
+        {
+          "question_patterns": [
+            "heygen graph builds",
+            "heygen graph construction",
+            "large graph builds down to minutes",
+            "heygen pyarrow",
+            "heygen kuzudb",
+            "heygen gitnexus"
+          ],
+          "answer": "I used PyArrow and KuzuDB bulk loading plus edge indexing to reduce relationship resolution from O(N×E) to O(N+E). The measured graph build took 8 minutes 19 seconds, compared with 42 minutes for GitNexus."
+        },
+        {
+          "question_patterns": [
+            "heygen multi user agents",
+            "heygen multi-user agents",
+            "heygen agent infrastructure",
+            "heygen go services",
+            "heygen python sidecars",
+            "heygen openclaw",
+            "heygen hermes agents",
+            "heygen claude code"
+          ],
+          "answer": "I built Go services and Python sidecars for multi-user agents, covering authorization, spend enforcement, MCP provisioning, and gateway lifecycle management. That infrastructure supported OpenClaw, Hermes, and Claude Code agents."
         }
       ]
     },
@@ -928,11 +1401,24 @@
     "top_level_faq": [
       {
         "question_patterns": [
+          "what are your new projects",
+          "what are your recent projects",
+          "what are your latest projects",
+          "what have you built recently",
+          "what projects have you built recently",
+          "tell me about your new work",
+          "tell me about your latest work",
+          "what are you working on lately"
+        ],
+        "answer": "I recently built Clearinghouse for payment correctness, ModelGate for model releases, and FlightDeck for telemetry replay."
+      },
+      {
+        "question_patterns": [
           "what projects have you built",
           "what projects are in your portfolio",
           "what have you built"
         ],
-        "answer": "The main projects in my portfolio are Matrix, Adapt UI, RobinTrain, Aura Dev, Elbow Exo, GymBro, Apollo, Aphrodite, Hermes, and Kronos."
+        "answer": "My newest projects are Clearinghouse, ModelGate, and FlightDeck. Other work includes Matrix, Adapt UI, RobinTrain, Aura Dev, Elbow Exo, GymBro, and the Gods' Hands collection: Apollo, Aphrodite, Hermes, and Kronos."
       },
       {
         "question_patterns": [

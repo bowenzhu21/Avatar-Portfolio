@@ -56,15 +56,28 @@ function buildPortfolioChatContext(transcript: string) {
     relevantProjects: Object.values(knowledge.relevantProjects).map((project) => ({
       title: project.title,
       oneLiner: project.one_liner,
-      techStack: project.tech_stack.slice(0, 5),
-      highlights: project.highlights.slice(0, 2),
-      results: project.results.slice(0, 2),
+      fullSummary: project.full_summary,
+      whyItMatters: project.why_it_matters,
+      problem: project.problem,
+      solution: project.solution,
+      role: project.your_role,
+      techStack: project.tech_stack,
+      highlights: project.highlights,
+      architecture: project.architecture,
+      challenges: project.challenges,
+      tradeoffs: project.tradeoffs,
+      results: project.results,
+      demoLinks: project.demo_links,
     })),
     relevantExperience: Object.values(knowledge.relevantExperience).map((experience) => ({
       title: experience.title,
       oneLiner: experience.one_liner,
-      wins: experience.wins.slice(0, 2),
-      skillsGained: experience.skills_gained.slice(0, 2),
+      fullSummary: experience.full_summary,
+      companyOrProgram: experience.company_or_program,
+      role: experience.your_role,
+      scope: experience.scope,
+      wins: experience.wins,
+      skillsGained: experience.skills_gained,
     })),
     projectDirectory: knowledge.projectDirectory.map((project) => ({
       title: project.title,
@@ -136,7 +149,13 @@ export async function POST(request: Request) {
     const trimmedMessages = messages.slice(-10);
     const latestUserMessage =
       [...trimmedMessages].reverse().find((message) => message.sender === "user")?.text?.trim() ?? "";
-    const portfolioContext = buildPortfolioChatContext(latestUserMessage);
+    // Keep an earlier named project or employer available for follow-up questions.
+    // Only user messages select sources; prior model replies are not factual evidence.
+    const retrievalTranscript = trimmedMessages
+      .filter((message) => message.sender === "user" && typeof message.text === "string")
+      .map((message) => message.text)
+      .join("\n");
+    const portfolioContext = buildPortfolioChatContext(retrievalTranscript);
 
     if (!latestUserMessage) {
       return NextResponse.json({ error: "A user message is required." }, { status: 400 });

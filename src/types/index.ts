@@ -77,6 +77,7 @@ export interface VoiceRouterInput {
   activeCard?: CardType | null;
   activeSection?: string | null;
   recentEntities?: string[];
+  recentUserTranscripts?: string[];
   conversationMode?: ConversationMode;
   lastIntent?: OrchestrationIntent | null;
 }

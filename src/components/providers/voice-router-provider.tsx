@@ -578,6 +578,7 @@ export function VoiceRouterProvider() {
   const activeCard = usePortfolioStore((state) => state.activeCard);
   const activeSection = usePortfolioStore((state) => state.activeSection);
   const recentEntities = usePortfolioStore((state) => state.recentEntities);
+  const conversationHistory = usePortfolioStore((state) => state.conversationHistory);
   const conversationMode = usePortfolioStore((state) => state.conversationMode);
   const lastIntent = usePortfolioStore((state) => state.lastIntent);
   const setActiveRoute = usePortfolioStore((state) => state.setActiveRoute);
@@ -629,6 +630,10 @@ export function VoiceRouterProvider() {
         activeCard,
         activeSection,
         recentEntities,
+        recentUserTranscripts: conversationHistory
+          .filter((turn) => turn.role === "user")
+          .slice(-4)
+          .map((turn) => turn.text),
         conversationMode,
         lastIntent,
       } as const;
@@ -751,6 +756,7 @@ export function VoiceRouterProvider() {
         }
 
         const shouldSkipNarrationModel =
+          result.intent === "navigate" &&
           !result.entity && result.route && deterministicAppRoutes.has(result.route);
         const narration = shouldSkipNarrationModel
           ? { spokenResponse: result.spokenResponse }
@@ -794,6 +800,7 @@ export function VoiceRouterProvider() {
     activeSection,
     interrupt,
     clearTurnCaption,
+    conversationHistory,
     conversationMode,
     lastIntent,
     openCard,

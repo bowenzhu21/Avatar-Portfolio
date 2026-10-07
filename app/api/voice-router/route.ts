@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { portfolioEntities, portfolioEntityMap } from "@/data/portfolio";
+import {
+  getConversationEntityIds,
+  getReferencedEntityIds,
+  voiceContext,
+} from "@/data/voiceContext";
 import { defaultSpotifyTrackId, getSpotifyTrackById } from "@/data/spotify";
 import {
   buildGeminiVoiceRouterPrompt,
@@ -500,6 +505,36 @@ export async function POST(request: Request) {
   }
 
   const appNavigationTarget = detectAppNavigationTarget(transcript);
+  const recentUserTranscripts = Array.isArray(input.recentUserTranscripts)
+    ? input.recentUserTranscripts
+        .filter((text): text is string => typeof text === "string")
+        .slice(-4)
+    : [];
+  const isFollowUp =
+    /\b(it|its|that|this|those|these|more|deeper|how|why|architecture|tradeoffs|stack|results)\b/i.test(transcript);
+  const referencedIds = isFollowUp
+    ? getConversationEntityIds(transcript, recentUserTranscripts)
+    : getReferencedEntityIds(transcript);
+  const referencedProjects = referencedIds
+    .filter((id) => voiceContext.projects[id] && !portfolioEntityMap.has(id))
+    .map((id) => voiceContext.projects[id]);
+
+  // Projects hosted outside the phone can still be discussed without inventing a route.
+  if (!appNavigationTarget && referencedProjects.length > 0) {
+    return NextResponse.json<VoiceRouterOutput>({
+      intent: referencedProjects.length > 1 ? "compare" : "answer",
+      entity: null,
+      route: null,
+      card: "overview",
+      section: null,
+      spokenResponse: referencedProjects.map((project) => project.one_liner).join(" "),
+      confidence: 0.95,
+      followUpSuggestions: referencedProjects
+        .slice(0, 3)
+        .map((project) => `How does ${project.title} work?`),
+    });
+  }
+
   const comparison = detectComparison(transcript);
   const aliasMatch = matchPortfolioAlias(transcript);
   const fallbackEntity =

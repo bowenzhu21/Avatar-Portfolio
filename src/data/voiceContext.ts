@@ -14,6 +14,7 @@ interface VoiceLink {
 
 interface ProjectVoiceContext {
   title: string;
+  aliases?: string[];
   one_liner: string;
   full_summary: string;
   why_it_matters: string;
@@ -172,12 +173,26 @@ function getEntityIdFromRoute(route: string | null | undefined) {
 }
 
 function getCurrentEntityId(args: {
+  transcript: string;
+  recentUserTranscripts?: string[];
   routedEntity: PortfolioEntity | null;
   activeEntityId?: string | null;
   activeRoute?: string | null;
 }) {
   if (args.routedEntity?.id) {
     return args.routedEntity.id;
+  }
+
+  const referencedIds = getReferencedEntityIds(args.transcript);
+  if (referencedIds.length > 0) {
+    return referencedIds[0];
+  }
+
+  if (!args.activeEntityId) {
+    const recentIds = getConversationEntityIds(args.transcript, args.recentUserTranscripts);
+    if (recentIds.length > 0) {
+      return recentIds[0];
+    }
   }
 
   if (typeof args.activeRoute !== "undefined") {
@@ -279,18 +294,12 @@ function isPersonalContext(context: unknown): context is PersonalVoiceContext {
 }
 
 function buildProjectDirectory() {
-  return portfolioEntities
-    .filter((entity) => voiceContext.projects[entity.id])
-    .map((entity) => {
-      const project = voiceContext.projects[entity.id];
-
-      return {
-        id: entity.id,
-        title: project.title,
-        oneLiner: project.one_liner,
-        techStack: project.tech_stack.slice(0, 6),
-      };
-    });
+  return Object.entries(voiceContext.projects).map(([id, project]) => ({
+    id,
+    title: project.title,
+    oneLiner: project.one_liner,
+    techStack: project.tech_stack.slice(0, 6),
+  }));
 }
 
 function buildExperienceDirectory() {
@@ -355,9 +364,37 @@ export function getReferencedEntityIds(transcript: string) {
             matchPattern(normalizedTranscript, candidate),
           ),
         )
-        .map((entity) => entity.id),
+        .map((entity) => entity.id)
+        .concat(
+          Object.entries(voiceContext.projects)
+            .filter(([id, project]) =>
+              [id, project.title, ...(project.aliases ?? [])].some((candidate) =>
+                matchPattern(normalizedTranscript, candidate),
+              ),
+            )
+            .map(([id]) => id),
+        ),
     ),
   ).slice(0, 6);
+}
+
+export function getConversationEntityIds(
+  transcript: string,
+  recentUserTranscripts: string[] = [],
+) {
+  const referencedIds = getReferencedEntityIds(transcript);
+  if (referencedIds.length > 0) {
+    return referencedIds;
+  }
+
+  for (const previous of recentUserTranscripts.slice(-4).reverse()) {
+    const previousIds = getReferencedEntityIds(previous);
+    if (previousIds.length > 0) {
+      return previousIds;
+    }
+  }
+
+  return [] as string[];
 }
 
 export function getMatchedVoiceFaqs(
@@ -419,6 +456,7 @@ export function getMatchedVoiceFaqs(
 
 export function getRelevantVoiceKnowledgeBase(args: {
   transcript: string;
+  recentUserTranscripts?: string[];
   routedEntity: PortfolioEntity | null;
   activeEntityId?: string | null;
   activeRoute?: string | null;
@@ -427,7 +465,7 @@ export function getRelevantVoiceKnowledgeBase(args: {
   const relevantEntityIds = Array.from(
     new Set([
       currentEntityId,
-      ...getReferencedEntityIds(args.transcript),
+      ...getConversationEntityIds(args.transcript, args.recentUserTranscripts),
     ].filter(Boolean)),
   ) as string[];
 
@@ -458,6 +496,7 @@ export function getRelevantVoiceKnowledgeBase(args: {
 
 export function buildGroundedVoiceFallback(args: {
   transcript: string;
+  recentUserTranscripts?: string[];
   deterministicFallback: string;
   conversationMode?: ConversationMode;
   activeCard?: CardType | null;

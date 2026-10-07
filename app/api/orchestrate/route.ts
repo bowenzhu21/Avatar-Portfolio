@@ -49,8 +49,14 @@ function clampSpokenText(text: string, maxWords: number, maxChars: number) {
 
 export async function POST(request: Request) {
   const payload = (await request.json()) as AvatarNarrationInput;
+  const recentUserTranscripts = Array.isArray(payload.input.recentUserTranscripts)
+    ? payload.input.recentUserTranscripts
+        .filter((transcript): transcript is string => typeof transcript === "string")
+        .slice(-4)
+    : [];
   const groundedFallback = buildGroundedVoiceFallback({
     transcript: payload.input.transcript,
+    recentUserTranscripts,
     deterministicFallback:
       payload.routerResult.spokenResponse.trim() ||
       "I can walk through Bowen's work once you pick a project, role, or section.",
@@ -70,6 +76,7 @@ export async function POST(request: Request) {
 
   const prompt = {
     transcript: payload.input.transcript,
+    recentUserTranscripts,
     activeRoute: payload.input.activeRoute ?? null,
     activeCard: payload.input.activeCard ?? null,
     activeSection: payload.input.activeSection ?? null,
@@ -80,6 +87,7 @@ export async function POST(request: Request) {
     routedEntity: getEntityContext(payload.routerResult.entity),
     voiceKnowledgeBase: getRelevantVoiceKnowledgeBase({
       transcript: payload.input.transcript,
+      recentUserTranscripts,
       routedEntity: payload.routerResult.entity,
       activeEntityId: payload.input.activeEntityId ?? null,
       activeRoute: payload.routerResult.route ?? payload.input.activeRoute ?? null,
@@ -93,7 +101,10 @@ export async function POST(request: Request) {
 You are writing the exact words Bowen should say out loud.
 Speak in first person as Bowen.
 Use only the provided context.
-Prioritize activeEntityContext, matchedFaqs, and routedEntity.sourceContext when they are present.
+Answer the current transcript. For follow-ups, use the most recent relevant topic in recentUserTranscripts.
+Prioritize sources matching the current question and recent topic over an unrelated active page.
+Use relevantProjects, relevantExperience, matchedFaqs, activeEntityContext, and routedEntity.sourceContext when they address that topic.
+Recent user transcripts identify the topic; they are not evidence for factual claims.
 Use other voiceKnowledgeBase context only when it is directly relevant to the transcript.
 For broad questions about projects, experience, school, or interests, use matchedFaqs first, then projectDirectory and experienceDirectory when relevant.
 Keep it concise: 1 to 2 short sentences, under 35 words total.
