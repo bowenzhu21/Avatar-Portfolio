@@ -49,7 +49,6 @@ const deterministicAppRoutes = new Set([
 const contactAliasMap: Record<ChatContactId, string[]> = {
   bowen: ["bowen"],
   lara: ["lara"],
-  john: ["anderson", "john"],
   yalda: ["yalda"],
   alisha: ["alisha"],
   pious: ["pious"],

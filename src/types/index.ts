@@ -154,7 +154,6 @@ export interface MessagesChatResponse {
 export type ChatContactId =
   | "bowen"
   | "lara"
-  | "john"
   | "yalda"
   | "alisha"
   | "pious";

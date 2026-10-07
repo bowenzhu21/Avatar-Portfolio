@@ -1,3 +1,5 @@
+import { heygenExperience } from "@/data/heygen";
+
 export interface ExperienceScreenRecord {
   id: string;
   title: string;
@@ -17,15 +19,16 @@ export const experienceScreens: Record<string, ExperienceScreenRecord> = {
   heygen: {
     id: "heygen",
     title: "HeyGen",
-    role: "Software Engineer Intern",
-    date: "May. 2026 - Aug. 2026",
-    location: "Palo Alto, CA",
+    role: heygenExperience.role,
+    date: heygenExperience.date,
+    location: heygenExperience.location,
     iconSrc: "/icons/heygen.jpeg",
     background:
       "radial-gradient(circle at 18% 14%, rgba(255,255,255,0.42), transparent 28%), radial-gradient(circle at 82% 22%, rgba(122,192,255,0.34), transparent 30%), linear-gradient(180deg, rgba(228,241,255,0.98) 0%, rgba(193,222,255,0.97) 48%, rgba(152,198,252,0.96) 100%)",
     backgroundImageSrc: "/experiences/heygen_bg.jpg",
     accent: "#69b6ff",
-    bullets: [],
+    description: heygenExperience.summary,
+    bullets: heygenExperience.bullets,
   },
   "hippos-exoskeleton": {
     id: "hippos-exoskeleton",

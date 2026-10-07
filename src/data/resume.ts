@@ -1,3 +1,5 @@
+import { heygenExperience } from "@/data/heygen";
+
 export interface ResumeBulletGroup {
   title?: string;
   bullets: string[];
@@ -88,12 +90,10 @@ export const resumeRecord: ResumeRecord = {
   experience: [
     {
       company: "HeyGen",
-      date: "May. 2026 - Aug. 2026",
-      role: "Software Engineer Intern",
-      location: "Palo Alto, CA",
-      bullets: [
-        "AI Data Infra",
-      ],
+      date: heygenExperience.date,
+      role: heygenExperience.role,
+      location: heygenExperience.location,
+      bullets: heygenExperience.bullets,
     },
     {
       company: "Hippos Exoskeleton",

@@ -565,33 +565,50 @@
   "experience": {
     "heygen": {
       "title": "HeyGen",
-      "one_liner": "I’ll be joining HeyGen as a Software Engineering Intern working on systems for real-time AI video and streaming avatars.",
-      "full_summary": "I’ll be joining HeyGen as a Software Engineering Intern working on systems that power real-time AI video and streaming avatars. The work sits at the intersection of AI inference, media processing, distributed systems, and low-latency delivery.",
+      "one_liner": "At HeyGen, I built AI agent infrastructure for security classification, repository retrieval, and multi-user agent services.",
+      "full_summary": "I was a Software Engineering Intern at HeyGen in Palo Alto from May to August 2026. I optimized a Gemma 2B security classifier with llama.cpp, shipped an MCP repository knowledge graph, accelerated graph construction with PyArrow and KuzuDB, and built Go services and Python sidecars for multi-user AI agents.",
       "company_or_program": "HeyGen",
       "your_role": "Software Engineering Intern",
       "scope": [
-        "Incoming role focused on systems behind real-time AI video and streaming avatars.",
-        "Work touches real-time data pipelines, media systems, and reliability at scale.",
-        "The core theme is low-latency generation and delivery."
+        "Agent data-security classification and low-latency local inference.",
+        "Repository knowledge graphs and MCP retrieval for coding agents.",
+        "Graph bulk loading, indexed relationship resolution, and build-time optimization.",
+        "Multi-user authorization, spend enforcement, MCP provisioning, and gateway lifecycle management for OpenClaw, Hermes, and Claude Code agents."
       ],
       "wins": [
-        "The role is a strong fit with my interest in real-time AI infrastructure, streaming systems, and product-facing systems engineering."
+        "Evaluated 8 classifiers on 449 cases and optimized Gemma 2B with llama.cpp, achieving 99.6% accuracy with latency under 300 ms in evaluation.",
+        "Shipped an MCP repository knowledge graph that reduced context usage 71× and inference cost 54% in controlled A/B evaluations.",
+        "Used PyArrow/KuzuDB bulk loading and edge indexing to reduce relationship resolution from O(N×E) to O(N+E); measured graph build time was 8m 19s versus 42m for GitNexus.",
+        "Built Go services and Python sidecars with multi-user authorization, spend enforcement, MCP provisioning, and gateway lifecycle management."
       ],
       "skills_gained": [
-        "Real-time streaming",
-        "Distributed systems",
-        "Video pipelines",
+        "Go",
+        "Python",
+        "llama.cpp",
+        "MCP",
+        "PyArrow",
+        "KuzuDB",
         "AI infrastructure",
-        "Performance optimization"
+        "Performance evaluation"
       ],
       "faq": [
         {
           "question_patterns": [
             "tell me about heygen",
             "what are you doing at heygen",
+            "what did you do at heygen",
             "what is your heygen role"
           ],
-          "answer": "I’m joining HeyGen as a Software Engineering Intern working on real-time AI video and streaming avatar systems. It is a strong match for my interest in low-latency AI infrastructure."
+          "answer": "I interned at HeyGen from May to August 2026, working on AI agent infrastructure. I built a low-latency security classifier, repository knowledge graphs for coding-agent retrieval, and Go and Python services for multi-user agents."
+        },
+        {
+          "question_patterns": [
+            "heygen impact",
+            "heygen results",
+            "heygen metrics",
+            "heygen achievements"
+          ],
+          "answer": "On a 449-case evaluation, the Gemma 2B classifier reached 99.6% accuracy with latency under 300 ms. Repository retrieval used 71 times less context and cut inference cost by 54% in controlled A/B evaluations. Graph construction took 8 minutes 19 seconds versus 42 minutes for GitNexus. These are evaluation and benchmark results, not production-wide guarantees."
         }
       ]
     },

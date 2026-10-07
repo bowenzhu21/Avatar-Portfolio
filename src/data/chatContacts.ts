@@ -30,21 +30,6 @@ export const phoneContacts: ChatContact[] = [
     ],
   },
   {
-    id: "john",
-    name: "Anderson",
-    avatar: "/phone/Anderson.jpeg",
-    favorite: true,
-    phoneLabel: "mobile",
-    phoneNumber: "(123) 456-7890",
-    voiceId: "wSqOdjeNqDrHcoK0zorF",
-    promptStyle:
-      "A jokester with easy banter. Toss in quick one-liners or playful punchlines without becoming a parody.",
-    promptRules: [
-      "Keep jokes short and natural.",
-      "Sound socially smooth and playful, not chaotic.",
-    ],
-  },
-  {
     id: "yalda",
     name: "Yalda",
     avatar: "/phone/Yalda.png",

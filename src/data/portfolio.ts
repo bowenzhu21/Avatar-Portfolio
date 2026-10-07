@@ -375,27 +375,27 @@ export const portfolioEntities: PortfolioEntity[] = [
     route: "/experience/heygen",
     aliases: ["heygen", "hey gen", "avatar company", "streaming avatar"],
     shortSummary:
-      "Experience centered on AI avatar products, real-time interaction design, and translating emerging capabilities into user value.",
+      "Built AI agent infrastructure: low-latency security classification, MCP code retrieval, and multi-user agent services.",
     technicalSummary:
-      "Worked across product surfaces where conversational systems, media pipelines, and front-end experience quality intersected.",
+      "Optimized Gemma 2B with llama.cpp, built repository knowledge graphs with PyArrow and KuzuDB, and shipped Go services and Python sidecars for agent authorization, spend enforcement, MCP provisioning, and gateway lifecycle management.",
     recruiterSummary:
-      "Signals exposure to fast-moving AI products and a strong sense for execution in ambiguous environments.",
-    tags: ["AI", "Avatars", "Realtime", "Product Engineering"],
+      "Demonstrates measured AI infrastructure work: 99.6% classifier accuracy under 300 ms on 449 evaluation cases, 71× lower context usage and 54% lower inference cost in controlled A/B evaluations, and graph construction in 8m 19s versus 42m for GitNexus.",
+    tags: ["Go", "Python", "MCP", "llama.cpp", "KuzuDB", "AI Infrastructure"],
     sections: [
       {
         id: "scope",
         title: "Scope",
-        summary: "Product areas, collaboration patterns, and example responsibilities.",
+        summary: "Software Engineering Intern, May–August 2026 in Palo Alto; AI agent security, code retrieval, and multi-user infrastructure.",
       },
       {
         id: "execution",
         title: "Execution",
-        summary: "Shipping in an ambiguous environment with evolving platform constraints.",
+        summary: "Classifier evaluation and optimization, indexed graph construction, Go services, and Python sidecars.",
       },
       {
         id: "takeaways",
         title: "Takeaways",
-        summary: "What the role sharpened around communication, iteration speed, and product judgment.",
+        summary: "Measured latency, retrieval efficiency, and graph-build improvements, with evaluation results distinguished from production-wide claims.",
       },
     ],
     relatedItems: ["matrix", "adapt-ui", "contact"],

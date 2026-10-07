@@ -231,7 +231,6 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const [messageThreads, setMessageThreads] = useState<MessagesThreads>({
     bowen: [],
     lara: [],
-    john: [],
     yalda: [],
     alisha: [],
     pious: [],
