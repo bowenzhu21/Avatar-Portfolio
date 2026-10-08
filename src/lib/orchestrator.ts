@@ -10,6 +10,7 @@ import { orchestrationSystemPrompt } from "@/config/prompts";
 
 export async function routeVoiceIntent(
   payload: VoiceRouterInput,
+  signal?: AbortSignal,
 ): Promise<VoiceRouterOutput> {
   const response = await fetch("/api/voice-router", {
     method: "POST",
@@ -17,6 +18,7 @@ export async function routeVoiceIntent(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (!response.ok) {
@@ -28,6 +30,7 @@ export async function routeVoiceIntent(
 
 export async function orchestrateWithGemini(
   payload: AvatarNarrationInput,
+  signal?: AbortSignal,
 ): Promise<AvatarNarrationOutput> {
   const response = await fetch("/api/orchestrate", {
     method: "POST",
@@ -35,6 +38,7 @@ export async function orchestrateWithGemini(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (!response.ok) {

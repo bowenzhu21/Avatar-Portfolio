@@ -105,7 +105,7 @@ export interface AvatarNarrationOutput {
 export interface SubmittedUtterance {
   id: string;
   text: string;
-  source: "voice" | "chip";
+  source: "voice" | "chip" | "text";
 }
 
 export interface ConversationTurn {

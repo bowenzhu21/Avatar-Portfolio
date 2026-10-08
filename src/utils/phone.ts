@@ -168,9 +168,37 @@ export function createPhoneListScreen(
     view: "list",
     title: titleMap[app],
     entityId: null,
-    route: null,
+    route: app in listAppTitleMap ? `/${app}` : null,
     card: "overview",
     contactId: null,
     callMode: null,
   };
+}
+
+/** Route props are available during SSR, before the client store synchronizes. */
+export function resolvePhoneScreen(
+  route: string,
+  activeRoute: string,
+  screen: PhoneScreenState,
+): PhoneScreenState {
+  if (activeRoute === route && (screen.route === route || screen.route === null)) {
+    // Keep contact targets and voice-selected cards on the current page.
+    return screen;
+  }
+
+  // Direct loads and browser Back/Forward must never show the previous screen.
+  return derivePhoneScreen({ route });
+}
+
+export function getPhoneParent(screen: PhoneScreenState): { route: string; title: string } | null {
+  if (screen.view !== "detail" || !screen.entityId) {
+    return null;
+  }
+
+  if (screen.app in listAppTitleMap) {
+    const app = screen.app as keyof typeof listAppTitleMap;
+    return { route: `/${app}`, title: listAppTitleMap[app] };
+  }
+
+  return null;
 }

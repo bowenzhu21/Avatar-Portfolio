@@ -142,9 +142,10 @@ function downsampleBuffer(
   return result;
 }
 
-async function fetchRealtimeToken(): Promise<string> {
+async function fetchRealtimeToken(signal: AbortSignal): Promise<string> {
   const response = await fetch("/api/deepgram/realtime-token", {
     method: "POST",
+    signal,
     headers: {
       "Content-Type": "application/json",
     },
@@ -177,6 +178,11 @@ export class DeepgramRealtimeClient {
   private finalizedSegments: string[] = [];
   private finalizePending: Promise<void> | null = null;
   private resolveFinalizePending: (() => void) | null = null;
+  private sessionGeneration = 0;
+  private startPending: Promise<void> | null = null;
+  private stopPending: Promise<void> | null = null;
+  private tokenRequest: AbortController | null = null;
+  private cancelConnection: (() => void) | null = null;
 
   subscribe(listener: StateListener) {
     this.listeners.add(listener);
@@ -192,10 +198,23 @@ export class DeepgramRealtimeClient {
   }
 
   async startListening(): Promise<void> {
-    if (this.state.isListening) {
-      return;
-    }
+    if (this.state.isListening) return;
+    if (this.startPending) return this.startPending;
+    if (this.stopPending) await this.stopPending;
+    // Another caller may have started while the previous stop was finishing.
+    if (this.startPending) return this.startPending;
 
+    const generation = ++this.sessionGeneration;
+    const operation = this.openListeningSession(generation);
+    this.startPending = operation;
+    try {
+      await operation;
+    } finally {
+      if (this.startPending === operation) this.startPending = null;
+    }
+  }
+
+  private async openListeningSession(generation: number): Promise<void> {
     this.finalizedSegments = [];
     this.resolveFinalize();
     this.setState({
@@ -219,6 +238,10 @@ export class DeepgramRealtimeClient {
         },
       });
 
+      if (generation !== this.sessionGeneration) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       this.mediaStream = stream;
 
       this.setState({
@@ -229,7 +252,17 @@ export class DeepgramRealtimeClient {
         },
       });
 
-      const token = await fetchRealtimeToken();
+      const request = new AbortController();
+      this.tokenRequest = request;
+      const tokenTimeout = setTimeout(() => request.abort(), 15_000);
+      let token: string;
+      try {
+        token = await fetchRealtimeToken(request.signal);
+      } finally {
+        clearTimeout(tokenTimeout);
+        if (this.tokenRequest === request) this.tokenRequest = null;
+      }
+      if (generation !== this.sessionGeneration) return;
       const url = new URL(DEEPGRAM_LISTEN_URL);
       url.searchParams.set("model", "nova-3");
       url.searchParams.set("language", "en-US");
@@ -249,7 +282,9 @@ export class DeepgramRealtimeClient {
       });
 
       await this.connectWebSocket(url.toString(), token);
+      if (generation !== this.sessionGeneration) return;
       await this.startAudioPipeline(stream);
+      if (generation !== this.sessionGeneration) return;
 
       this.setState({
         isListening: true,
@@ -260,6 +295,7 @@ export class DeepgramRealtimeClient {
         },
       });
     } catch (error) {
+      if (generation !== this.sessionGeneration) return;
       const message =
         error instanceof Error
           ? error.message
@@ -288,55 +324,59 @@ export class DeepgramRealtimeClient {
   }
 
   async stopListening(): Promise<void> {
-    if (!this.state.isListening && !this.socket && !this.mediaStream) {
-      this.resetState();
-      return;
+    if (this.stopPending) return this.stopPending;
+    this.sessionGeneration += 1;
+    this.startPending = null;
+    this.tokenRequest?.abort();
+    this.tokenRequest = null;
+    const operation = this.finishListeningSession();
+    this.stopPending = operation;
+    try {
+      await operation;
+    } finally {
+      if (this.stopPending === operation) this.stopPending = null;
     }
+  }
 
-    this.setState({
-      session: {
-        ...this.state.session,
-        status: "stopping",
-      },
-    });
-
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.finalizePending = new Promise<void>((resolve) => {
-        this.resolveFinalizePending = resolve;
-      });
-
-      this.socket.send(JSON.stringify({ type: "Finalize" }));
-
-      await Promise.race([
-        this.finalizePending,
-        new Promise<void>((resolve) => {
-          window.setTimeout(resolve, FINALIZE_TIMEOUT_MS);
-        }),
-      ]);
-
-      this.socket.send(JSON.stringify({ type: "CloseStream" }));
-    }
-
-    await this.cleanupTransport();
-
+  private async finishListeningSession(): Promise<void> {
     this.setState({
       isListening: false,
-      transcript: "",
-      partialTranscript: "",
-      session: {
-        sessionId: null,
-        modelId: "nova-3",
-        status: "idle",
-      },
+      session: { ...this.state.session, status: "stopping" },
     });
+    // Stop capture immediately; finalization only drains audio already sent.
+    this.mediaStream?.getTracks().forEach((track) => track.stop());
+    const socket = this.socket;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    try {
+      if (socket?.readyState === WebSocket.OPEN) {
+        this.finalizePending = new Promise<void>((resolve) => {
+          this.resolveFinalizePending = resolve;
+        });
+        socket.send(JSON.stringify({ type: "Finalize" }));
+        await Promise.race([
+          this.finalizePending,
+          new Promise<void>((resolve) => {
+            timeoutId = setTimeout(resolve, FINALIZE_TIMEOUT_MS);
+          }),
+        ]);
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: "CloseStream" }));
+        }
+      }
+    } catch {
+      // A dropped connection must never prevent microphone cleanup.
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      await this.cleanupTransport();
+      this.resetState();
+    }
   }
 
   async toggleListening(): Promise<void> {
-    if (this.state.isListening) {
+    if (this.state.session.status !== "idle" && this.state.session.status !== "error") {
       await this.stopListening();
       return;
     }
-
     await this.startListening();
   }
 
@@ -361,39 +401,68 @@ export class DeepgramRealtimeClient {
     await new Promise<void>((resolve, reject) => {
       const socket = new WebSocket(url, ["bearer", token]);
       this.socket = socket;
+      let connected = false;
+      const timeoutId = setTimeout(() => {
+        reject(new Error("Voice connection timed out. Try again, or type your question."));
+      }, 10_000);
+      const finishConnection = () => {
+        clearTimeout(timeoutId);
+        this.cancelConnection = null;
+      };
+      this.cancelConnection = () => {
+        finishConnection();
+        reject(new DOMException("Voice input cancelled.", "AbortError"));
+      };
 
       socket.onopen = () => {
+        connected = true;
+        finishConnection();
         resolve();
       };
-
       socket.onerror = () => {
-        reject(new Error("Failed to connect to Deepgram realtime transcription."));
+        finishConnection();
+        const error = new Error("Unable to connect voice input. Try again, or type your question.");
+        if (!connected) reject(error);
+        else {
+          this.sessionGeneration += 1;
+          this.setState({
+            isListening: false,
+            error: error.message,
+            session: { ...this.state.session, status: "error" },
+          });
+          void this.cleanupTransport();
+        }
       };
-
       socket.onclose = () => {
+        finishConnection();
+        if (!connected) {
+          reject(new Error("Voice connection closed before it was ready."));
+          return;
+        }
+        if (this.state.session.status === "stopping") {
+          this.resolveFinalize();
+          return;
+        }
+        this.sessionGeneration += 1;
         this.setState({
           isListening: false,
           partialTranscript: "",
-          session: {
-            sessionId: null,
-            modelId: "nova-3",
-            status: this.state.session.status === "error" ? "error" : "idle",
-          },
+          error: "Voice connection closed. Try again, or type your question.",
+          session: { sessionId: null, modelId: "nova-3", status: "error" },
         });
+        void this.cleanupTransport();
       };
-
       socket.onmessage = (event) => {
         try {
-          const payload = JSON.parse(event.data) as DeepgramRealtimeMessage;
-          this.handleSocketMessage(payload);
+          this.handleSocketMessage(JSON.parse(event.data) as DeepgramRealtimeMessage);
         } catch {
+          this.sessionGeneration += 1;
           this.setState({
-            error: "Received an unreadable Deepgram realtime message.",
-            session: {
-              ...this.state.session,
-              status: "error",
-            },
+            isListening: false,
+            error: "Voice input received an unreadable response. Please try again.",
+            session: { ...this.state.session, status: "error" },
           });
+          void this.cleanupTransport();
         }
       };
     });
@@ -454,7 +523,9 @@ export class DeepgramRealtimeClient {
     }
 
     if (message.type === "Error") {
+      this.sessionGeneration += 1;
       this.setState({
+        isListening: false,
         error: message.description || message.message || "Deepgram realtime error.",
         session: {
           ...this.state.session,
@@ -462,6 +533,7 @@ export class DeepgramRealtimeClient {
         },
       });
       this.resolveFinalize();
+      void this.cleanupTransport();
     }
   }
 
@@ -485,7 +557,7 @@ export class DeepgramRealtimeClient {
     );
 
     this.processorNode.onaudioprocess = (event) => {
-      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+      if (this.state.session.status !== "listening" || !this.socket || this.socket.readyState !== WebSocket.OPEN) {
         return;
       }
 
@@ -509,45 +581,43 @@ export class DeepgramRealtimeClient {
   }
 
   private async cleanupTransport() {
-    if (this.processorNode) {
-      this.processorNode.disconnect();
-      this.processorNode.onaudioprocess = null;
-      this.processorNode = null;
-    }
+    // Detach all handles before awaiting, so overlapping shutdowns cannot close
+    // a newly started session or leave tracks alive while AudioContext closes.
+    const processor = this.processorNode;
+    const source = this.sourceNode;
+    const context = this.audioContext;
+    const stream = this.mediaStream;
+    const socket = this.socket;
+    this.processorNode = null;
+    this.sourceNode = null;
+    this.audioContext = null;
+    this.mediaStream = null;
+    this.socket = null;
+    this.tokenRequest?.abort();
+    this.tokenRequest = null;
+    this.cancelConnection?.();
+    this.cancelConnection = null;
 
-    if (this.sourceNode) {
-      this.sourceNode.disconnect();
-      this.sourceNode = null;
+    if (processor) {
+      processor.onaudioprocess = null;
+      processor.disconnect();
     }
-
-    if (this.audioContext) {
-      await this.audioContext.close().catch(() => undefined);
-      this.audioContext = null;
-    }
-
-    if (this.mediaStream) {
-      for (const track of this.mediaStream.getTracks()) {
-        track.stop();
+    source?.disconnect();
+    stream?.getTracks().forEach((track) => track.stop());
+    if (socket) {
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
+      if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+        socket.close();
       }
-      this.mediaStream = null;
     }
-
-    if (this.socket) {
-      this.socket.onopen = null;
-      this.socket.onmessage = null;
-      this.socket.onerror = null;
-      this.socket.onclose = null;
-      if (
-        this.socket.readyState === WebSocket.OPEN ||
-        this.socket.readyState === WebSocket.CONNECTING
-      ) {
-        this.socket.close();
-      }
-      this.socket = null;
-    }
-
     this.resolveFinalize();
     this.finalizedSegments = [];
+    if (context && context.state !== "closed") {
+      await context.close().catch(() => undefined);
+    }
   }
 
   private resetState() {

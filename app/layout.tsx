@@ -17,8 +17,16 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: siteConfig.name,
+  metadataBase: new URL("https://bowenzhu.ca"),
+  title: { default: "Bowen Zhu — Portfolio", template: "%s — Bowen Zhu" },
   description: siteConfig.description,
+  openGraph: {
+    title: "Bowen Zhu — Portfolio",
+    description: siteConfig.description,
+    type: "website",
+    images: [{ url: "/profile_pic.jpeg", alt: "Bowen Zhu" }],
+  },
+  twitter: { card: "summary", title: "Bowen Zhu — Portfolio", description: siteConfig.description },
   icons: {
     icon: [
       { url: "/browser_icon.png", type: "image/png" },

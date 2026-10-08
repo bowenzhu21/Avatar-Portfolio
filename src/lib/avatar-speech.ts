@@ -31,9 +31,10 @@ const INITIAL_STATE: AvatarSpeechState = {
   error: null,
 };
 
-async function fetchSpeechAudio(text: string): Promise<ArrayBuffer> {
+async function fetchSpeechAudio(text: string, signal: AbortSignal): Promise<ArrayBuffer> {
   const response = await fetch("/api/elevenlabs/speech", {
     method: "POST",
+    signal,
     headers: {
       "Content-Type": "application/json",
     },
@@ -62,6 +63,7 @@ export class AvatarSpeechClient {
   private playbackToken = 0;
   private lastLevelCommit = 0;
   private outputVolume = 1;
+  private pendingRequest: AbortController | null = null;
 
   subscribe(listener: StateListener) {
     this.listeners.add(listener);
@@ -90,6 +92,7 @@ export class AvatarSpeechClient {
   }
 
   async unlockAudio() {
+    if (typeof document !== "undefined" && document.hidden) return;
     this.setState({
       status: this.state.isSpeaking ? "playing" : "unlocking",
       error: null,
@@ -105,6 +108,7 @@ export class AvatarSpeechClient {
       const silentSource = audioContext.createBufferSource();
       silentSource.buffer = silentBuffer;
       silentSource.connect(audioContext.destination);
+      silentSource.onended = () => silentSource.disconnect();
       silentSource.start();
 
       this.setState({
@@ -126,13 +130,17 @@ export class AvatarSpeechClient {
 
   async speak(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) {
+    if (!trimmed || (typeof document !== "undefined" && document.hidden)) {
       await this.interrupt();
       return;
     }
 
     const token = ++this.playbackToken;
+    this.pendingRequest?.abort();
+    const request = new AbortController();
+    this.pendingRequest = request;
     this.stopCurrentSource();
+    this.stopBrowserSpeech();
     this.stopLevelTracking();
 
     this.setState({
@@ -140,11 +148,12 @@ export class AvatarSpeechClient {
       isSpeaking: false,
       currentText: trimmed,
       audioLevel: 0,
+      provider: null,
       error: null,
     });
 
     try {
-      const audioBytes = await fetchSpeechAudio(trimmed);
+      const audioBytes = await fetchSpeechAudio(trimmed, request.signal);
       if (token !== this.playbackToken) {
         return;
       }
@@ -167,6 +176,7 @@ export class AvatarSpeechClient {
           return;
         }
 
+        source.disconnect();
         this.currentSource = null;
         this.stopLevelTracking();
         this.setState({
@@ -219,25 +229,18 @@ export class AvatarSpeechClient {
 
         throw fallbackError;
       }
+    } finally {
+      if (this.pendingRequest === request) this.pendingRequest = null;
     }
   }
 
   async interrupt() {
     this.playbackToken += 1;
+    this.pendingRequest?.abort();
+    this.pendingRequest = null;
     this.stopCurrentSource();
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    this.currentUtterance = null;
+    this.stopBrowserSpeech();
     this.stopLevelTracking();
-
-    if (this.audioContext && this.audioContext.state === "suspended") {
-      try {
-        await this.audioContext.resume();
-      } catch {
-        // Best effort only.
-      }
-    }
 
     this.setState({
       status: "idle",
@@ -247,6 +250,18 @@ export class AvatarSpeechClient {
       provider: null,
       error: null,
     });
+  }
+
+  private stopBrowserSpeech() {
+    if (this.currentUtterance) {
+      this.currentUtterance.onstart = null;
+      this.currentUtterance.onend = null;
+      this.currentUtterance.onerror = null;
+      this.currentUtterance = null;
+    }
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
   }
 
   private ensureAudioContext() {
@@ -343,6 +358,7 @@ export class AvatarSpeechClient {
       });
     };
 
+    this.currentUtterance = utterance;
     synthesis.speak(utterance);
   }
 
@@ -397,9 +413,10 @@ export class AvatarSpeechClient {
         Math.abs(Math.sin(now / 160)) * 0.18 +
         Math.abs(Math.sin(now / 67)) * 0.08;
 
-      this.setState({
-        audioLevel: Math.min(0.55, nextLevel),
-      });
+      if (now - this.lastLevelCommit > 48) {
+        this.lastLevelCommit = now;
+        this.setState({ audioLevel: Math.min(0.55, nextLevel) });
+      }
 
       this.levelRafId = window.requestAnimationFrame(tick);
     };
@@ -412,6 +429,7 @@ export class AvatarSpeechClient {
       return;
     }
 
+    this.currentSource.onended = null;
     try {
       this.currentSource.stop();
     } catch {

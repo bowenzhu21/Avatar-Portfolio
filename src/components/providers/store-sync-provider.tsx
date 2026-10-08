@@ -4,47 +4,47 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getEntityByRoute } from "@/utils/portfolio";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
+import { derivePhoneScreen, resolvePhoneScreen } from "@/utils/phone";
 
 export function StoreSyncProvider() {
   const pathname = usePathname();
-  const setActiveRoute = usePortfolioStore((state) => state.setActiveRoute);
-  const setActiveEntity = usePortfolioStore((state) => state.setActiveEntity);
-  const setActiveSection = usePortfolioStore((state) => state.setActiveSection);
   const pushRecentEntity = usePortfolioStore((state) => state.pushRecentEntity);
-  const syncPhoneScreenFromRoute = usePortfolioStore((state) => state.syncPhoneScreenFromRoute);
   const portfolioVolume = usePortfolioStore((state) => state.portfolioVolume);
   const setPortfolioVolume = usePortfolioStore((state) => state.setPortfolioVolume);
   const [hasLoadedVolume, setHasLoadedVolume] = useState(false);
 
   useEffect(() => {
     const entity = getEntityByRoute(pathname);
-    setActiveRoute(pathname);
-    setActiveEntity(entity);
-    setActiveSection(entity?.sections[0]?.id ?? null);
-    syncPhoneScreenFromRoute(pathname, entity);
+    const current = usePortfolioStore.getState();
+    const resolved = resolvePhoneScreen(pathname, current.activeRoute, current.phoneScreen);
+
+    // An explicit UI/voice navigation has already selected its section/card.
+    // Preserve it. A direct load or history transition replaces stale state in
+    // one update so subscribers cannot observe a route/entity/screen mismatch.
+    if (resolved !== current.phoneScreen) {
+      usePortfolioStore.setState({
+        activeRoute: pathname,
+        activeEntity: entity,
+        activeSection: entity?.sections[0]?.id ?? null,
+        activeCard: "overview",
+        phoneScreen: derivePhoneScreen({ route: pathname, entity }),
+      });
+    }
 
     if (entity) {
       pushRecentEntity(entity.id);
     }
-  }, [
-    pathname,
-    pushRecentEntity,
-    setActiveEntity,
-    setActiveRoute,
-    setActiveSection,
-    syncPhoneScreenFromRoute,
-  ]);
+  }, [pathname, pushRecentEntity]);
 
   useEffect(() => {
-    const savedVolume = window.localStorage.getItem("portfolio-volume");
-    if (!savedVolume) {
-      setHasLoadedVolume(true);
-      return;
-    }
-
-    const parsedVolume = Number.parseFloat(savedVolume);
-    if (Number.isFinite(parsedVolume)) {
-      setPortfolioVolume(parsedVolume);
+    try {
+      const savedVolume = window.localStorage.getItem("portfolio-volume");
+      const parsedVolume = savedVolume ? Number.parseFloat(savedVolume) : NaN;
+      if (Number.isFinite(parsedVolume)) {
+        setPortfolioVolume(parsedVolume);
+      }
+    } catch {
+      // Storage may be unavailable in private or restricted browser contexts.
     }
 
     setHasLoadedVolume(true);
@@ -55,7 +55,11 @@ export function StoreSyncProvider() {
       return;
     }
 
-    window.localStorage.setItem("portfolio-volume", portfolioVolume.toString());
+    try {
+      window.localStorage.setItem("portfolio-volume", portfolioVolume.toString());
+    } catch {
+      // Volume still works for this visit when persistence is unavailable.
+    }
   }, [hasLoadedVolume, portfolioVolume]);
 
   return null;

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
@@ -25,7 +25,7 @@ import { RobinTrainApp } from "@/components/projects/RobinTrainApp";
 import { SystemsProjectApp } from "@/components/projects/SystemsProjectApp";
 import { ResumeApp } from "@/components/resume/ResumeApp";
 import { portfolioEntities } from "@/data/portfolio";
-import { createPhoneListScreen } from "@/utils/phone";
+import { createPhoneListScreen, derivePhoneScreen, resolvePhoneScreen } from "@/utils/phone";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityById, getEntityByRoute } from "@/utils/portfolio";
 import type {
@@ -223,7 +223,9 @@ function usePacificTime() {
 export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   const router = useRouter();
   const entity = getEntityByRoute(route);
-  const phoneScreen = usePortfolioStore((state) => state.phoneScreen);
+  const storedPhoneScreen = usePortfolioStore((state) => state.phoneScreen);
+  const activeRoute = usePortfolioStore((state) => state.activeRoute);
+  const phoneScreen = resolvePhoneScreen(route, activeRoute, storedPhoneScreen);
   const setPhoneScreen = usePortfolioStore((state) => state.setPhoneScreen);
   const setActiveEntity = usePortfolioStore((state) => state.setActiveEntity);
   const setActiveRoute = usePortfolioStore((state) => state.setActiveRoute);
@@ -348,7 +350,12 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
     }
 
     if (app === "projects" || app === "primitives" || app === "experience") {
-      setPhoneScreen(createPhoneListScreen(app));
+      const nextScreen = createPhoneListScreen(app);
+      usePortfolioStore.setState({
+        activeRoute: nextScreen.route!, activeEntity: null, activeSection: null,
+        activeCard: "overview", phoneScreen: nextScreen,
+      });
+      if (route !== nextScreen.route) router.push(nextScreen.route as Route);
       return;
     }
 
@@ -396,20 +403,11 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
   }
 
   function goPhoneHome() {
-    setPhoneScreen({
-      app: "home",
-      view: "home",
-      title: "Bowen",
-      entityId: null,
-      route: "/",
-      card: "overview",
-      contactId: null,
-      callMode: null,
+    usePortfolioStore.setState({
+      phoneScreen: derivePhoneScreen({ route: "/" }),
+      activeRoute: "/", activeEntity: null, activeSection: null, activeCard: "overview",
     });
-    setActiveRoute("/");
-    setActiveEntity(null);
-    setActiveSection(null);
-    router.push("/" as Route);
+    if (route !== "/") router.push("/" as Route);
   }
 
   function openEntity(nextEntity: PortfolioEntity) {
@@ -528,7 +526,7 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
             phoneScreen.app === "primitives" ||
             phoneScreen.app === "experience" ? (
               <div className="relative h-full overflow-hidden rounded-[2rem]">
-                <div className="pointer-events-none absolute inset-0 scale-[1.035] blur-[14px] brightness-[0.72]">
+                <div aria-hidden="true" inert className="pointer-events-none absolute inset-0 scale-[1.035] blur-[14px] brightness-[0.72]">
                   {homeScreen}
                 </div>
                 <div className="absolute inset-0 bg-black/14" />
@@ -887,21 +885,47 @@ function FolderGrid({
   onClose: () => void;
 }) {
   const slots = Array.from({ length: 9 }, (_, index) => items[index] ?? null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeRef.current?.focus({ preventScroll: true });
+  }, []);
 
   return (
-    <div className="absolute inset-0 z-10 flex flex-col items-center px-6 pt-16">
-      <div className="relative flex w-full items-center justify-center pb-4">
+    <div
+      role="dialog"
+      aria-label={`${title} folder`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }
+      }}
+      className="absolute inset-0 z-10 flex flex-col items-center px-4 pt-12 sm:px-6 sm:pt-16"
+    >
+      <button type="button" onClick={onClose} tabIndex={-1} aria-hidden="true" className="absolute inset-0 cursor-default" />
+      <div className="relative flex w-full max-w-[320px] items-center justify-center pb-4">
         <h2 className="text-[1.75rem] font-medium tracking-[-0.03em] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.28)]">
           {title}
         </h2>
+        <button
+          ref={closeRef}
+          type="button"
+          onClick={onClose}
+          aria-label={`Close ${title} folder`}
+          className="absolute right-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/15 text-lg text-white/85 backdrop-blur-xl transition hover:bg-black/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
       </div>
 
-      <div className="h-[320px] w-[320px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(214,201,196,0.78),rgba(194,189,197,0.72))] px-5 py-6 shadow-[0_22px_50px_rgba(0,0,0,0.24)] backdrop-blur-2xl">
-        <div className="grid h-full grid-cols-3 grid-rows-3 gap-x-4 gap-y-5">
+      <div className="relative h-[340px] w-full max-w-[320px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(214,201,196,0.78),rgba(194,189,197,0.72))] px-3 py-5 shadow-[0_22px_50px_rgba(0,0,0,0.24)] backdrop-blur-2xl sm:px-5">
+        <div className="grid h-full grid-cols-3 grid-rows-3 gap-x-3 gap-y-4">
           {slots.map((item, index) =>
             item ? (
-              <button key={item.id} type="button" onClick={() => onOpen(item)} className="text-center">
-                <div className="relative mx-auto h-[68px] w-[68px] overflow-hidden rounded-[1.15rem] bg-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
+              <button key={item.id} type="button" onClick={() => onOpen(item)} className="min-w-0 rounded-xl text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+                <div className="relative mx-auto h-[min(68px,17vw)] w-[min(68px,17vw)] overflow-hidden rounded-[1.15rem] bg-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
                   {getIconSrc(item.id) ? (
                     <Image
                       src={getIconSrc(item.id)!}
@@ -916,7 +940,7 @@ function FolderGrid({
                     </div>
                   )}
                 </div>
-                <p className="mt-2 truncate text-[0.7rem] font-medium leading-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.28)]">
+                <p className="mt-2 truncate text-[0.62rem] min-[360px]:text-[0.7rem] font-medium leading-tight text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.28)]">
                   {item.title}
                 </p>
               </button>

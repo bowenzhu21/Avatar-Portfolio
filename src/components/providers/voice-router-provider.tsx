@@ -11,8 +11,11 @@ import {
   spotifyTracks,
 } from "@/data/spotify";
 import { useAvatarSpeech } from "@/hooks/useAvatarSpeech";
+import { usePromptFeedback } from "@/hooks/usePromptFeedback";
 import { stopRealtimeSTTListening } from "@/hooks/useRealtimeSTT";
 import { orchestrateWithGemini, routeVoiceIntent } from "@/lib/orchestrator";
+import { abortPromptRequest, beginPromptRequest, isActivePromptRequest } from "@/lib/prompt-request";
+import { boundReply } from "@/lib/bounded-reply";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import type { ChatContactId, PhoneCallMode } from "@/types";
 import { getEntityByRoute } from "@/utils/portfolio";
@@ -564,97 +567,109 @@ function detectSpotifyVoiceCommand(args: {
 
 export function VoiceRouterProvider() {
   const router = useRouter();
-  const {
-    isSpeaking: isAvatarSpeaking,
-    speak,
-    interrupt,
-    unlockAudio,
-  } = useAvatarSpeech();
+  const audio = useAvatarSpeech();
+  const audioRef = useRef(audio);
+  audioRef.current = audio;
   const lastHandledUtteranceRef = useRef("");
+  const activeRequestRef = useRef<AbortController | null>(null);
   const pendingUtterance = usePortfolioStore((state) => state.pendingUtterance);
   const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
-  const activeRoute = usePortfolioStore((state) => state.activeRoute);
-  const activeEntity = usePortfolioStore((state) => state.activeEntity);
-  const activeCard = usePortfolioStore((state) => state.activeCard);
-  const activeSection = usePortfolioStore((state) => state.activeSection);
-  const recentEntities = usePortfolioStore((state) => state.recentEntities);
-  const conversationHistory = usePortfolioStore((state) => state.conversationHistory);
-  const conversationMode = usePortfolioStore((state) => state.conversationMode);
-  const lastIntent = usePortfolioStore((state) => state.lastIntent);
-  const setActiveRoute = usePortfolioStore((state) => state.setActiveRoute);
-  const setActiveEntity = usePortfolioStore((state) => state.setActiveEntity);
-  const setActiveSection = usePortfolioStore((state) => state.setActiveSection);
-  const setActiveCard = usePortfolioStore((state) => state.setActiveCard);
-  const setFollowUpSuggestions = usePortfolioStore((state) => state.setFollowUpSuggestions);
-  const setLastIntent = usePortfolioStore((state) => state.setLastIntent);
-  const setConversationMode = usePortfolioStore((state) => state.setConversationMode);
-  const setInteractionPhase = usePortfolioStore((state) => state.setInteractionPhase);
-  const setLatestSpokenResponse = usePortfolioStore((state) => state.setLatestSpokenResponse);
-  const setLatestRouterPayload = usePortfolioStore((state) => state.setLatestRouterPayload);
-  const setLatestRouterResponse = usePortfolioStore((state) => state.setLatestRouterResponse);
-  const setPhoneScreen = usePortfolioStore((state) => state.setPhoneScreen);
-  const selectedSpotifyTrackId = usePortfolioStore((state) => state.selectedSpotifyTrackId);
-  const isSpotifyPaused = usePortfolioStore((state) => state.isSpotifyPaused);
-  const setSelectedSpotifyTrackId = usePortfolioStore((state) => state.setSelectedSpotifyTrackId);
-  const setSpotifyPaused = usePortfolioStore((state) => state.setSpotifyPaused);
-  const acknowledgePendingUtterance = usePortfolioStore(
-    (state) => state.acknowledgePendingUtterance,
-  );
-  const clearTurnCaption = usePortfolioStore((state) => state.clearTurnCaption);
-  const openCard = usePortfolioStore((state) => state.openCard);
-  const pushRecentEntity = usePortfolioStore((state) => state.pushRecentEntity);
-  const syncPhoneScreenFromRoute = usePortfolioStore((state) => state.syncPhoneScreenFromRoute);
+
+  useEffect(() => () => {
+    abortPromptRequest();
+    activeRequestRef.current = null;
+  }, []);
 
   useEffect(() => {
-    if (isAvatarSpeaking) {
-      setInteractionPhase("speaking");
-    } else if (interactionPhase === "speaking") {
-      setInteractionPhase("idle");
+    const state = usePortfolioStore.getState();
+    if (state.pendingUtterance) return;
+    if (audio.isSpeaking) {
+      state.setInteractionPhase("speaking");
+    } else if (state.interactionPhase === "speaking") {
+      state.setInteractionPhase("idle");
     }
-  }, [interactionPhase, isAvatarSpeaking, setInteractionPhase]);
+  }, [audio.isSpeaking, interactionPhase]);
+
+  useEffect(() => {
+    if (interactionPhase === "listening" && !pendingUtterance) {
+      abortPromptRequest();
+      activeRequestRef.current = null;
+    }
+  }, [interactionPhase, pendingUtterance]);
 
   useEffect(() => {
     const utterance = pendingUtterance;
-    if (!utterance || utterance.id === lastHandledUtteranceRef.current) {
-      return;
-    }
-
+    if (!utterance || (utterance.id === lastHandledUtteranceRef.current && activeRequestRef.current)) return;
     lastHandledUtteranceRef.current = utterance.id;
 
-    const run = async () => {
-      const transcript = utterance.text.trim();
-      const payload = {
-        transcript,
-        activeRoute,
-        activeEntityId: activeEntity?.id ?? null,
-        activeCard,
-        activeSection,
-        recentEntities,
-        recentUserTranscripts: conversationHistory
-          .filter((turn) => turn.role === "user")
-          .slice(-4)
-          .map((turn) => turn.text),
-        conversationMode,
-        lastIntent,
-      } as const;
+    const controller = beginPromptRequest();
+    activeRequestRef.current = controller;
+    const timeoutId = window.setTimeout(() => controller.abort(), 45_000);
+    const state = usePortfolioStore.getState();
+    const transcript = utterance.text.trim();
+    const payload = {
+      transcript,
+      activeRoute: state.activeRoute,
+      activeEntityId: state.activeEntity?.id ?? null,
+      activeCard: state.activeCard,
+      activeSection: state.activeSection,
+      recentEntities: state.recentEntities,
+      recentUserTranscripts: state.conversationHistory
+        .filter((turn) => turn.role === "user")
+        .slice(-4)
+        .map((turn) => turn.text),
+      conversationMode: state.conversationMode,
+      lastIntent: state.lastIntent,
+    } as const;
 
-      await interrupt();
-      setInteractionPhase("thinking");
-      setLatestRouterPayload(payload);
-      setLatestSpokenResponse("");
+    // Store changes can precede the effect for the next turn. Check both identities.
+    function isCurrent() {
+      const pending = usePortfolioStore.getState().pendingUtterance;
+      return isActivePromptRequest(controller) &&
+        usePortfolioStore.getState().interactionPhase !== "listening" &&
+        (!pending || pending.id === utterance!.id);
+    }
 
+    async function finish(responseText: string) {
+      if (!isCurrent()) return;
+      state.acknowledgePendingUtterance(utterance!.id);
+      state.clearTurnCaption();
+      state.setLatestSpokenResponse(responseText);
+      state.setInteractionPhase("idle");
+      window.clearTimeout(timeoutId);
+
+      // Typing is deliberately quiet and never unlocks browser audio.
+      if (!responseText || utterance!.source === "text" || document.hidden) return;
+      await stopRealtimeSTTListening();
+      if (!isCurrent()) return;
+      await audioRef.current.unlockAudio();
+      if (!isCurrent()) return;
       try {
-        const contactCommand = detectContactVoiceCommand(transcript);
+        await audioRef.current.speak(responseText);
+      } catch {
+        if (isCurrent()) state.setInteractionPhase("idle");
+      }
+    }
 
+    const run = async () => {
+      usePromptFeedback.getState().clearError();
+      try {
+        await audioRef.current.interrupt();
+        if (!isCurrent()) return;
+        state.setInteractionPhase("thinking");
+        state.setLatestRouterPayload(payload);
+        state.setLatestSpokenResponse("");
+
+        const contactCommand = detectContactVoiceCommand(transcript);
         if (contactCommand) {
-          setLatestRouterResponse(null);
-          openCard();
-          setActiveCard("overview");
-          setActiveEntity(null);
-          setActiveSection(null);
-          setLastIntent("navigate");
-          setFollowUpSuggestions(contactCommand.followUpSuggestions);
-          setPhoneScreen({
+          state.setLatestRouterResponse(null);
+          state.openCard();
+          state.setActiveCard("overview");
+          state.setActiveEntity(null);
+          state.setActiveSection(null);
+          state.setLastIntent("navigate");
+          state.setFollowUpSuggestions(contactCommand.followUpSuggestions);
+          state.setPhoneScreen({
             app: contactCommand.app,
             view: "detail",
             title: contactCommand.app === "phone" ? "Phone" : "Messages",
@@ -664,170 +679,83 @@ export function VoiceRouterProvider() {
             contactId: contactCommand.contactId,
             callMode: contactCommand.callMode,
           });
-
-          acknowledgePendingUtterance(utterance.id);
-          clearTurnCaption();
-          setLatestSpokenResponse(contactCommand.responseText);
-
-          if (contactCommand.responseText) {
-            await stopRealtimeSTTListening();
-            await unlockAudio();
-
-            try {
-              await speak(contactCommand.responseText);
-            } catch {
-              setInteractionPhase("idle");
-            }
-          } else {
-            setInteractionPhase("idle");
-          }
-
+          await finish(contactCommand.responseText);
           return;
         }
 
         const spotifyCommand = detectSpotifyVoiceCommand({
           transcript,
-          currentTrackId: selectedSpotifyTrackId,
-          isSpotifyPaused,
+          currentTrackId: state.selectedSpotifyTrackId,
+          isSpotifyPaused: state.isSpotifyPaused,
         });
-
         if (spotifyCommand) {
-          setLatestRouterResponse(null);
-          setFollowUpSuggestions(spotifyCommand.followUpSuggestions);
-
+          state.setLatestRouterResponse(null);
+          state.setFollowUpSuggestions(spotifyCommand.followUpSuggestions);
           if (spotifyCommand.trackId) {
-            setSelectedSpotifyTrackId(spotifyCommand.trackId);
+            state.setSelectedSpotifyTrackId(spotifyCommand.trackId);
           } else if (typeof spotifyCommand.shouldPause === "boolean") {
-            setSpotifyPaused(spotifyCommand.shouldPause);
+            state.setSpotifyPaused(spotifyCommand.shouldPause);
           }
-
-          acknowledgePendingUtterance(utterance.id);
-          clearTurnCaption();
-          setLatestSpokenResponse(spotifyCommand.responseText);
-
-          if (spotifyCommand.responseText) {
-            await stopRealtimeSTTListening();
-            await unlockAudio();
-
-            try {
-              await speak(spotifyCommand.responseText);
-            } catch {
-              setInteractionPhase("idle");
-            }
-          } else {
-            setInteractionPhase("idle");
-          }
-
+          await finish(spotifyCommand.responseText);
           return;
         }
 
-        const result = await routeVoiceIntent(payload);
-        setLatestRouterResponse(result);
-
-        openCard();
-        setActiveCard(result.card);
-        setLastIntent(result.intent);
-        setFollowUpSuggestions(result.followUpSuggestions);
+        const result = await routeVoiceIntent(payload, controller.signal);
+        if (!isCurrent()) return;
+        state.setLatestRouterResponse(result);
+        state.openCard();
+        state.setActiveCard(result.card);
+        state.setLastIntent(result.intent);
+        state.setFollowUpSuggestions(result.followUpSuggestions);
 
         if (/\b(recruiter|hiring manager)\b/i.test(transcript)) {
-          setConversationMode("recruiter");
+          state.setConversationMode("recruiter");
         } else if (/\b(technical|backend|architecture|deeper)\b/i.test(transcript)) {
-          setConversationMode("technical");
+          state.setConversationMode("technical");
         } else if (/\b(concise|brief|shorter)\b/i.test(transcript)) {
-          setConversationMode("concise");
+          state.setConversationMode("concise");
         }
 
-        const nextEntity =
-          result.entity ?? (result.route ? getEntityByRoute(result.route) : null);
+        const nextEntity = result.entity ?? (result.route ? getEntityByRoute(result.route) : null);
+        state.setActiveEntity(nextEntity);
+        state.setActiveSection(result.section);
+        if (nextEntity) state.pushRecentEntity(nextEntity.id);
 
-        setActiveEntity(nextEntity);
-        setActiveSection(result.section);
-
-        if (nextEntity) {
-          pushRecentEntity(nextEntity.id);
-        }
-
-        if (result.route && result.route !== activeRoute) {
-          setActiveRoute(result.route);
-          syncPhoneScreenFromRoute(result.route, nextEntity, result.card);
+        if (result.route && result.route !== state.activeRoute) {
+          state.setActiveRoute(result.route);
+          state.syncPhoneScreenFromRoute(result.route, nextEntity, result.card);
           router.push(result.route as Route);
         } else {
-          syncPhoneScreenFromRoute(activeRoute, nextEntity ?? activeEntity, result.card);
+          state.syncPhoneScreenFromRoute(state.activeRoute, nextEntity ?? state.activeEntity, result.card);
         }
 
-        const shouldSkipNarrationModel =
-          result.intent === "navigate" &&
+        const shouldSkipNarrationModel = result.intent === "navigate" &&
           !result.entity && result.route && deterministicAppRoutes.has(result.route);
         const narration = shouldSkipNarrationModel
           ? { spokenResponse: result.spokenResponse }
-          : await orchestrateWithGemini({
-              input: payload,
-              routerResult: result,
-            }).catch(() => ({
-              spokenResponse: result.spokenResponse,
-            }));
-        const conciseResponse = narration.spokenResponse
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 320);
-
-        acknowledgePendingUtterance(utterance.id);
-        clearTurnCaption();
-        setLatestSpokenResponse(conciseResponse);
-
-        if (conciseResponse) {
-          await stopRealtimeSTTListening();
-          await unlockAudio();
-          await speak(conciseResponse);
-        } else {
-          setInteractionPhase("idle");
-        }
+          : await orchestrateWithGemini({ input: payload, routerResult: result }, controller.signal)
+              .catch((error: unknown) => {
+                if (controller.signal.aborted) throw error;
+                return { spokenResponse: result.spokenResponse };
+              });
+        if (!isCurrent()) return;
+        const conciseResponse = boundReply(narration.spokenResponse, 60, 320);
+        await finish(conciseResponse);
       } catch {
-        acknowledgePendingUtterance(utterance.id);
-        setInteractionPhase("idle");
-        setLatestSpokenResponse(
-          "I couldn’t route that cleanly. Try naming a project, role, or section again.",
+        if (!isCurrent()) return;
+        state.acknowledgePendingUtterance(utterance.id);
+        state.setInteractionPhase("idle");
+        usePromptFeedback.getState().reportError(
+          "Couldn’t get a reply. Check your connection and try again.",
+          transcript,
         );
+      } finally {
+        window.clearTimeout(timeoutId);
       }
     };
 
     void run();
-  }, [
-    acknowledgePendingUtterance,
-    activeCard,
-    activeEntity,
-    activeRoute,
-    activeSection,
-    interrupt,
-    clearTurnCaption,
-    conversationHistory,
-    conversationMode,
-    lastIntent,
-    openCard,
-    pendingUtterance,
-    pushRecentEntity,
-    recentEntities,
-    router,
-    selectedSpotifyTrackId,
-    setActiveCard,
-    setActiveEntity,
-    setActiveRoute,
-    setActiveSection,
-    setConversationMode,
-    setFollowUpSuggestions,
-    setInteractionPhase,
-    setLastIntent,
-    setLatestRouterPayload,
-    setLatestRouterResponse,
-    setLatestSpokenResponse,
-    setPhoneScreen,
-    setSelectedSpotifyTrackId,
-    setSpotifyPaused,
-    speak,
-    syncPhoneScreenFromRoute,
-    unlockAudio,
-    isSpotifyPaused,
-  ]);
+  }, [pendingUtterance, router]);
 
   return null;
 }
