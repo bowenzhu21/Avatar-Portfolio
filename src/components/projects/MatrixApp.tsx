@@ -5,18 +5,21 @@ import Image from "next/image";
 import { useState } from "react";
 
 const matrixSummary =
-  "Matrix is a system for simulating agent-based environments, enabling the generation, interaction, and analysis of complex networks and behavioral dynamics.";
+  "A small artificial society you can watch and question. Explore how connected fictional residents respond to an idea, then ask them what shaped their view.";
+
+const matrixDemoUrl = "https://matrix-society.vercel.app";
 
 const matrixImages = [1, 2, 3, 4].map((index) => ({
   id: index,
   src: `/matrix/${index}.png`,
-  alt: `Matrix preview ${index}`,
+  alt: `Original Matrix project preview ${index}`,
 }));
 
 const matrixBullets = [
-  "Designed an artificial society of graph-node LLM agents modeled on human demographic & behavior patterns using Exa, propagating via weighted BFS scored by social proximity & societal influence, with Supermemory for context.",
-  "Architected a distributed Modal pipeline supporting 100 concurrent DeepSeek-1.5B node agents across 25 GPUs, with 3 instances of DeepSeek-32B for orchestration on 15 GPUs.",
-  "Built live avatars for node agents, processing expressions, tone & speech with <200 ms audio & visual response.",
+  "Watch a connected community respond, one conversation round at a time.",
+  "Inspect each person's perspective, memories, and relationships.",
+  "Try a deterministic preview or live OpenAI responses, with optional voice conversations.",
+  "Built on the original team project, with saved progress and bounded usage in the current demo.",
 ];
 
 const matrixTabs = [
@@ -156,8 +159,8 @@ function OverviewPage() {
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
         <div className="relative aspect-[1.08/1]">
           <Image
-            src="/matrix/1.png"
-            alt="Matrix preview"
+            src="/matrix/demo-preview.png"
+            alt="Current Matrix demo with a social graph, resident profile, and completed conversation rounds"
             fill
             sizes="(max-width: 768px) 92vw, 360px"
             className="object-cover"
@@ -168,13 +171,15 @@ function OverviewPage() {
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-[0.26em] text-white/56">
-              Simulation View
+              Current Demo
             </p>
-            <p className="mt-2 text-sm font-medium text-white">Agent environment preview</p>
+            <p className="mt-2 text-sm font-medium text-white">Artificial society exploration</p>
           </div>
           <span className="text-[10px] uppercase tracking-[0.24em] text-white/42">01</span>
         </div>
       </div>
+
+      <LiveDemoAction />
 
       <div className="border-l border-cyan-200/32 pl-4">
         <p className="text-[0.88rem] leading-7 text-white/82">{matrixSummary}</p>
@@ -222,6 +227,7 @@ function GalleryPage({
 }) {
   return (
     <div className="space-y-6">
+      <p className="text-xs leading-5 text-white/55">Screens from the original team project. Open the demo to explore the current experience.</p>
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
         <div className="relative aspect-[1.08/1]">
           <Image
@@ -294,6 +300,7 @@ function GalleryPage({
 function LinksPage() {
   return (
     <div className="space-y-6">
+      <LiveDemoAction />
       <div className="border-y border-white/10">
         <ActionRow
           title="GitHub"
@@ -308,6 +315,13 @@ function LinksPage() {
       </div>
     </div>
   );
+}
+
+function LiveDemoAction() {
+  const className = "flex w-full items-center justify-between gap-4 rounded-[1.25rem] border border-cyan-200/35 bg-cyan-100 px-5 py-4 text-left text-slate-950 shadow-[0_12px_30px_rgba(80,210,220,0.12)] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-100";
+  const content = <><span><span className="block text-[0.9rem] font-semibold">Explore the live demo</span><span className="mt-1 block text-xs text-slate-700">Meet the society. Start a conversation.</span></span><span aria-hidden="true" className="text-xl">↗</span></>;
+
+  return <a href={matrixDemoUrl} target="_blank" rel="noopener noreferrer" className={className}>{content}</a>;
 }
 
 function ActionRow({

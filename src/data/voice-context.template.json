@@ -28,56 +28,81 @@
   "projects": {
     "matrix": {
       "title": "Matrix",
-      "one_liner": "Matrix is an artificial society simulation where each node in a graph is powered by its own LLM agent with memory, personality, and goals.",
-      "full_summary": "I built Matrix as an artificial society simulation rather than a single-agent demo. Each node in the graph is its own LLM-powered agent with memory, personality, and goals, and a larger orchestrator model manages task assignment, interactions, and the spread of information across the network.",
-      "why_it_matters": "Matrix matters to me because it lets me work on the systems side of AI: orchestration, memory, multi-agent behavior, external tools, and how local interactions create larger network-level dynamics.",
-      "problem": "Most AI interfaces stop at one model talking to one user. I wanted to simulate what happens when many persistent agents interact inside a structured social graph and information moves between them over time.",
-      "solution": "I built a graph-based simulation with smaller per-agent models, a larger central orchestrator, persistent memory, and external data access. Users can also join the simulation directly through avatar-based real-time video calls.",
-      "your_role": "I designed the multi-agent architecture, built the orchestration flow, handled memory and external tool integration, and connected the system to avatar-based real-time interaction.",
+      "aliases": [
+        "matrix project",
+        "artificial society",
+        "society simulation"
+      ],
+      "one_liner": "Matrix is an interactive artificial society with connected fictional residents, inspectable memories, and optional AI voice conversations.",
+      "full_summary": "Matrix began as a team project, and I maintain a fork that preserves the original contributions while adding the current demo refresh. In the current demo, users choose a scenario, run a deterministic Preview or Live AI study, inspect the social graph and each resident’s memories, and ask individuals about their views. Each request advances one round; saved state lives in SQLite, and OpenAI generates Live responses.",
+      "why_it_matters": "It makes multi-agent behavior inspectable while exposing the engineering work around state recovery, provider failures, session isolation, and bounded API usage.",
+      "problem": "A multi-agent demo is difficult to explore when it requires GPU startup, long-running jobs, and a video-avatar session before a visitor can understand it. The current refresh makes the society visible and lets a visitor try a small, bounded study directly.",
+      "solution": "The React/Vite frontend offers a labeled deterministic Preview and an OpenAI-backed Live mode. A FastAPI service advances one round per request, stages resident results before publishing a complete round, persists scoped state in SQLite, and provides text chat with optional push-to-talk AI speech. Static portraits illustrate fictional people.",
+      "your_role": "I contributed to the original team project and maintain this fork, including the current demo refresh. The repository preserves the original team history and links to the original Devpost submission.",
       "tech_stack": [
+        "React",
+        "Vite",
         "Python",
-        "Modal",
-        "vLLM",
-        "Redis",
-        "LLM orchestration",
-        "Agent systems",
-        "Graph-based simulation",
-        "Vector memory",
-        "APIs",
-        "GPU inference"
+        "FastAPI",
+        "SQLite",
+        "OpenAI Responses API",
+        "gpt-4.1-mini",
+        "gpt-4o-mini-transcribe",
+        "gpt-4o-mini-tts",
+        "Vercel",
+        "Modal CPU ASGI"
       ],
       "highlights": [
-        "Built an artificial society where each graph node is its own LLM-powered agent.",
-        "Used a larger orchestrator model to assign tasks and manage interactions between agents.",
-        "Maintained persistent context with memory systems so agents could evolve over time.",
-        "Pulled in outside information through external APIs and web data sources.",
-        "Let users insert themselves into the simulation through real-time avatar video calls."
+        "Interactive social graph, resident profiles, stance changes, and saved per-resident memories.",
+        "Deterministic Preview works without an API key; Live AI responses are explicitly labeled.",
+        "One request advances one round, with staged results, leases, and retry recovery.",
+        "Scoped text chat and optional push-to-talk AI voice, using static portraits.",
+        "Server-side credentials, per-run bearer tokens, and persistent shared usage reservations."
       ],
       "architecture": [
-        "A graph of agents where each node has its own local context, personality, and goals.",
-        "Smaller models run per agent while a larger reasoning model coordinates global behavior.",
-        "Memory systems preserve context and influence future interactions.",
-        "External tools supply fresh information that can propagate through the simulated society.",
-        "Avatar and video interfaces allow humans to interact with agents directly."
+        "Vercel serves a React/Vite frontend and forwards same-origin API requests to a CPU-only Modal ASGI service.",
+        "OpenAI gpt-4.1-mini supplies structured responses; Modal hosts the HTTP service rather than GPU model inference.",
+        "A single application container owns the SQLite file on a persistent Modal volume. This is not a distributed database architecture.",
+        "Each round reads the previous committed state. Completed resident turns are staged individually; a new round becomes visible only after all residents finish.",
+        "Each resident sees their own recent simulation memory and connected neighbors’ previous-round messages. Private chat history is scoped to the run and resident.",
+        "Run tokens are hashed server-side and kept in the browser’s sessionStorage. They are required for run reads, updates, chat, and audio.",
+        "Paid calls reserve shared UTC-day usage before provider work. Transcription uses gpt-4o-mini-transcribe; speech uses gpt-4o-mini-tts and a saved assistant reply."
       ],
       "challenges": [
-        "Keeping many agents coherent without collapsing everything into one centralized model.",
-        "Managing cost and latency across GPU-hosted inference.",
-        "Designing interactions that feel socially structured instead of random.",
-        "Blending simulation behavior with real-time human interaction."
+        "Recovering an interrupted round without publishing a partially updated society.",
+        "Keeping chat, generated speech, and simulation state scoped to the correct run and resident.",
+        "Bounding public demo usage while preserving honest errors when the provider or quota is unavailable.",
+        "Keeping a voice interaction optional and understandable when microphone access or audio playback is unavailable."
       ],
       "tradeoffs": [
-        "Using smaller per-agent models improves scale, but it puts more pressure on orchestration.",
-        "Persistent memory makes the simulation richer, but also makes consistency harder.",
-        "Adding real-time avatar interaction makes the system more compelling, but increases infrastructure complexity."
+        "The current demo supports at most 12 residents and 5 rounds; it favors an inspectable experience over large-scale simulation.",
+        "SQLite and one CPU application container simplify persistence; horizontal scaling would need a different storage and coordination design.",
+        "Preview uses deterministic rules and scripted dialogue. Live responses depend on the model and are not deterministic human-behavior forecasts.",
+        "Voice is turn-based push-to-talk, not full-duplex realtime calling, and there is no HeyGen video session in the current demo.",
+        "Shared daily quotas can temporarily exhaust Live mode. These counters are application limits, not a dollar-denominated billing meter."
       ],
       "results": [
-        "Built a working multi-agent society simulation with persistent memory and real-time human interaction."
+        "The current demo is available at https://matrix-society.vercel.app with scenario selection, graph exploration, resident chat, and optional Live voice.",
+        "Local end-to-end checks exercised real OpenAI round generation, chat, speech synthesis, and transcription.",
+        "The original team prototype and Devpost video remain linked separately from the refreshed demo.",
+        "Fictional residents and simulated stance values are exploratory outputs, not measured public opinion or validated predictions."
       ],
       "demo_links": [
         {
+          "label": "Live demo",
+          "url": "https://matrix-society.vercel.app"
+        },
+        {
           "label": "GitHub",
           "url": "https://github.com/bowenzhu21/matrix"
+        },
+        {
+          "label": "Demo architecture and limits",
+          "url": "https://github.com/bowenzhu21/matrix/blob/master/docs/demo.md"
+        },
+        {
+          "label": "Original team project video",
+          "url": "https://devpost.com/software/matrix-uj8gdk?ref_content=user-portfolio&ref_feature=in_progress"
         }
       ],
       "faq": [
@@ -87,7 +112,104 @@
             "what is matrix",
             "explain matrix"
           ],
-          "answer": "Matrix is my artificial society simulation. Each node is its own LLM agent, and a larger orchestrator manages how agents interact and how information spreads."
+          "answer": "Matrix is an artificial society you can explore: connected fictional residents, evolving perspectives, and conversations. I refreshed our original team project with a small OpenAI-backed demo and a deterministic Preview mode."
+        },
+        {
+          "question_patterns": [
+            "matrix architecture",
+            "how does matrix work",
+            "matrix backend",
+            "matrix stack"
+          ],
+          "answer": "The React frontend runs on Vercel. A CPU-hosted FastAPI service on Modal saves scoped state in SQLite and advances one round per request. OpenAI gpt-4.1-mini generates Live responses from each resident’s context and neighbors’ previous messages."
+        },
+        {
+          "question_patterns": [
+            "matrix preview",
+            "matrix deterministic",
+            "does matrix need an api key"
+          ],
+          "answer": "Preview runs deterministic rules and scripted dialogue without an API key. Live mode uses a server-side OpenAI key. The interface labels the mode, and provider failures are not silently replaced with successful Preview output."
+        },
+        {
+          "question_patterns": [
+            "matrix openai",
+            "matrix models",
+            "does matrix still use modal",
+            "matrix gpu"
+          ],
+          "answer": "OpenAI handles inference now: gpt-4.1-mini for text, gpt-4o-mini-transcribe for input audio, and gpt-4o-mini-tts for speech. Modal hosts a small CPU API and persistent storage. The current demo needs no GPU-hosted model."
+        },
+        {
+          "question_patterns": [
+            "matrix voice",
+            "matrix calls",
+            "matrix avatars",
+            "matrix heygen",
+            "matrix video"
+          ],
+          "answer": "The current demo uses static profile portraits, typed chat, and optional push-to-talk AI voice. You choose when to activate the microphone. It does not start a HeyGen video session; the original project explored embodied avatars."
+        },
+        {
+          "question_patterns": [
+            "matrix state",
+            "matrix recovery",
+            "matrix retry",
+            "matrix persistence"
+          ],
+          "answer": "Resident turns are staged separately and only published when the whole round is complete. Leases fence stale operations, retries resume saved progress, and SQLite persists run state. Each request advances a round; there is no unattended background simulation."
+        },
+        {
+          "question_patterns": [
+            "matrix memory",
+            "matrix isolation",
+            "matrix private conversations"
+          ],
+          "answer": "A resident sees its own recent simulation memory and listed neighbors’ previous-round messages. Direct conversation history is scoped to that resident and run. A run requires its own bearer token, and speech can only use an assistant reply belonging to that run and resident."
+        },
+        {
+          "question_patterns": [
+            "matrix cost",
+            "matrix budget",
+            "matrix limits",
+            "matrix scale"
+          ],
+          "answer": "The current demo limits studies to 12 residents and 5 rounds. Shared daily counters reserve model requests, text tokens, transcription, and speech before paid work. It uses one CPU application container and SQLite; old GPU counts and Modal-credit figures describe the earlier prototype."
+        },
+        {
+          "question_patterns": [
+            "who built matrix",
+            "matrix team",
+            "matrix authorship",
+            "matrix original"
+          ],
+          "answer": "Matrix was originally built as a team project. My fork preserves the contributions from aryan-cs/matrix and adds the current demo refresh. The original Devpost video is still linked alongside the new demo."
+        },
+        {
+          "question_patterns": [
+            "matrix demo",
+            "try matrix",
+            "where can i use matrix",
+            "matrix website"
+          ],
+          "answer": "Try Matrix at matrix-society.vercel.app. Start with the deterministic Preview, or use Live AI when available, then select a resident to inspect their view or start a conversation."
+        },
+        {
+          "question_patterns": [
+            "matrix predictions",
+            "matrix research",
+            "is matrix accurate"
+          ],
+          "answer": "Matrix explores fictional conversations. Its stance values are simulated outputs, not calibrated probabilities or measured public opinion. I do not treat it as validated research or a prediction of real people."
+        },
+        {
+          "question_patterns": [
+            "matrix original stack",
+            "matrix supermemory",
+            "matrix exa",
+            "matrix old architecture"
+          ],
+          "answer": "The original team prototype explored Exa retrieval, Supermemory, Modal-hosted inference, and avatar conversations. The current demo instead uses scoped SQLite state, OpenAI inference, static portraits, and optional push-to-talk speech. The repository preserves the original project history."
         }
       ]
     },

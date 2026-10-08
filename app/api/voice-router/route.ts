@@ -541,6 +541,11 @@ export async function POST(request: Request) {
     aliasMatch.entity ?? getEntityById(input.activeEntityId ?? null) ?? null;
   const section = inferSection(transcript, fallbackEntity);
   const followUp = detectFollowUpIntent(input);
+  const followUpContext =
+    getEntityById(input.activeEntityId ?? null) ??
+    getEntityById(input.recentEntities?.[0] ?? null);
+  const namesDifferentEntity =
+    aliasMatch.entity && aliasMatch.entity.id !== followUpContext?.id;
 
   let deterministicResult: VoiceRouterOutput | null = null;
   if (appNavigationTarget) {
@@ -564,7 +569,7 @@ export async function POST(request: Request) {
       });
   }
 
-  if (!deterministicResult && followUp.intent && followUp.entity) {
+  if (!deterministicResult && !namesDifferentEntity && followUp.intent && followUp.entity) {
     const route = followUp.entity.route;
     const card = followUp.card ?? "overview";
     const response = buildContextualResponse({

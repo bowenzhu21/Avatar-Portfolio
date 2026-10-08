@@ -20,29 +20,29 @@ export const portfolioEntities: PortfolioEntity[] = [
     title: "Matrix",
     type: "project",
     route: "/projects/matrix",
-    aliases: ["matrix", "matrix project", "ops dashboard", "decision cockpit"],
+    aliases: ["matrix", "matrix project", "artificial society", "society simulation"],
     shortSummary:
-      "A decision-support workspace for turning live operational signals into concise executive recommendations.",
+      "An artificial society you can watch, question, and explore through connected fictional residents.",
     technicalSummary:
-      "Built as a modular web platform with typed data contracts, event ingestion, and configurable analytics surfaces for rapid iteration.",
+      "React frontend and a CPU-hosted FastAPI service with SQLite persistence, request-per-round simulation, OpenAI structured responses, and optional push-to-talk voice.",
     recruiterSummary:
-      "Shows product thinking, system design, and the ability to package complex data into a crisp operator experience.",
-    tags: ["TypeScript", "Dashboards", "Analytics", "Product Strategy"],
+      "Shows multi-agent product design, state recovery, provider integration, and bounded resource use through an interactive refresh of a team project.",
+    tags: ["React", "Python", "OpenAI", "FastAPI", "SQLite", "Agent Systems"],
     sections: [
       {
         id: "overview",
         title: "Overview",
-        summary: "Product scope, user goals, and the operational problem the project solves.",
+        summary: "Explore a fictional society in deterministic Preview or Live AI mode, inspect residents, and ask about their views.",
       },
       {
         id: "architecture",
         title: "Architecture",
-        summary: "Data flow, service boundaries, and the typed UI system behind the dashboard.",
+        summary: "Vercel frontend, Modal CPU API, persistent SQLite, and OpenAI inference with scoped access tokens and recoverable rounds.",
       },
       {
         id: "impact",
         title: "Impact",
-        summary: "Placeholder metrics around adoption, faster decision cycles, and reduced reporting friction.",
+        summary: "Inspectable agent memories, completed-round recovery, bounded AI usage, and explicit limits on what a synthetic simulation can establish.",
       },
     ],
     relatedItems: ["adapt-ui", "heygen", "momenta"],
