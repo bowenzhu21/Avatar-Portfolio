@@ -43,6 +43,29 @@ function loadSource(filename) {
 
 const { POST } = loadSource(path.join(root, "app/api/voice-router/route.ts"));
 
+for (const id of ["modelgate", "flightdeck", "clearinghouse"]) {
+  for (const section of ["", " architecture"]) {
+    test(`opens ${id}${section} from another portfolio page`, async () => {
+      const response = await POST(new Request("http://localhost/api/voice-router", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcript: `Open ${id}${section}`,
+          activeEntityId: "heygen",
+          activeRoute: "/experience/heygen",
+          activeCard: "overview",
+        }),
+      }));
+      const result = await response.json();
+      assert.equal(response.status, 200);
+      assert.equal(result.entity?.id, id);
+      assert.equal(result.route, `/projects/${id}`);
+      if (section) assert.equal(result.section, "architecture");
+      assert.ok(result.spokenResponse.length > 0);
+    });
+  }
+}
+
 for (const scenario of [
   { name: "an explicit Matrix section overrides the open HeyGen page", transcript: "Matrix architecture", current: "heygen", expected: "matrix" },
   { name: "an unnamed section stays with the open HeyGen page", transcript: "architecture", current: "heygen", expected: "heygen" },

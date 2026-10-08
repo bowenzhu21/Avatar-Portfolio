@@ -16,6 +16,100 @@ export interface CompactPortfolioEntity {
 
 export const portfolioEntities: PortfolioEntity[] = [
   {
+    id: "modelgate",
+    title: "ModelGate",
+    type: "project",
+    route: "/projects/modelgate",
+    aliases: ["modelgate", "model gate", "model release", "release explorer"],
+    shortSummary: "The evidence between a model and its release.",
+    technicalSummary:
+      "CPU-trained geometry classifiers, grouped evaluation, slice-level release gates, and a content-addressed local registry with atomic promotion and rollback.",
+    recruiterSummary:
+      "Shows ML release engineering through reproducible training, evidence validation, failure drills, and an inspectable release lifecycle on synthetic point clouds.",
+    tags: ["Python", "NumPy", "ML Evaluation", "Point Clouds", "Release Engineering"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Train geometry classifiers, inspect their behavior, and see which releases pass or fail the evidence gates.",
+      },
+      {
+        id: "architecture",
+        title: "Architecture",
+        summary: "Grouped point-cloud fixtures, train-only preprocessing, slice and class evaluation, exact evidence recomputation, and a locked local artifact registry.",
+      },
+      {
+        id: "results",
+        title: "Results",
+        summary: "The synthetic seed-42 candidate reaches 97.22% accuracy. A controlled defect is blocked despite 92.13% overall accuracy because noisy-cylinder recall falls to 72.22%.",
+      },
+    ],
+    relatedItems: ["clearinghouse", "flightdeck", "heygen"],
+  },
+  {
+    id: "flightdeck",
+    title: "FlightDeck",
+    type: "project",
+    route: "/projects/flightdeck",
+    aliases: ["flightdeck", "flight deck", "telemetry replay", "mission replay"],
+    shortSummary: "Replay the mission. Find what went wrong.",
+    technicalSummary:
+      "C++17 streaming telemetry engine with bounded event reordering, per-vehicle fault detection, checksummed binary recording, deterministic replay, and an interactive mission report.",
+    recruiterSummary:
+      "Demonstrates systems engineering through explicit memory limits, malformed-input handling, replay consistency, and failure visibility using synthetic vehicle telemetry.",
+    tags: ["C++17", "Telemetry", "Event Streams", "Binary Formats", "Replay"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Scrub a synthetic mission, trace each vehicle, and inspect the packets behind a fault.",
+      },
+      {
+        id: "architecture",
+        title: "Architecture",
+        summary: "A bounded reorder heap feeds per-vehicle rules. Checksummed logs retain the rule configuration so replay reproduces the original findings.",
+      },
+      {
+        id: "results",
+        title: "Results",
+        summary: "The six-vehicle synthetic fixture records 721 packets and produces 46 findings across 14 categories, with record and replay agreement checked in CI.",
+      },
+    ],
+    relatedItems: ["modelgate", "clearinghouse", "elbow-exo"],
+  },
+  {
+    id: "clearinghouse",
+    title: "Clearinghouse",
+    type: "project",
+    route: "/projects/clearinghouse",
+    aliases: ["clearinghouse", "clearing house", "payment ledger", "clearinghouse ledger"],
+    shortSummary:
+      "A payment ledger built for the moments between a commit and a retry.",
+    technicalSummary:
+      "Python and SQLite payment-event processing with immutable double-entry journals, request and event deduplication, a leased transactional outbox, and settlement reconciliation.",
+    recruiterSummary:
+      "Demonstrates backend correctness through atomic accounting commits, concurrent retries, crash recovery, and strict reconciliation using synthetic payment events.",
+    tags: ["Python", "SQLite", "Payments", "Idempotency", "Transactional Outbox"],
+    sections: [
+      {
+        id: "overview",
+        title: "Overview",
+        summary: "Inspect balanced journals, delayed refunds, delivery recovery, and settlement discrepancies in an executed synthetic report.",
+      },
+      {
+        id: "architecture",
+        title: "Architecture",
+        summary: "The event, journal, idempotency response, and outbox commit in one SQLite transaction. A leased worker retries delivery to a deduplicating example inbox.",
+      },
+      {
+        id: "results",
+        title: "Results",
+        summary: "Eight synthetic failure scenarios produce nine balanced journals and ten unique consumer receipts, with explicit reconciliation categories and recovery evidence.",
+      },
+    ],
+    relatedItems: ["modelgate", "flightdeck", "matrix"],
+  },
+  {
     id: "matrix",
     title: "Matrix",
     type: "project",

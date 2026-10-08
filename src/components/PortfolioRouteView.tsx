@@ -22,6 +22,7 @@ import { GodProjectApp } from "@/components/projects/GodProjectApp";
 import { GymBroApp } from "@/components/projects/GymBroApp";
 import { MatrixApp } from "@/components/projects/MatrixApp";
 import { RobinTrainApp } from "@/components/projects/RobinTrainApp";
+import { SystemsProjectApp } from "@/components/projects/SystemsProjectApp";
 import { ResumeApp } from "@/components/resume/ResumeApp";
 import { portfolioEntities } from "@/data/portfolio";
 import { createPhoneListScreen } from "@/utils/phone";
@@ -48,6 +49,9 @@ const wallpaperStyle = {
 } as const;
 
 const entityIconMap: Partial<Record<string, string>> = {
+  modelgate: "/projects/modelgate/cover.webp",
+  flightdeck: "/projects/flightdeck/cover.webp",
+  clearinghouse: "/projects/clearinghouse/cover.webp",
   matrix: "/icons/matrix.png",
   robintrain: "/icons/robintrain.jpeg",
   "adapt-ui": "/icons/adapt.png",
@@ -586,6 +590,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
               <ExperienceApp screenId="jma-consulting" />
             ) : visibleEntity.id === "school" ? (
               <ExperienceApp screenId="school" />
+            ) : visibleEntity.id === "modelgate" || visibleEntity.id === "flightdeck" || visibleEntity.id === "clearinghouse" ? (
+              <SystemsProjectApp key={visibleEntity.id} projectId={visibleEntity.id} />
             ) : visibleEntity.id === "matrix" ? (
               <MatrixApp />
             ) : visibleEntity.id === "robintrain" ? (

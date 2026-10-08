@@ -1,0 +1,46 @@
+Portfolio project artwork
+Generated: 2026-10-07
+Method: OpenAI built-in image_gen tool (not CLI fallback).
+Purpose: original decorative cover imagery, backgrounds, and icon crops; these are concept artworks, not application screenshots.
+Export: Original generated PNG assets preserved under ~/.codex/generated_images. Workspace WebP exports preserve composition at original dimensions, quality 84, effort 6. No generative edits outside image_gen.
+
+CLEARINGHOUSE
+Use case: stylized-concept
+Asset type: square cinematic cover art for an elegant engineering portfolio; also crops to a small app icon.
+Scene/backdrop: dark emerald studio with very subtle atmospheric depth and generous dark negative space, no visible horizon.
+Subject: one central minimalist architectural sculpture of three interlocking rectangular slabs, two matte ivory limestone and one deep translucent emerald glass, precisely counterbalanced, suggesting a ledger brought into perfect equilibrium. A compact recognizable silhouette with purposeful asymmetry, no literal paperwork.
+Style/medium: sophisticated photorealistic editorial still life, tactile micro-texture, crisp sculptural edges, restrained museum catalogue art direction.
+Composition/framing: square 1024x1024, single subject fills central half, slight elevated three-quarter perspective, soft grounding shadow, clear enough for an icon crop while retaining generous dark space at edges.
+Lighting/mood: quiet, mysterious, refined; soft ivory key light with muted green reflections, rich blacks and subtle film grain.
+Constraints: no text, no letters, no numbers, no logos, no UI, no charts, no borders, no watermark; no glowing circuitry or stock fintech symbols.
+
+MODELGATE
+Use case: stylized-concept
+Asset type: square cinematic cover art for an elegant engineering portfolio; also crops to a small app icon.
+Scene/backdrop: deep midnight indigo studio, subtle atmospheric depth, dark negative space.
+Subject: one sculptural geometric gateway composed of thick smoked indigo glass and gently brushed chrome, a minimal upright rectangular open portal with a second thin inner frame, a restrained cool cyan light visible through the opening. The portal is a physically believable crafted object, compact and central, evoking a deliberate controlled passage.
+Style/medium: premium photorealistic editorial 3D still life, elegant industrial design photography, real glass refraction and satin metal reflections, restrained museum catalogue art direction.
+Composition/framing: square 1024x1024, single portal fills central half, slight three-quarter view with clean strong silhouette, generous dark margins suitable for UI overlay and icon crop, subtle grounding shadow.
+Lighting/mood: quiet, slightly mysterious, crisp yet soft; small cyan illumination through center, dim indigo environment, no harsh blooming.
+Constraints: no text, no letters, no numbers, no logo, no UI, no chart, no borders, no watermark, no busy futuristic circuitry or excessive neon.
+
+FLIGHTDECK
+Use case: stylized-concept
+Asset type: square cinematic cover art for an elegant engineering portfolio; also crops to a small app icon.
+Scene/backdrop: a quiet aerial landscape at blue hour where a jagged dark coastal mountain ridge meets a calm slate sea, wisps of thin low cloud following the ridge, extraordinary natural scale.
+Subject: a single restrained warm amber trajectory light, a tiny distant aircraft point with one fine graceful curved light trail crossing the central landscape; the landscape and the graceful trajectory form a clear simple motif, no close-up aircraft.
+Style/medium: cinematic fine art aerial photography with subtle long-exposure light trail, tactile terrain and soft atmospheric depth, premium editorial travel art direction.
+Composition/framing: square 1024x1024, high-angle aerial view, central diagonally rising ridge with dark sea as generous negative space, strong uncluttered composition that works for a cropped app icon and a full screen dark background.
+Lighting/mood: quiet and mysterious, cool slate blue, charcoal mountains and muted pale cloud, a single small amber point and understated line.
+Constraints: no text, no letters, no numbers, no logos, no UI, no charts, no maps or grids, no borders, no watermark, no sci-fi objects, no multiple light trails.
+
+MODELGATE FINAL COLOR REVISION
+Use case: lighting-weather
+Asset type: cinematic square portfolio cover artwork, central sculpture also used as an app icon.
+Primary request: preserve this exact central glass and brushed silver portal sculpture, composition, perspective, setting, materials, edges, and restrained mysterious mood. Change only its color palette: the dark blue/indigo environment and glass become deep forest green with soft sage reflections. The cyan light in the opening becomes a restrained pale lime/sage light (#cde8a0). Keep silver metal neutral silver and shadows rich. Lighting should stay subtle, not neon. No text, logos, UI, or extra objects. Keep all geometry unchanged.
+
+Final selected sources:
+clearinghouse: /Users/bowenzhu/.codex/generated_images/01a11923-2447-7813-8ce5-52456e3c4d2b/exec-d8f407d1-d452-4344-8aac-3bc2c1340d54.png
+modelgate: /Users/bowenzhu/.codex/generated_images/01a11923-2447-7813-8ce5-52456e3c4d2b/exec-8a9d5a20-fa2a-4cf1-b490-e75ef4021c8e.png
+flightdeck: /Users/bowenzhu/.codex/generated_images/01a11923-2447-7813-8ce5-52456e3c4d2b/exec-937d2ac6-0145-4257-928c-613d03948a10.png
+

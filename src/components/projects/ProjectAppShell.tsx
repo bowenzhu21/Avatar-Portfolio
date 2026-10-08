@@ -16,10 +16,13 @@ interface ProjectPreview {
   fit?: "contain" | "cover";
   paddingClassName?: string;
   label?: string;
+  aspectRatio?: number;
 }
 
 interface ProjectGalleryImage extends ProjectPreview {
   id: number;
+  caption?: string;
+  href?: string;
 }
 
 interface ProjectAppShellProps {
@@ -31,6 +34,7 @@ interface ProjectAppShellProps {
   preview: ProjectPreview;
   galleryImages?: ProjectGalleryImage[];
   links: ProjectAppLink[];
+  primaryAction?: Pick<ProjectAppLink, "title" | "href">;
   shellTone?: "dark" | "light";
 }
 
@@ -62,6 +66,7 @@ export function ProjectAppShell({
   preview,
   galleryImages,
   links,
+  primaryAction,
   shellTone = "dark",
 }: ProjectAppShellProps) {
   const [activeTab, setActiveTab] = useState<ProjectTabId>("overview");
@@ -132,6 +137,7 @@ export function ProjectAppShell({
                   title={title}
                   preview={preview}
                   shellTone={shellTone}
+                  primaryAction={primaryAction}
                 />
               ) : activeTab === "highlights" ? (
                 <HighlightsPage bullets={bullets} shellTone={shellTone} />
@@ -203,18 +209,20 @@ function OverviewPage({
   title,
   preview,
   shellTone,
+  primaryAction,
 }: {
   summary: string;
   title: string;
   preview: ProjectPreview;
   shellTone: "dark" | "light";
+  primaryAction?: Pick<ProjectAppLink, "title" | "href">;
 }) {
   const isLightTone = shellTone === "light";
 
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
-        <div className="relative aspect-[1.08/1] bg-black/15">
+        <div className="relative bg-black/15" style={{ aspectRatio: preview.aspectRatio ?? 1.08 }}>
           <Image
             src={preview.src}
             alt={preview.alt}
@@ -251,6 +259,22 @@ function OverviewPage({
           {summary}
         </p>
       </div>
+
+      {primaryAction ? (
+        <a
+          href={primaryAction.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`flex min-h-11 items-center justify-between gap-4 rounded-full border px-5 py-3 text-[0.82rem] font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ${
+            isLightTone
+              ? "border-black/15 bg-black/90 text-white hover:bg-black"
+              : "border-white/20 bg-white/12 text-white backdrop-blur-xl hover:bg-white/20"
+          }`}
+        >
+          <span>{primaryAction.title}</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+      ) : null}
     </div>
   );
 }
@@ -323,7 +347,7 @@ function GalleryPage({
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
-        <div className="relative aspect-[1.08/1] bg-black/15">
+        <div className="relative bg-black/15" style={{ aspectRatio: activeImage.aspectRatio ?? 1.08 }}>
           <Image
             src={activeImage.src}
             alt={activeImage.alt}
@@ -335,7 +359,9 @@ function GalleryPage({
             priority
           />
         </div>
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.1)_36%,rgba(0,0,0,0.34)_100%)]" />
+        {!activeImage.caption ? (
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.1)_36%,rgba(0,0,0,0.34)_100%)]" />
+        ) : null}
 
         {images.length > 1 ? (
           <>
@@ -364,7 +390,30 @@ function GalleryPage({
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      {activeImage.caption || activeImage.href ? (
+        <div className="space-y-4">
+          {activeImage.label ? (
+            <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">{activeImage.label}</p>
+          ) : null}
+          {activeImage.caption ? (
+            <p className="text-[0.82rem] leading-6 text-white/84">{activeImage.caption}</p>
+          ) : null}
+          {activeImage.href ? (
+            <a
+              href={activeImage.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-11 items-center justify-between gap-4 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-[0.82rem] font-medium text-white backdrop-blur-xl transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+            >
+              <span>Open interactive report</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+
+      {images.length > 1 ? (
+        <div className="flex gap-2 overflow-x-auto pb-1">
         {images.map((image, index) => {
           const active = index === activeImageIndex;
 
@@ -394,7 +443,8 @@ function GalleryPage({
             </button>
           );
         })}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

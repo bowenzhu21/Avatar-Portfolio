@@ -738,6 +738,10 @@
       ],
       "demo_links": [
         {
+          "label": "Portfolio project page",
+          "url": "https://bowenzhu.ca/projects/clearinghouse"
+        },
+        {
           "label": "Interactive operations report",
           "url": "https://bowenzhu21.github.io/clearinghouse/"
         },
@@ -813,7 +817,7 @@
             "clearinghouse github",
             "where can i see clearinghouse"
           ],
-          "answer": "The GitHub repository is bowenzhu21/clearinghouse, with an interactive operations report linked in the README. From the checkout, python3 -m clearinghouse demo regenerates the scenarios and evidence."
+          "answer": "Open Clearinghouse in my Projects app for the overview, interactive operations report, and source. The report is a saved synthetic run; the repository regenerates its scenarios and evidence locally."
         }
       ],
       "aliases": [
@@ -878,6 +882,10 @@
         "Three saved local CPU timing runs have a median total generation, two-model training, and evaluation time of about 1.856 seconds on macOS arm64 with Python 3.13.5 and NumPy 2.2.6. Timing excludes networking, GPUs, and registry writes and is not a serving-throughput claim."
       ],
       "demo_links": [
+        {
+          "label": "Portfolio project page",
+          "url": "https://bowenzhu.ca/projects/modelgate"
+        },
         {
           "label": "Interactive release explorer",
           "url": "https://bowenzhu21.github.io/modelgate/"
@@ -957,7 +965,7 @@
             "modelgate github",
             "where can i see modelgate"
           ],
-          "answer": "The repository is bowenzhu21/modelgate, and its README links the interactive release explorer. The local demo trains, evaluates, rejects bad releases, promotes a successor, and exercises rollback."
+          "answer": "Open ModelGate in my Projects app for the overview, release explorer, and source. The explorer shows a saved run; the local demo trains, evaluates, rejects bad releases, promotes a successor, and exercises rollback."
         }
       ],
       "aliases": [
@@ -1020,6 +1028,10 @@
         "Five-run local processor benchmarks record medians of about 5.63 million events per second with a zero-millisecond reorder window and 5.47 million with a 250-millisecond window on macOS arm64 and Apple Clang 21 at -O2. The measurements use synthetic events and exclude parsing, recorder I/O, and serialization; they are not operational flight or end-to-end throughput results."
       ],
       "demo_links": [
+        {
+          "label": "Portfolio project page",
+          "url": "https://bowenzhu.ca/projects/flightdeck"
+        },
         {
           "label": "Interactive mission report",
           "url": "https://bowenzhu21.github.io/flightdeck/"
@@ -1102,7 +1114,7 @@
             "flightdeck github",
             "where can i see flightdeck"
           ],
-          "answer": "The repository is bowenzhu21/flightdeck, with a linked mission report you can scrub and filter. Running make demo regenerates the synthetic recording, replay results, and report locally."
+          "answer": "Open FlightDeck in my Projects app for the overview, mission replay, and source. Scrub and filter the synthetic mission report, or run make demo to regenerate the recording and replay results locally."
         }
       ],
       "aliases": [
@@ -1559,7 +1571,7 @@
           "which projects show ai systems work",
           "what projects are ai"
         ],
-        "answer": "The clearest AI systems projects are Matrix, Adapt UI, RobinTrain, and Aura Dev. They cover multi-agent systems, code generation reliability, conversation simulation, and voice-first coding."
+        "answer": "ModelGate shows ML evaluation and release engineering. Matrix shows multi-agent simulation, while Adapt UI, RobinTrain, and Aura Dev cover code generation, conversation evaluation, and voice-first coding."
       },
       {
         "question_patterns": [
@@ -1567,7 +1579,15 @@
           "what projects involve real time systems",
           "what projects are low latency"
         ],
-        "answer": "The most real-time work is probably Aura Dev, Elbow Exo, Kronos, and parts of Matrix. My experience at Hippos, Momenta, and HeyGen also fits that pattern."
+        "answer": "FlightDeck shows bounded stream processing and telemetry replay. Aura Dev, Elbow Exo, and Kronos add live interaction, sensing, and rendering, while my Hippos, Momenta, and HeyGen work adds professional systems experience."
+      },
+      {
+        "question_patterns": [
+          "which projects show backend infrastructure",
+          "what projects show backend engineering",
+          "what projects show reliability"
+        ],
+        "answer": "Clearinghouse focuses on payment correctness and recovery. ModelGate adds evidence-checked releases, and FlightDeck adds bounded processing and deterministic replay. Each makes failure cases inspectable."
       },
       {
         "question_patterns": [
