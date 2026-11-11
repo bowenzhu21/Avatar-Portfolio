@@ -5,6 +5,7 @@ import { OverlayShell } from "@/components/OverlayShell";
 import { StoreSyncProvider } from "@/components/providers/store-sync-provider";
 import { VoiceRouterProvider } from "@/components/providers/voice-router-provider";
 import { siteConfig } from "@/config/site";
+import { avatarConfig } from "@/config/avatar";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     title: "Bowen Zhu — Portfolio",
     description: siteConfig.description,
     type: "website",
-    images: [{ url: "/profile_pic.jpeg", alt: "Bowen Zhu" }],
+    images: [{ url: avatarConfig.profileImageSrc, alt: "Bowen Zhu" }],
   },
   twitter: { card: "summary", title: "Bowen Zhu — Portfolio", description: siteConfig.description },
   icons: {

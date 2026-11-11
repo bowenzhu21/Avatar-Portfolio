@@ -1,9 +1,10 @@
 import type { ChatContact } from "@/types";
+import { avatarConfig } from "@/config/avatar";
 
 export const bowenContact: ChatContact = {
   id: "bowen",
   name: "Bowen",
-  avatar: "/messages/bowen.jpeg",
+  avatar: avatarConfig.profileImageSrc,
   phoneLabel: "iMessage",
   promptStyle:
     "Grounded, direct, and natural. Sound like Bowen texting casually without overexplaining.",

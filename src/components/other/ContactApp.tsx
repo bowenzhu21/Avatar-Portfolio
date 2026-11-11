@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { avatarConfig } from "@/config/avatar";
 import { resumeRecord } from "@/data/resume";
 
 export function ContactApp() {
@@ -26,11 +27,11 @@ export function ContactApp() {
               <div className="absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/85 to-transparent" />
               <div className="absolute left-0 top-0 z-10 h-16 w-24 rounded-full bg-white/16 blur-xl" />
               <Image
-                src="/photos/1.jpeg"
+                src={avatarConfig.profileImageSrc}
                 alt="Bowen Zhu"
                 fill
                 sizes="(max-width: 768px) 100vw, 420px"
-                className="object-cover"
+                className="object-cover object-[center_35%]"
                 priority
               />
           </div>
