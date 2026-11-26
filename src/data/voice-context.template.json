@@ -12,7 +12,7 @@
       "No made-up metrics",
       "No UI narration unless asked"
     ],
-    "short_intro": "I’m Bowen. I study Systems Design Engineering at the University of Waterloo, and I’m most interested in AI systems, real-time infrastructure, software-hardware pipelines, and product-minded engineering. Ask me about my projects, experience, school, or interests like fitness and nutrition."
+    "short_intro": "I’m Bowen. I study Systems Design Engineering at Waterloo, and I’m an incoming Software Engineering Intern at Stripe on Radar AI/ML Infrastructure, starting January 2027. Ask me about my projects, experience, school, or interests like fitness and nutrition."
   },
   "global_rules": {
     "allowed_sources_only": true,
@@ -22,7 +22,8 @@
       "Invented timelines",
       "Invented team sizes",
       "Invented technologies",
-      "Invented impact claims"
+      "Invented impact claims",
+      "Describing an incoming role as completed work or inventing achievements for it"
     ]
   },
   "projects": {
@@ -1125,6 +1126,70 @@
     }
   },
   "experience": {
+    "stripe": {
+      "title": "Stripe",
+      "one_liner": "I’m an incoming Software Engineering Intern at Stripe, joining Radar AI/ML Infrastructure in San Francisco from January to May 2027.",
+      "full_summary": "My incoming Stripe internship is scheduled for January to May 2027 in San Francisco, on Radar AI/ML Infrastructure. This is an upcoming role; I have no completed Stripe work, results, or specific implementation details to share yet.",
+      "company_or_program": "Stripe",
+      "your_role": "Incoming Software Engineering Intern",
+      "scope": [
+        "Upcoming team: Radar - AI/ML Infrastructure.",
+        "Scheduled internship: January to May 2027, San Francisco, CA."
+      ],
+      "wins": [],
+      "skills_gained": [],
+      "faq": [
+        {
+          "question_patterns": [
+            "tell me about stripe",
+            "what is your stripe role",
+            "what are you doing at stripe",
+            "stripe internship",
+            "incoming stripe"
+          ],
+          "answer": "I’m an incoming Software Engineering Intern at Stripe, joining Radar AI/ML Infrastructure in San Francisco from January to May 2027."
+        },
+        {
+          "question_patterns": [
+            "when do you start at stripe",
+            "when are you joining stripe",
+            "when is your stripe internship",
+            "stripe dates"
+          ],
+          "answer": "My Stripe internship is scheduled for January to May 2027."
+        },
+        {
+          "question_patterns": [
+            "which team at stripe",
+            "what team at stripe",
+            "what will you work on at stripe",
+            "tell me about radar",
+            "stripe radar"
+          ],
+          "answer": "I’m joining Radar - AI/ML Infrastructure as an incoming Software Engineering Intern. I don’t have more specific project details to share yet."
+        },
+        {
+          "question_patterns": [
+            "what did you do at stripe",
+            "have you started at stripe",
+            "stripe achievements",
+            "stripe impact",
+            "stripe results",
+            "stripe metrics",
+            "what have you built at stripe"
+          ],
+          "answer": "Stripe is an incoming role, scheduled for January to May 2027. I haven’t started yet, so I don’t have completed work or results from it to share."
+        },
+        {
+          "question_patterns": [
+            "where is your stripe internship",
+            "where will you work at stripe",
+            "stripe location"
+          ],
+          "answer": "My incoming Stripe internship is based in San Francisco, California."
+        }
+      ]
+    },
     "heygen": {
       "title": "HeyGen",
       "one_liner": "At HeyGen, I built AI agent infrastructure for security classification, repository retrieval, and multi-user agent services.",
@@ -1259,7 +1324,7 @@
       "one_liner": "At Momenta, I built a real-time voice AI pipeline for fraud detection on live phone calls.",
       "full_summary": "At Momenta, I worked on a real-time voice AI pipeline that analyzed live phone calls for fraud detection. Audio was streamed, transformed into features, and passed through ML models for inference, with a big focus on reducing latency, stabilizing predictions, and handling concurrency.",
       "company_or_program": "Momenta",
-      "your_role": "Software & ML Engineer Intern",
+      "your_role": "Software Engineering Volunteer",
       "scope": [
         "Worked on streaming audio pipelines for live phone-call analysis.",
         "Optimized inference and latency across the fraud-detection flow.",
@@ -1294,7 +1359,7 @@
       "one_liner": "At JMA Consulting, I worked as a full-stack developer building web systems, data pipelines, and automation for multiple clients.",
       "full_summary": "At JMA Consulting, I worked as a full-stack developer building and maintaining web systems for multiple clients. My work spanned backend features, data pipelines, CRM-related systems, automation, and testing, with a focus on reliability and maintainability in production.",
       "company_or_program": "JMA Consulting",
-      "your_role": "Software Engineer Intern",
+      "your_role": "Junior Software Developer Intern",
       "scope": [
         "Built backend features and maintained client-facing web systems.",
         "Worked on CRM systems, data ingestion, and automation.",
@@ -1326,46 +1391,45 @@
     }
   },
   "resume": {
-    "headline": "Software engineer focused on AI systems, real-time infrastructure, and end-to-end product systems.",
-    "short_summary": "I’m a Systems Design Engineering student at the University of Waterloo. Most of my work sits at the intersection of AI, real-time systems, distributed infrastructure, software-hardware integration, and product-minded engineering.",
+    "headline": "Software engineer focused on AI and ML infrastructure, agent systems, and reliability.",
+    "short_summary": "I study Systems Design Engineering at Waterloo and am an incoming Software Engineering Intern at Stripe on Radar AI/ML Infrastructure, January to May 2027. My resume includes HeyGen, Momenta, and JMA Consulting, plus contributions to NVIDIA’s NemoClaw and Genesis, HeyGen’s persistent agent harness work.",
     "education": [
       "University of Waterloo",
-      "BASc in Systems Design Engineering (Co-op)",
-      "Sep. 2024 - Apr. 2028"
+      "BASc, Systems Design Engineering (Co-op)",
+      "Sep. 2024 - Apr. 2029",
+      "President’s Scholarship of Distinction",
+      "Bill Harvey Scholar"
     ],
     "skills": [
       "Python",
+      "Go",
       "C++",
+      "Java",
       "TypeScript",
-      "JavaScript",
-      "Swift",
-      "React",
-      "React Native",
-      "FastAPI",
-      "Flask",
+      "SQL",
+      "Git",
+      "Docker",
+      "ArgoCD",
+      "AWS",
+      "Helm",
+      "Langfuse",
+      "Kubernetes",
+      "Temporal",
+      "MCP",
+      "llama.cpp",
+      "TensorRT",
       "Redis",
-      "PostgreSQL",
-      "Firebase",
-      "Modal",
-      "vLLM",
-      "LiveKit",
-      "Deepgram",
-      "ElevenLabs",
-      "BLE",
-      "WebSockets",
-      "GPU inference",
-      "Sensor fusion",
-      "Computer vision",
-      "Real-time rendering",
-      "LLM orchestration"
+      "MySQL",
+      "LLM Evals",
+      "Knowledge Graphs"
     ],
     "strengths": [
-      "AI systems engineering",
-      "Real-time pipelines",
-      "Distributed systems thinking",
-      "Software-hardware integration",
-      "Building full pipelines from input to output",
-      "Product-minded technical execution"
+      "AI and ML infrastructure",
+      "Agent systems and security",
+      "Knowledge graphs and code retrieval",
+      "Database reliability",
+      "Real-time inference pipelines",
+      "Open-source contributions"
     ],
     "job_targets": [
       "AI systems engineering",
@@ -1381,7 +1445,64 @@
           "what do you focus on",
           "how would you describe your background"
         ],
-        "answer": "I’d describe my background as systems-heavy software engineering. I’m most interested in AI systems, real-time pipelines, distributed infrastructure, and software-hardware integration."
+        "answer": "I study Systems Design Engineering at Waterloo and am incoming at Stripe on Radar AI/ML Infrastructure for January to May 2027. My resume includes HeyGen, Momenta, and JMA Consulting, plus NVIDIA NemoClaw contributions and Genesis, HeyGen’s persistent agent harness work."
+      },
+      {
+        "question_patterns": [
+          "what roles are on your resume",
+          "what experience is on your resume",
+          "resume experience"
+        ],
+        "answer": "My resume lists incoming Software Engineering Intern at Stripe, January to May 2027; Software Engineering Intern at HeyGen, May to August 2026; Software Engineering Volunteer at Momenta, May to August 2025; and Junior Software Developer Intern at JMA Consulting, January to April 2025."
+      },
+      {
+        "question_patterns": [
+          "what projects are on your resume",
+          "resume projects"
+        ],
+        "answer": "My resume highlights NVIDIA NemoClaw open-source contributions and Genesis, HeyGen’s persistent agent harness work."
+      },
+      {
+        "question_patterns": [
+          "tell me about nemoclaw",
+          "what did you do on nemoclaw",
+          "nvidia contributions",
+          "nvidia open source"
+        ],
+        "answer": "My resume lists seven merged PRs to NVIDIA’s NemoClaw agent-deployment platform across the Rust SDK and Python agent bridge. I also implemented stale-lock recovery for sandbox resume, reducing benchmark recovery time from 5 minutes 20 seconds to 54 seconds."
+      },
+      {
+        "question_patterns": [
+          "tell me about genesis",
+          "what is genesis",
+          "genesis project",
+          "persistent agent harnesses"
+        ],
+        "answer": "Genesis is the persistent agent harness work from HeyGen on my resume. It includes a synchronous agent data-security layer using Gemma 2B with llama.cpp, plus Go services, Python sidecars, and extensions for OpenClaw, Hermes, and Claude Code agents."
+      },
+      {
+        "question_patterns": [
+          "what skills are on your resume",
+          "resume skills",
+          "what technologies are on your resume"
+        ],
+        "answer": "My resume lists Python, Go, C++, Java, TypeScript, SQL, Git, Docker, ArgoCD, AWS, Helm, and Langfuse, plus Kubernetes, Temporal, MCP, llama.cpp, TensorRT, Redis, MySQL, LLM evaluations, and knowledge graphs."
+      },
+      {
+        "question_patterns": [
+          "what awards are on your resume",
+          "resume awards",
+          "what scholarships do you have"
+        ],
+        "answer": "My resume lists the President’s Scholarship of Distinction and Bill Harvey Scholar, plus AIME qualification, Top 50 in the Optiver Trading Challenge, five CEMC honours in the top 3%, and first place at Toronto Model UN."
+      },
+      {
+        "question_patterns": [
+          "when do you graduate",
+          "when is your graduation",
+          "resume education"
+        ],
+        "answer": "My BASc in Systems Design Engineering at Waterloo runs from September 2024 to April 2029."
       }
     ]
   },
@@ -1535,6 +1656,18 @@
     "top_level_faq": [
       {
         "question_patterns": [
+          "what is your next internship",
+          "where are you interning next",
+          "where are you working next",
+          "what is your incoming role",
+          "what is next for you",
+          "what are you doing next",
+          "what is your upcoming internship"
+        ],
+        "answer": "I’m joining Stripe as an incoming Software Engineering Intern on Radar AI/ML Infrastructure, in San Francisco from January to May 2027."
+      },
+      {
+        "question_patterns": [
           "what are your new projects",
           "what are your recent projects",
           "what are your latest projects",
@@ -1595,7 +1728,7 @@
           "what internships have you done",
           "tell me about your experience"
         ],
-        "answer": "My main experience is JMA Consulting, Momenta, Hippos Exoskeleton, and HeyGen. The common thread is real systems work across backend, AI, streaming, and software-hardware pipelines."
+        "answer": "I’m incoming at Stripe on Radar AI/ML Infrastructure for January to May 2027. My past experience includes HeyGen, Hippos Exoskeleton, Momenta, and JMA Consulting, across AI, backend, streaming, and software-hardware systems."
       },
       {
         "question_patterns": [

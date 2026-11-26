@@ -1,4 +1,5 @@
 import type { PortfolioEntity } from "@/types";
+import { stripeExperience } from "@/data/stripe";
 
 export interface CompactPortfolioEntity {
   id: string;
@@ -461,6 +462,27 @@ export const portfolioEntities: PortfolioEntity[] = [
       },
     ],
     relatedItems: ["apollo", "aphrodite", "hermes"],
+  },
+  {
+    id: "stripe",
+    title: "Stripe",
+    type: "experience",
+    route: "/experience/stripe",
+    aliases: ["stripe", "stripe radar", "radar", "incoming internship", "next internship"],
+    shortSummary: "Incoming at Stripe. Radar · AI/ML Infrastructure.",
+    technicalSummary:
+      "Incoming Software Engineering Intern on Radar, with an AI/ML Infrastructure focus. January–May 2027 in San Francisco. The internship has not started; project details and outcomes are not available yet.",
+    recruiterSummary:
+      "Upcoming Software Engineering internship at Stripe, January–May 2027. Team: Radar — AI/ML Infrastructure.",
+    tags: ["Incoming", "Radar", "AI/ML Infrastructure"],
+    sections: [
+      {
+        id: "overview",
+        title: "Next",
+        summary: `${stripeExperience.role}. ${stripeExperience.date}. ${stripeExperience.location}. ${stripeExperience.summary}`,
+      },
+    ],
+    relatedItems: ["heygen", "resume"],
   },
   {
     id: "heygen",

@@ -62,6 +62,7 @@ const entityIconMap: Partial<Record<string, string>> = {
   "aura-dev": "/icons/aura.jpg",
   "elbow-exo": "/icons/elbow.jpg",
   gymbro: "/icons/gymbro.png",
+  stripe: "/icons/stripe.svg",
   heygen: "/icons/heygen.jpeg",
   "hippos-exoskeleton": "/icons/hippos.jpeg",
   momenta: "/icons/momenta.jpeg",
@@ -578,6 +579,8 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
           ) : visibleEntity ? (
             visibleEntity.id === "photos" ? (
               <PhotosApp />
+            ) : visibleEntity.id === "stripe" ? (
+              <ExperienceApp key="stripe" screenId="stripe" />
             ) : visibleEntity.id === "heygen" ? (
               <ExperienceApp screenId="heygen" />
             ) : visibleEntity.id === "hippos-exoskeleton" ? (

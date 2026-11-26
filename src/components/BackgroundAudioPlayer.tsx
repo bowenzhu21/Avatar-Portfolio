@@ -32,7 +32,7 @@ export function BackgroundAudioPlayer() {
 
     async function reconcilePlayback() {
       if (disposed) return;
-      if (shouldPause || document.hidden) {
+      if (pauseIntentRef.current || document.hidden) {
         audio!.pause();
         return;
       }
@@ -63,6 +63,7 @@ export function BackgroundAudioPlayer() {
     window.addEventListener("pagehide", pauseForPageExit);
     window.addEventListener("pageshow", reconcilePlayback);
     window.addEventListener("pointerdown", handleUserGesture, { passive: true });
+    window.addEventListener("pointerup", handleUserGesture, { passive: true });
     window.addEventListener("keydown", handleUserGesture);
 
     return () => {
@@ -72,6 +73,7 @@ export function BackgroundAudioPlayer() {
       window.removeEventListener("pagehide", pauseForPageExit);
       window.removeEventListener("pageshow", reconcilePlayback);
       window.removeEventListener("pointerdown", handleUserGesture);
+      window.removeEventListener("pointerup", handleUserGesture);
       window.removeEventListener("keydown", handleUserGesture);
     };
   }, [activeTrack.audioSrc, shouldPause]);

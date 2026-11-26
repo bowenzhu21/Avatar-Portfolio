@@ -65,7 +65,7 @@ export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceS
           </AnimatePresence>
         </div>
 
-        <nav
+        {screen.status !== "incoming" ? <nav
           className="absolute inset-x-7 bottom-5 z-20 overflow-hidden rounded-[1.7rem] border border-white/18 shadow-[0_12px_28px_rgba(0,0,0,0.12)] backdrop-blur-[22px]"
           style={navGlassStyle}
         >
@@ -105,7 +105,7 @@ export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceS
               );
             })}
           </div>
-        </nav>
+        </nav> : null}
       </div>
     </div>
   );
@@ -117,7 +117,7 @@ function OverviewPage({
   screenId: keyof typeof experienceScreens;
 }) {
   const screen = experienceScreens[screenId];
-  const typeLabel = screenId === "school" ? "Education" : "Experience";
+  const typeLabel = screenId === "school" ? "Education" : screen.status === "incoming" ? "Up next" : "Experience";
   const isLightText = screen.textTone === "light";
 
   return (

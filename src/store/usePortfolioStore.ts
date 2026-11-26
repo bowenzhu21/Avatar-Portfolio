@@ -100,7 +100,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   latestRouterPayload: null,
   latestRouterResponse: null,
   selectedSpotifyTrackId: defaultSpotifyTrackId,
-  isSpotifyPaused: true,
+  isSpotifyPaused: false,
   isCardOpen: true,
   portfolioVolume: DEFAULT_PORTFOLIO_VOLUME,
   setActiveRoute: (route) => set({ activeRoute: route }),

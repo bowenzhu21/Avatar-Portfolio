@@ -42,6 +42,45 @@ function loadSource(filename) {
 }
 
 const { POST } = loadSource(path.join(root, "app/api/voice-router/route.ts"));
+const { buildGroundedVoiceFallback, getRelevantVoiceKnowledgeBase } = loadSource(path.join(root, "src/data/voiceContext.ts"));
+
+test("opens the incoming Stripe role from another experience", async () => {
+  const response = await POST(new Request("http://localhost/api/voice-router", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      transcript: "Open Stripe",
+      activeEntityId: "heygen",
+      activeRoute: "/experience/heygen",
+      activeCard: "overview",
+    }),
+  }));
+  const result = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(result.entity?.id, "stripe");
+  assert.equal(result.route, "/experience/stripe");
+  assert.match(result.spokenResponse, /incoming/i);
+});
+
+test("Stripe assistant context distinguishes incoming work from completed achievements", () => {
+  const args = {
+    transcript: "What did you do at Stripe?",
+    routedEntity: null,
+    activeEntityId: "stripe",
+    activeRoute: "/experience/stripe",
+  };
+  const knowledge = getRelevantVoiceKnowledgeBase(args);
+  const stripe = knowledge.relevantExperience.stripe;
+  assert.equal(stripe.your_role, "Incoming Software Engineering Intern");
+  assert.match(stripe.full_summary, /January to May 2027/);
+  assert.match(stripe.full_summary, /San Francisco/);
+  assert.match(stripe.full_summary, /Radar AI\/ML Infrastructure/);
+  assert.deepEqual(stripe.wins, []);
+  assert.deepEqual(stripe.skills_gained, []);
+  assert.match(knowledge.experienceDirectory.find((entry) => entry.id === "stripe").oneLiner, /incoming/);
+  assert.equal(buildGroundedVoiceFallback({ ...args, deterministicFallback: "Unknown" }),
+    "Stripe is an incoming role, scheduled for January to May 2027. I haven’t started yet, so I don’t have completed work or results from it to share.");
+});
 
 for (const id of ["modelgate", "flightdeck", "clearinghouse"]) {
   for (const section of ["", " architecture"]) {

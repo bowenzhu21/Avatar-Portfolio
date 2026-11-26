@@ -1,4 +1,5 @@
 import { heygenExperience } from "@/data/heygen";
+import { stripeExperience } from "@/data/stripe";
 
 export interface ExperienceScreenRecord {
   id: string;
@@ -12,10 +13,26 @@ export interface ExperienceScreenRecord {
   accent: string;
   textTone?: "dark" | "light";
   description?: string;
+  status?: "incoming";
   bullets: string[];
 }
 
 export const experienceScreens: Record<string, ExperienceScreenRecord> = {
+  stripe: {
+    id: "stripe",
+    title: "Stripe",
+    role: stripeExperience.role,
+    date: stripeExperience.date,
+    location: stripeExperience.location,
+    status: "incoming",
+    iconSrc: "/icons/stripe.svg",
+    background:
+      "radial-gradient(ellipse at 92% 6%, rgba(165,151,255,0.8), transparent 48%), radial-gradient(ellipse at 8% 80%, rgba(90,110,226,0.55), transparent 58%), linear-gradient(155deg, #5046a8 0%, #30235b 50%, #101a35 100%)",
+    accent: "#c7bdff",
+    textTone: "light",
+    description: stripeExperience.summary,
+    bullets: [],
+  },
   heygen: {
     id: "heygen",
     title: "HeyGen",
