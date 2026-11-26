@@ -1,7 +1,7 @@
 export const avatarConfig = {
   name: "Bowen Zhu",
   role: "Voice Portfolio",
-  profileImageSrc: "/profile-bowen-202611.jpeg",
+  profileImageSrc: "/profile-bowen-20261126.webp",
   voiceId: "GmJQfkSLcCcQLhDDkRG6",
   speechModelId: "eleven_multilingual_v2",
   speechOutputFormat: "mp3_44100_128",
