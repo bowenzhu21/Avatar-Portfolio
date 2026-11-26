@@ -64,7 +64,6 @@ const existingPhotos: PhotoAsset[] = [...photoFileNames]
   });
 
 export const photoLibrary: PhotoAsset[] = [
-  ...existingPhotos,
   { id: 44, src: "/photos/44.webp", alt: "Two friends pointing toward mountains in a meadow" },
   { id: 45, src: "/photos/45.webp", alt: "Friends hiking beside a mountain waterfall" },
   { id: 46, src: "/photos/46.webp", alt: "YC Startup School 2026 sign" },
@@ -93,4 +92,5 @@ export const photoLibrary: PhotoAsset[] = [
   { id: 69, src: "/photos/69.webp", alt: "Friends’ shadows on sunlit sand" },
   { id: 70, src: "/photos/70.webp", alt: "Three friends beside arched windows overlooking the bay" },
   { id: 71, src: "/photos/71.webp", alt: "Bay at sunset with an island, rooftops, and seagulls" },
+  ...existingPhotos,
 ];
