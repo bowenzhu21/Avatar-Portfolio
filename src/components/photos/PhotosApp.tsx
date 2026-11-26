@@ -241,7 +241,7 @@ function PhotoViewer({
           <img
             src={photo.src}
             alt={photo.alt}
-            className="max-h-full max-w-full object-contain scale-[1.04]"
+            className="max-h-full max-w-full object-contain"
             draggable={false}
           />
         </motion.div>

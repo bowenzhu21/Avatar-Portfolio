@@ -37,11 +37,11 @@ export function OverlayShell({ children }: OverlayShellProps) {
       <div className="relative z-10 flex min-h-screen flex-col">
         <div className="flex flex-1 items-start px-3 pb-8 pt-3 md:px-8 md:pt-6">
           <div className="grid w-full min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[376px_minmax(0,1fr)] lg:gap-8">
-            <div className="order-2 flex justify-center lg:order-1 lg:justify-start">
+            <div className="flex justify-center lg:justify-start">
               <RightSideCard>{children}</RightSideCard>
             </div>
 
-            <div className="order-1 flex min-h-0 min-w-0 flex-col justify-between lg:order-2 lg:min-h-[min(750px,calc(100dvh-72px))]">
+            <div className="flex min-h-0 min-w-0 flex-col justify-between lg:min-h-[min(750px,calc(100dvh-72px))]">
               <div className="w-full max-w-full lg:max-w-[calc(100vw-376px-6rem)]">
                 <AvatarStage />
               </div>
