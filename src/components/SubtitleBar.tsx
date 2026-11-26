@@ -153,7 +153,7 @@ export function SubtitleBar() {
             autoComplete="off"
             placeholder="Ask me…"
             aria-describedby={requestError ? "portfolio-prompt-error" : undefined}
-            className="min-w-0 flex-1 bg-transparent px-3 py-2 text-base text-white outline-none placeholder:text-white/65 sm:text-sm"
+            className="min-w-0 flex-1 bg-transparent px-3 py-2 text-base text-white outline-none focus-visible:outline-none placeholder:text-white/65 sm:text-sm"
           />
           <button
             type="submit"
