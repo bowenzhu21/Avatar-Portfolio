@@ -29,9 +29,11 @@ export function SubtitleBar() {
   const pendingUtterance = usePortfolioStore((state) => state.pendingUtterance);
   const latestSpokenResponse = usePortfolioStore((state) => state.latestSpokenResponse);
   const partialTranscript = usePortfolioStore((state) => state.partialTranscript);
-  const latestUserUtterance = usePortfolioStore((state) => state.latestUserUtterance);
-  const conversationHistory = usePortfolioStore((state) => state.conversationHistory);
+  const interactionPhase = usePortfolioStore((state) => state.interactionPhase);
   const isPending = Boolean(pendingUtterance) || isSubmitting;
+  const liveTranscript = interactionPhase === "listening" ? partialTranscript : "";
+  const hasMessage = Boolean(isPending || liveTranscript || (!requestError && latestSpokenResponse));
+  const hasFeedback = hasMessage || Boolean(requestError);
 
   async function sendPrompt(value: string) {
     const prompt = value.trim();
@@ -70,65 +72,71 @@ export function SubtitleBar() {
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
-  const previousPrompt = [...conversationHistory].reverse().find((turn) => turn.role === "user")?.text;
-  const caption = partialTranscript || latestUserUtterance || previousPrompt;
+  const inputToggle = (
+    <button
+      type="button"
+      onClick={inputExpanded ? () => setInputExpanded(false) : openInput}
+      aria-label={inputExpanded ? "Close keyboard" : "Type a question"}
+      title={inputExpanded ? "Close keyboard" : "Type a question"}
+      aria-expanded={inputExpanded}
+      aria-controls="portfolio-prompt-form"
+      className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {inputExpanded ? <path d="m6 6 12 12M18 6 6 18" /> : (
+          <>
+            <rect x="2" y="5" width="20" height="14" rx="3" />
+            <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 15h10" />
+          </>
+        )}
+      </svg>
+    </button>
+  );
 
   return (
     <section
       aria-label="Ask Bowen"
-      className="panel-blur relative mx-auto w-full max-w-3xl rounded-[1.6rem] border border-white/30 bg-black/40 px-4 py-4 text-white shadow-[0_18px_50px_rgba(0,0,0,0.1)] backdrop-blur-[8px] sm:px-6"
+      className={`panel-blur relative mx-auto border border-white/25 bg-black/35 text-white shadow-[0_18px_50px_rgba(0,0,0,0.1)] backdrop-blur-[8px] ${hasFeedback || inputExpanded ? "w-full max-w-3xl rounded-[1.4rem] p-3 sm:p-4" : "w-fit rounded-full p-1"}`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-white/65">
-          Ask Bowen
-        </p>
-        <button
-          type="button"
-          onClick={inputExpanded ? () => setInputExpanded(false) : openInput}
-          aria-expanded={inputExpanded}
-          aria-controls="portfolio-prompt-form"
-          className="-my-2 min-h-10 rounded-lg px-2 text-xs text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-        >
-          {inputExpanded ? "Close keyboard" : "Type instead"}
-        </button>
-      </div>
-
-      <div aria-live="polite" aria-atomic="true" className="mt-1">
-        {caption && (
-          <p className="mb-1 truncate text-xs text-white/60" title={caption}>
-            {caption}
-          </p>
-        )}
-        <p className="text-sm font-medium leading-relaxed text-white/95 sm:text-[15px]">
-          {isPending
-            ? "Thinking…"
-            : requestError
-              ? "Let’s try that again."
-              : latestSpokenResponse || "Projects, experience, or a little more about me."}
-        </p>
-        {isPending && (
-          <button
-            type="button"
-            onClick={() => {
-              submissionVersionRef.current += 1;
-              submissionRef.current = false;
-              setIsSubmitting(false);
-              setDraft(pendingUtterance?.text ?? draft);
-              cancelPendingPortfolioPrompt();
-              void stopRealtimeSTTListening({ discardTranscript: true });
-            }}
-            className="mt-1 min-h-9 rounded-lg px-2 text-xs text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
+      {(hasMessage || !inputExpanded) && (
+        <div className="flex items-start gap-2">
+          {hasMessage && (
+            <div aria-live="polite" aria-atomic="true" className="min-w-0 flex-1 px-1 py-2">
+              {liveTranscript && (
+                <p className="mb-1 text-xs leading-relaxed text-white/60">{liveTranscript}</p>
+              )}
+              {(isPending || (!requestError && latestSpokenResponse)) && (
+                <p className="text-sm font-medium leading-relaxed text-white/95 sm:text-[15px]">
+                  {isPending ? "Thinking…" : latestSpokenResponse}
+                </p>
+              )}
+              {isPending && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    submissionVersionRef.current += 1;
+                    submissionRef.current = false;
+                    setIsSubmitting(false);
+                    setDraft(pendingUtterance?.text ?? draft);
+                    cancelPendingPortfolioPrompt();
+                    void stopRealtimeSTTListening({ discardTranscript: true });
+                  }}
+                  className="mt-1 min-h-9 rounded-lg px-2 text-xs text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          )}
+          {inputToggle}
+        </div>
+      )}
 
       {inputExpanded && (
         <form
           id="portfolio-prompt-form"
           onSubmit={handleSubmit}
-          className="mt-3 flex items-center gap-2 rounded-full border border-white/25 bg-white/10 p-1.5 focus-within:border-white/65"
+          className={`${hasMessage ? "mt-2 " : ""}flex items-center gap-1 rounded-full border border-white/20 bg-white/[0.07] p-1 focus-within:border-white/55`}
           aria-busy={isPending}
         >
           <label htmlFor="portfolio-prompt" className="sr-only">Your question for Bowen</label>
@@ -143,8 +151,8 @@ export function SubtitleBar() {
             }}
             maxLength={600}
             autoComplete="off"
-            placeholder="Show me ModelGate…"
-            aria-describedby={requestError ? "portfolio-prompt-error" : "portfolio-prompt-hint"}
+            placeholder="Ask me…"
+            aria-describedby={requestError ? "portfolio-prompt-error" : undefined}
             className="min-w-0 flex-1 bg-transparent px-3 py-2 text-base text-white outline-none placeholder:text-white/65 sm:text-sm"
           />
           <button
@@ -157,6 +165,7 @@ export function SubtitleBar() {
               <path d="M12 19V5m-6 6 6-6 6 6" />
             </svg>
           </button>
+          {!hasMessage && inputToggle}
         </form>
       )}
 
@@ -174,9 +183,7 @@ export function SubtitleBar() {
             </button>
           )}
         </div>
-      ) : inputExpanded && (
-        <p id="portfolio-prompt-hint" className="mt-2 pl-1 text-[10px] text-white/50">Quiet replies. No microphone needed.</p>
-      )}
+      ) : null}
     </section>
   );
 }
