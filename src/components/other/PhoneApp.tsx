@@ -121,7 +121,7 @@ export function PhoneApp({
 
 function PhoneHeader() {
   return (
-    <div className="border-b border-black/6 bg-[rgba(248,248,250,0.94)] px-4 pb-3 pt-4 backdrop-blur-xl">
+    <div className="glass-surface-light border-b bg-white/60 px-4 pb-3 pt-4">
       <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#111111]">Contacts</h1>
     </div>
   );
@@ -159,7 +159,7 @@ function ContactDetailScreen({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col bg-[#f7f7f9]">
-      <div className="border-b border-black/6 bg-[rgba(248,248,250,0.96)] px-3 pb-3 pt-3 backdrop-blur-xl">
+      <div className="glass-surface-light border-b bg-white/65 px-3 pb-3 pt-3">
         <button type="button" onClick={onBack} className="text-[1rem] font-medium text-[#007aff]">
           &#8249; Contacts
         </button>
@@ -468,7 +468,7 @@ function PhoneCallScreen({
                 onTouchStart={() => void beginHoldToTalk()}
                 onTouchEnd={() => void stopListening()}
                 onTouchCancel={() => void stopListening()}
-                className={`flex h-[3.5rem] w-[3.5rem] items-center justify-center rounded-full text-[0.72rem] font-medium backdrop-blur-xl transition ${
+                className={`glass-surface flex h-[3.5rem] w-[3.5rem] items-center justify-center rounded-full border text-[0.72rem] font-medium transition ${
                   sttState.isListening
                     ? "bg-cyan-200/28 text-white shadow-[0_0_24px_rgba(112,255,224,0.22)]"
                     : "bg-white/16 text-white"

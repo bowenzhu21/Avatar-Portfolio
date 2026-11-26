@@ -42,11 +42,6 @@ const liquidGlassStyle = {
     "linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04)), linear-gradient(135deg,rgba(7,16,28,0.48),rgba(7,16,28,0.24))",
 } as const;
 
-const navGlassStyle = {
-  backgroundImage:
-    "linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015)), linear-gradient(135deg,rgba(255,255,255,0.012),rgba(255,255,255,0.004))",
-} as const;
-
 export function MatrixApp() {
   const [activeTab, setActiveTab] = useState<MatrixTabId>("overview");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -70,7 +65,7 @@ export function MatrixApp() {
       style={shellBackgroundStyle}
     >
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-        <header className="border-b border-white/10 px-5 pb-5 pt-5 backdrop-blur-[18px]">
+        <header className="glass-surface border-b bg-black/10 px-5 pb-5 pt-5">
           <h1 className="text-[2.25rem] font-semibold tracking-[-0.07em] text-white">
             Matrix
           </h1>
@@ -106,8 +101,7 @@ export function MatrixApp() {
         </div>
 
         <nav
-          className="absolute inset-x-7 bottom-5 z-20 overflow-hidden rounded-[1.7rem] border border-white/10 shadow-[0_12px_28px_rgba(0,0,0,0.14)] backdrop-blur-[22px]"
-          style={navGlassStyle}
+          className="glass-surface-strong absolute inset-x-7 bottom-5 z-20 overflow-hidden rounded-[1.7rem] border bg-black/[0.16]"
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/72 to-transparent" />
           <div className="absolute left-6 top-0 h-[55%] w-[34%] rounded-full bg-white/[0.12] blur-2xl" />
@@ -124,8 +118,8 @@ export function MatrixApp() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`mx-auto w-[3.15rem] rounded-[1.1rem] px-1 py-1.5 text-center transition ${
                     active
-                      ? "bg-white/[0.035]"
-                      : "hover:bg-white/[0.025]"
+                      ? "bg-white/[0.16]"
+                      : "hover:bg-white/10"
                   }`}
                   aria-pressed={active}
                   aria-label={tab.label}
@@ -200,7 +194,7 @@ function HighlightsPage() {
               {!isLast ? (
                 <span className="absolute left-[0.96rem] top-9 bottom-0 w-px bg-white/12" />
               ) : null}
-              <span className="absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border border-cyan-300/22 bg-white/6 text-[11px] font-semibold text-cyan-100 backdrop-blur-[16px]">
+              <span className="glass-surface absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border bg-white/[0.06] text-[11px] font-semibold text-cyan-100">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <p className="pt-1 text-[0.82rem] leading-6 text-white/82">{bullet}</p>
@@ -244,7 +238,7 @@ function GalleryPage({
         <button
           type="button"
           onClick={onPrevious}
-          className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/14 bg-black/26 text-[1.35rem] text-white/86 backdrop-blur-xl"
+          className="glass-surface absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border bg-black/20 text-[1.35rem] text-white/86"
           aria-label="Previous Matrix image"
         >
           ‹
@@ -253,13 +247,13 @@ function GalleryPage({
         <button
           type="button"
           onClick={onNext}
-          className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/14 bg-black/26 text-[1.35rem] text-white/86 backdrop-blur-xl"
+          className="glass-surface absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border bg-black/20 text-[1.35rem] text-white/86"
           aria-label="Next Matrix image"
         >
           ›
         </button>
 
-        <div className="absolute bottom-4 right-4 rounded-full border border-white/12 bg-black/22 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/58 backdrop-blur-xl">
+        <div className="glass-surface absolute bottom-4 right-4 rounded-full border bg-black/[0.16] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/[0.72]">
           {activeImageIndex + 1}/{matrixImages.length}
         </div>
       </div>

@@ -13,7 +13,7 @@ export function ContactApp() {
       }}
     >
       <div className="space-y-4">
-        <section className="relative overflow-hidden rounded-[2rem] border border-white/26 bg-white/10 p-5 shadow-[0_18px_40px_rgba(27,24,20,0.08)] backdrop-blur-[34px]">
+        <section className="glass-surface-strong relative overflow-hidden rounded-[2rem] border bg-white/[0.08] p-5">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/85 to-transparent" />
           <div className="absolute left-5 top-0 h-20 w-40 rounded-full bg-white/20 blur-2xl" />
           <div className="absolute right-0 top-6 h-24 w-28 rounded-full bg-sky-100/12 blur-2xl" />
@@ -45,7 +45,7 @@ export function ContactApp() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden rounded-[2rem] border border-white/24 bg-white/9 p-4 shadow-[0_18px_36px_rgba(27,24,20,0.08)] backdrop-blur-[34px]">
+        <section className="glass-surface relative overflow-hidden rounded-[2rem] border bg-white/[0.06] p-4">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/82 to-transparent" />
           <div className="absolute left-6 top-0 h-16 w-32 rounded-full bg-white/16 blur-2xl" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_52%,rgba(255,255,255,0.01))]" />
@@ -80,7 +80,7 @@ function ContactRow({
   href?: string;
 }) {
   const content = (
-    <div className="relative overflow-hidden rounded-[1.35rem] border border-white/22 bg-white/8 px-4 py-3.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-[20px]">
+    <div className="glass-surface relative overflow-hidden rounded-[1.35rem] border bg-white/[0.06] px-4 py-3.5 text-left">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
       <div className="absolute left-3 top-0 h-10 w-20 rounded-full bg-white/14 blur-xl" />
       <div className="relative flex items-center justify-between gap-4">

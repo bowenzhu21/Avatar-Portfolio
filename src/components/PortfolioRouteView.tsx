@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,7 @@ import { RobinTrainApp } from "@/components/projects/RobinTrainApp";
 import { SystemsProjectApp } from "@/components/projects/SystemsProjectApp";
 import { ResumeApp } from "@/components/resume/ResumeApp";
 import { portfolioEntities } from "@/data/portfolio";
-import { createPhoneListScreen, derivePhoneScreen, resolvePhoneScreen } from "@/utils/phone";
+import { createPhoneListScreen, derivePhoneScreen, getPhoneParent, resolvePhoneScreen } from "@/utils/phone";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { getEntityById, getEntityByRoute } from "@/utils/portfolio";
 import type {
@@ -39,6 +39,34 @@ import type {
 
 interface PortfolioRouteViewProps {
   route: string;
+}
+
+function PhoneScreenTransition({ children }: { children: React.ReactNode }) {
+  const isPresent = useIsPresent();
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.965, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{
+        opacity: 0,
+        scale: reduceMotion ? 1 : 0.985,
+        y: reduceMotion ? 0 : -4,
+        transition: { duration: reduceMotion ? 0 : 0.14, ease: "easeIn" },
+      }}
+      transition={reduceMotion ? { duration: 0 } : {
+        type: "spring", stiffness: 360, damping: 34, mass: 0.9,
+        opacity: { duration: 0.2, ease: "easeOut" },
+      }}
+      inert={!isPresent}
+      aria-hidden={!isPresent || undefined}
+      className="absolute inset-0 flex min-h-0 flex-col"
+      style={{ transformOrigin: "50% 40%", pointerEvents: isPresent ? "auto" : "none" }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
 const wallpaperStyle = {
@@ -403,12 +431,16 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
     setPhoneScreen(createPhoneListScreen(app));
   }
 
-  function goPhoneHome() {
+  function navigateTo(nextRoute: string) {
     usePortfolioStore.setState({
-      phoneScreen: derivePhoneScreen({ route: "/" }),
-      activeRoute: "/", activeEntity: null, activeSection: null, activeCard: "overview",
+      phoneScreen: derivePhoneScreen({ route: nextRoute }),
+      activeRoute: nextRoute, activeEntity: null, activeSection: null, activeCard: "overview",
     });
-    if (route !== "/") router.push("/" as Route);
+    if (route !== nextRoute) router.push(nextRoute as Route);
+  }
+
+  function goPhoneHome() {
+    navigateTo("/");
   }
 
   function openEntity(nextEntity: PortfolioEntity) {
@@ -451,183 +483,194 @@ export function PortfolioRouteView({ route }: PortfolioRouteViewProps) {
 
   const showTopBar = phoneScreen.view !== "detail";
   const clipScreenShell = phoneScreen.view !== "home";
+  const parent = getPhoneParent(phoneScreen);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-[3rem]" style={wallpaperStyle}>
-      {showTopBar ? (
-        <div className="flex items-center justify-between px-7 pb-4 pt-4 text-[14px] font-semibold text-white">
-          <div>
-            <span>{timeLabel}</span>
-          </div>
-          <div className="mr-[-0.5rem] flex items-center text-[12px] text-white/92">
-            <Image
-              src="/airplane_mode.png"
-              alt="Airplane mode"
-              width={18}
-              height={18}
-              className="h-[18px] w-[15px] object-contain"
-            />
-            <Image
-              src="/wifi.png"
-              alt="Wi-Fi"
-              width={20}
-              height={15}
-              className="ml-[0.32rem] h-[15px] w-[20px] object-contain"
-            />
-            <Image
-              src="/battery.png"
-              alt="Battery"
-              width={36}
-              height={35}
-              className="ml-[0rem] h-[20px] w-[32px] object-contain"
-            />
-          </div>
-        </div>
-      ) : null}
-
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={currentScreenKey}
-          initial={{ opacity: 0, scale: 0.955 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.972 }}
-          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          className={clsx(
-            "flex min-h-0 flex-1 flex-col px-0 pb-0",
-            clipScreenShell ? "overflow-hidden rounded-[2.35rem]" : null,
-          )}
-        >
-          {phoneScreen.view === "home" ? (
-            homeScreen
-          ) : phoneScreen.app === "phone" ? (
-            <PhoneAppScreen
-              initialContactId={phoneScreen.contactId}
-              initialCallMode={phoneScreen.callMode}
-              onOpenMessages={(contactId) => openMessages(contactId)}
-              onUpdateTarget={(contactId, callMode) => openPhone(contactId, callMode)}
-            />
-          ) : phoneScreen.app === "messages" ? (
-            <MessagesApp
-              selectedContactId={selectedMessageContactId}
-              threads={messageThreads}
-              onOpenThread={(contactId) => openMessages(contactId)}
-              onCloseThread={() => openMessages(null)}
-              onSendMessage={sendChatMessage}
-              sendingContactId={sendingMessageContactId}
-              error={messagesError}
-            />
-          ) : phoneScreen.app === "safari" ? (
-            <SafariApp />
-          ) : phoneScreen.app === "spotify" ? (
-            <SpotifyApp />
-          ) : phoneScreen.app === "settings" ? (
-            <SettingsApp />
-          ) : phoneScreen.view === "list" ? (
-            phoneScreen.app === "projects" ||
-            phoneScreen.app === "primitives" ||
-            phoneScreen.app === "experience" ? (
-              <div className="relative h-full overflow-hidden rounded-[2rem]">
-                <div aria-hidden="true" inert className="pointer-events-none absolute inset-0 scale-[1.035] blur-[14px] brightness-[0.72]">
-                  {homeScreen}
-                </div>
-                <div className="absolute inset-0 bg-black/14" />
-                <FolderGrid
-                  title={phoneScreen.title}
-                  items={getItemsForApp(phoneScreen.app)}
-                  onOpen={openEntity}
-                  getIconSrc={getEntityIconSrc}
-                  onClose={goPhoneHome}
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2.5rem]" style={wallpaperStyle}>
+      <AnimatePresence mode="sync">
+        <PhoneScreenTransition key={currentScreenKey}>
+          {parent ? (
+            <nav aria-label="Portfolio navigation" className="shrink-0 bg-black/15 px-5 pb-1 pt-3">
+              <button
+                type="button"
+                onClick={() => navigateTo(parent.route)}
+                aria-label={`Back to ${parent.title}`}
+                className="glass-surface flex min-h-8 items-center gap-2 rounded-full border bg-white/[0.08] px-3 text-[11px] font-medium text-white/90 transition hover:bg-white/15"
+              >
+                <span aria-hidden="true" className="text-base leading-none">‹</span>
+                <span>{parent.title}</span>
+              </button>
+            </nav>
+          ) : null}
+          {showTopBar ? (
+            <div className="flex shrink-0 items-center justify-between px-7 pb-4 pt-4 text-[14px] font-semibold text-white">
+              <div>
+                <span>{timeLabel}</span>
+              </div>
+              <div className="mr-[-0.5rem] flex items-center text-[12px] text-white/92">
+                <Image
+                  src="/airplane_mode.png"
+                  alt="Airplane mode"
+                  width={18}
+                  height={18}
+                  className="h-[18px] w-[15px] object-contain"
+                />
+                <Image
+                  src="/wifi.png"
+                  alt="Wi-Fi"
+                  width={20}
+                  height={15}
+                  className="ml-[0.32rem] h-[15px] w-[20px] object-contain"
+                />
+                <Image
+                  src="/battery.png"
+                  alt="Battery"
+                  width={36}
+                  height={35}
+                  className="ml-[0rem] h-[20px] w-[32px] object-contain"
                 />
               </div>
-            ) : (
-              <div className="flex h-full flex-col rounded-[1.9rem] border border-white/12 bg-black/34 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-transparent">Home</span>
-                    <span className="text-base font-semibold text-white">{phoneScreen.title}</span>
-                    <span className="text-sm text-white/68">
-                      {getItemsForApp(phoneScreen.app).length}
-                    </span>
-                  </div>
-
-                  <div className="mt-5 space-y-3">
-                    {getItemsForApp(phoneScreen.app).map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => openEntity(item)}
-                        className="w-full rounded-[1.5rem] border border-white/12 bg-black/24 px-4 py-4 text-left backdrop-blur-lg transition hover:border-white/24"
-                      >
-                        <div className="flex items-center gap-3">
-                          {getEntityIconSrc(item.id) ? (
-                            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[0.95rem]">
-                              <Image
-                                src={getEntityIconSrc(item.id)!}
-                                alt={item.title}
-                                fill
-                                className="object-cover"
-                                sizes="48px"
-                              />
-                            </div>
-                          ) : null}
-                          <p className="text-sm font-semibold text-white">{item.title}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-              </div>
-            )
-          ) : visibleEntity ? (
-            visibleEntity.id === "photos" ? (
-              <PhotosApp />
-            ) : visibleEntity.id === "stripe" ? (
-              <ExperienceApp key="stripe" screenId="stripe" />
-            ) : visibleEntity.id === "heygen" ? (
-              <ExperienceApp screenId="heygen" />
-            ) : visibleEntity.id === "hippos-exoskeleton" ? (
-              <ExperienceApp screenId="hippos-exoskeleton" />
-            ) : visibleEntity.id === "momenta" ? (
-              <ExperienceApp screenId="momenta" />
-            ) : visibleEntity.id === "jma-consulting" ? (
-              <ExperienceApp screenId="jma-consulting" />
-            ) : visibleEntity.id === "school" ? (
-              <ExperienceApp screenId="school" />
-            ) : visibleEntity.id === "modelgate" || visibleEntity.id === "flightdeck" || visibleEntity.id === "clearinghouse" ? (
-              <SystemsProjectApp key={visibleEntity.id} projectId={visibleEntity.id} />
-            ) : visibleEntity.id === "matrix" ? (
-              <MatrixApp />
-            ) : visibleEntity.id === "robintrain" ? (
-              <RobinTrainApp />
-            ) : visibleEntity.id === "elbow-exo" ? (
-              <ElbowExoApp />
-            ) : visibleEntity.id === "gymbro" ? (
-              <GymBroApp />
-            ) : visibleEntity.id === "aura-dev" ? (
-              <AuraApp />
-            ) : visibleEntity.id === "adapt-ui" ? (
-              <AdaptApp />
-            ) : visibleEntity.id === "apollo" ? (
-              <GodProjectApp projectId="apollo" />
-            ) : visibleEntity.id === "aphrodite" ? (
-              <GodProjectApp projectId="aphrodite" />
-            ) : visibleEntity.id === "hermes" ? (
-              <GodProjectApp projectId="hermes" />
-            ) : visibleEntity.id === "kronos" ? (
-              <GodProjectApp projectId="kronos" />
-            ) : visibleEntity.id === "resume" ? (
-              <ResumeApp />
-            ) : visibleEntity.id === "contact" ? (
-              <ContactApp />
-            ) : (
-              <PlaceholderPage title={visibleEntity.title} />
-            )
-          ) : (
-            <div className="flex h-full flex-col justify-center rounded-[1.9rem] border border-white/12 bg-black/30 p-6 text-center backdrop-blur-xl">
-              <p className="text-sm font-medium text-white/82">
-                Open a section from the iPhone homescreen or let the avatar navigate for you.
-              </p>
             </div>
-          )}
-        </motion.div>
+          ) : null}
+
+          <div
+            className={clsx(
+              "flex min-h-0 flex-1 flex-col px-0 pb-0",
+              clipScreenShell ? "overflow-hidden rounded-[2.35rem]" : null,
+            )}
+          >
+            {phoneScreen.view === "home" ? (
+              homeScreen
+            ) : phoneScreen.app === "phone" ? (
+              <PhoneAppScreen
+                initialContactId={phoneScreen.contactId}
+                initialCallMode={phoneScreen.callMode}
+                onOpenMessages={(contactId) => openMessages(contactId)}
+                onUpdateTarget={(contactId, callMode) => openPhone(contactId, callMode)}
+              />
+            ) : phoneScreen.app === "messages" ? (
+              <MessagesApp
+                selectedContactId={selectedMessageContactId}
+                threads={messageThreads}
+                onOpenThread={(contactId) => openMessages(contactId)}
+                onCloseThread={() => openMessages(null)}
+                onSendMessage={sendChatMessage}
+                sendingContactId={sendingMessageContactId}
+                error={messagesError}
+              />
+            ) : phoneScreen.app === "safari" ? (
+              <SafariApp />
+            ) : phoneScreen.app === "spotify" ? (
+              <SpotifyApp />
+            ) : phoneScreen.app === "settings" ? (
+              <SettingsApp />
+            ) : phoneScreen.view === "list" ? (
+              phoneScreen.app === "projects" ||
+              phoneScreen.app === "primitives" ||
+              phoneScreen.app === "experience" ? (
+                <div className="relative h-full overflow-hidden rounded-[2rem]">
+                  <div aria-hidden="true" inert className="pointer-events-none absolute inset-0 scale-[1.035] blur-[14px] brightness-[0.72]">
+                    {homeScreen}
+                  </div>
+                  <div className="absolute inset-0 bg-black/14" />
+                  <FolderGrid
+                    title={phoneScreen.title}
+                    items={getItemsForApp(phoneScreen.app)}
+                    onOpen={openEntity}
+                    getIconSrc={getEntityIconSrc}
+                    onClose={goPhoneHome}
+                  />
+                </div>
+              ) : (
+                <div className="glass-surface-strong flex h-full flex-col rounded-[1.9rem] border bg-black/20 p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-transparent">Home</span>
+                      <span className="text-base font-semibold text-white">{phoneScreen.title}</span>
+                      <span className="text-sm text-white/68">
+                        {getItemsForApp(phoneScreen.app).length}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                      {getItemsForApp(phoneScreen.app).map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => openEntity(item)}
+                          className="glass-surface w-full rounded-[1.5rem] border bg-black/[0.12] px-4 py-4 text-left transition hover:bg-white/10"
+                        >
+                          <div className="flex items-center gap-3">
+                            {getEntityIconSrc(item.id) ? (
+                              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[0.95rem]">
+                                <Image
+                                  src={getEntityIconSrc(item.id)!}
+                                  alt={item.title}
+                                  fill
+                                  className="object-cover"
+                                  sizes="48px"
+                                />
+                              </div>
+                            ) : null}
+                            <p className="text-sm font-semibold text-white">{item.title}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                </div>
+              )
+            ) : visibleEntity ? (
+              visibleEntity.id === "photos" ? (
+                <PhotosApp />
+              ) : visibleEntity.id === "stripe" ? (
+                <ExperienceApp key="stripe" screenId="stripe" />
+              ) : visibleEntity.id === "heygen" ? (
+                <ExperienceApp screenId="heygen" />
+              ) : visibleEntity.id === "hippos-exoskeleton" ? (
+                <ExperienceApp screenId="hippos-exoskeleton" />
+              ) : visibleEntity.id === "momenta" ? (
+                <ExperienceApp screenId="momenta" />
+              ) : visibleEntity.id === "jma-consulting" ? (
+                <ExperienceApp screenId="jma-consulting" />
+              ) : visibleEntity.id === "school" ? (
+                <ExperienceApp screenId="school" />
+              ) : visibleEntity.id === "modelgate" || visibleEntity.id === "flightdeck" || visibleEntity.id === "clearinghouse" ? (
+                <SystemsProjectApp key={visibleEntity.id} projectId={visibleEntity.id} />
+              ) : visibleEntity.id === "matrix" ? (
+                <MatrixApp />
+              ) : visibleEntity.id === "robintrain" ? (
+                <RobinTrainApp />
+              ) : visibleEntity.id === "elbow-exo" ? (
+                <ElbowExoApp />
+              ) : visibleEntity.id === "gymbro" ? (
+                <GymBroApp />
+              ) : visibleEntity.id === "aura-dev" ? (
+                <AuraApp />
+              ) : visibleEntity.id === "adapt-ui" ? (
+                <AdaptApp />
+              ) : visibleEntity.id === "apollo" ? (
+                <GodProjectApp projectId="apollo" />
+              ) : visibleEntity.id === "aphrodite" ? (
+                <GodProjectApp projectId="aphrodite" />
+              ) : visibleEntity.id === "hermes" ? (
+                <GodProjectApp projectId="hermes" />
+              ) : visibleEntity.id === "kronos" ? (
+                <GodProjectApp projectId="kronos" />
+              ) : visibleEntity.id === "resume" ? (
+                <ResumeApp />
+              ) : visibleEntity.id === "contact" ? (
+                <ContactApp />
+              ) : (
+                <PlaceholderPage title={visibleEntity.title} />
+              )
+            ) : (
+              <div className="glass-surface-strong flex h-full flex-col justify-center rounded-[1.9rem] border bg-black/20 p-6 text-center">
+                <p className="text-sm font-medium text-white/82">
+                  Open a section from the iPhone homescreen or let the avatar navigate for you.
+                </p>
+              </div>
+            )}
+          </div>
+        </PhoneScreenTransition>
       </AnimatePresence>
     </div>
   );
@@ -675,7 +718,7 @@ function HomeScreen({
   return (
     <div className="flex h-full flex-col px-3 pb-4 pt-2">
       <div className="grid auto-rows-[64px] grid-cols-4 gap-x-3 gap-y-[1.45rem]">
-        <div className="col-span-2 row-span-2 mx-auto w-[90%] rounded-[1.32rem] border border-white/12 bg-black/68 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
+        <div className="glass-surface col-span-2 row-span-2 mx-auto w-[90%] rounded-[1.32rem] border bg-black/25 p-3">
           <div className="flex h-full flex-col items-center justify-center text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/72">PT</p>
             <p className="mt-1 font-display text-[2.1rem] leading-none tracking-tight text-white">
@@ -753,14 +796,14 @@ function HomeScreen({
       </div>
 
       <div className="mt-auto pt-0">
-        <div className="grid grid-cols-4 gap-x-1.5 gap-y-3 rounded-[1.7rem] border border-white/12 bg-black/30 p-3 shadow-[0_20px_45px_rgba(0,0,0,0.26)] backdrop-blur-xl">
+        <div className="glass-surface grid grid-cols-4 gap-x-1.5 gap-y-3 rounded-[1.7rem] border bg-white/[0.08] p-3">
           {[
             { label: "Messages", iconSrc: "/icons/messages.png", tint: "from-emerald-400 to-lime-500", onClick: onOpenMessages },
             { label: "Phone", iconSrc: "/icons/call.webp", tint: "from-green-400 to-emerald-500", onClick: onOpenPhone },
             { label: "Safari", iconSrc: "/icons/safari.jpg", tint: "from-sky-400 to-blue-500", onClick: onOpenSafari },
             { label: "Settings", iconSrc: "/icons/settings.webp", tint: "from-zinc-300 to-zinc-500", onClick: onOpenSettings },
           ].map((dockItem) => (
-            <button key={dockItem.label} type="button" onClick={dockItem.onClick} className="text-center">
+            <button key={dockItem.label} type="button" onClick={dockItem.onClick} className="text-center transition-transform duration-200 ease-out hover:scale-[1.035] active:scale-[0.94]">
               <div
                 className={`mx-auto relative flex h-[56px] w-[56px] items-center justify-center overflow-hidden rounded-[1.15rem] bg-gradient-to-br ${dockItem.tint} shadow-[0_16px_24px_rgba(0,0,0,0.2)]`}
               >
@@ -802,9 +845,9 @@ function AppIcon({
   children?: React.ReactNode;
 }) {
   return (
-    <button type="button" onClick={onClick} className="text-center">
+    <button type="button" onClick={onClick} className="text-center transition-transform duration-200 ease-out hover:scale-[1.035] active:scale-[0.94]">
       {folder ? (
-        <div className="mx-auto grid h-[54px] w-[54px] grid-cols-2 gap-[3px] rounded-[0.95rem] bg-[rgba(176,181,191,0.58)] p-[5px] shadow-[0_10px_18px_rgba(0,0,0,0.12)] backdrop-blur-md">
+        <div className="glass-surface mx-auto grid h-[54px] w-[54px] grid-cols-2 gap-[3px] rounded-[0.95rem] border bg-white/15 p-[5px]">
           {children}
         </div>
       ) : (
@@ -861,7 +904,7 @@ function DateWidget({
   day: string;
 }) {
   return (
-    <div className="col-span-2 row-span-2 mx-auto w-[90%] rounded-[1.32rem] border border-white/12 bg-black/74 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-md">
+    <div className="glass-surface col-span-2 row-span-2 mx-auto w-[90%] rounded-[1.32rem] border bg-black/25 p-3">
       <div className="flex h-full flex-col items-center justify-center text-center">
         <div className="flex items-center justify-center gap-2 text-[0.8rem] font-semibold">
           <span className="text-red-400">{weekday}</span>
@@ -917,17 +960,17 @@ function FolderGrid({
           type="button"
           onClick={onClose}
           aria-label={`Close ${title} folder`}
-          className="absolute right-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/15 text-lg text-white/85 backdrop-blur-xl transition hover:bg-black/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+          className="glass-surface absolute right-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border bg-black/15 text-lg text-white/90 transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
         >
           <span aria-hidden="true">×</span>
         </button>
       </div>
 
-      <div className="relative h-[340px] w-full max-w-[320px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(214,201,196,0.78),rgba(194,189,197,0.72))] px-3 py-5 shadow-[0_22px_50px_rgba(0,0,0,0.24)] backdrop-blur-2xl sm:px-5">
+      <div className="glass-surface-strong relative h-[340px] w-full max-w-[320px] rounded-[2rem] border bg-white/[0.16] px-3 py-5 sm:px-5">
         <div className="grid h-full grid-cols-3 grid-rows-3 gap-x-3 gap-y-4">
           {slots.map((item, index) =>
             item ? (
-              <button key={item.id} type="button" onClick={() => onOpen(item)} className="min-w-0 rounded-xl text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+              <button key={item.id} type="button" onClick={() => onOpen(item)} className="min-w-0 rounded-xl text-center transition-transform duration-200 ease-out hover:scale-[1.035] active:scale-[0.94] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
                 <div className="relative mx-auto h-[min(68px,17vw)] w-[min(68px,17vw)] overflow-hidden rounded-[1.15rem] bg-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
                   {getIconSrc(item.id) ? (
                     <Image

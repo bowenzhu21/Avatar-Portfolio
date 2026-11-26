@@ -41,10 +41,10 @@ export function MicToggleButton() {
         }}
         disabled={disabled}
         className={clsx(
-          "group panel-blur relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-transparent sm:h-16 sm:w-16",
+          "group glass-surface relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border transition-[background-color,border-color,box-shadow,transform] duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-transparent sm:h-16 sm:w-16",
           isListening
-            ? "border-cyan-200/60 bg-cyan-300/15 shadow-[0_0_35px_rgba(53,200,255,0.15)]"
-            : "border-white/45 bg-white/15 shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:border-white/70 hover:bg-white/25",
+            ? "border-cyan-200/60 bg-cyan-300/20"
+            : "bg-white/10 hover:border-white/70 hover:bg-white/20",
           disabled && "cursor-not-allowed opacity-50",
           permissionDenied && "border-rose-200/55",
         )}

@@ -51,7 +51,7 @@ export function OverlayShell({ children }: OverlayShellProps) {
                 aria-expanded={assistantOpen}
                 aria-controls="portfolio-assistant-controls"
                 onClick={toggleAssistant}
-                className="mt-3 flex min-h-11 items-center justify-between rounded-2xl border border-white/25 bg-black/25 px-5 text-sm text-white backdrop-blur-xl lg:hidden"
+                className="glass-surface mt-3 flex min-h-11 items-center justify-between rounded-2xl border bg-slate-950/25 px-5 text-sm text-white transition-colors hover:bg-slate-950/35 lg:hidden"
               >
                 <span>{assistantOpen ? "Close conversation" : "Ask Bowen"}</span>
                 <span aria-hidden="true">{assistantOpen ? "−" : "+"}</span>

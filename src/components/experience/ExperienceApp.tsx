@@ -12,16 +12,6 @@ const experienceTabs = [
 
 type ExperienceTabId = (typeof experienceTabs)[number]["id"];
 
-const navGlassStyle = {
-  backgroundImage:
-    "linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015)), linear-gradient(135deg,rgba(255,255,255,0.012),rgba(255,255,255,0.004))",
-} as const;
-
-const liquidGlassStyle = {
-  backgroundImage:
-    "linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06)), linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))",
-} as const;
-
 export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceScreens }) {
   const screen = experienceScreens[screenId];
   const [activeTab, setActiveTab] = useState<ExperienceTabId>("home");
@@ -40,7 +30,7 @@ export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceS
       style={shellStyle}
     >
       <div className={`relative z-10 flex min-h-0 flex-1 flex-col ${isLightText ? "text-white" : "text-[#172033]"}`}>
-        <header className="border-b border-white/22 px-5 pb-5 pt-5 backdrop-blur-[18px]">
+        <header className={`border-b px-5 pb-5 pt-5 ${isLightText ? "glass-surface bg-black/10" : "glass-surface-light bg-white/[0.16]"}`}>
           <h1 className={`text-[2.1rem] font-semibold tracking-[-0.07em] ${isLightText ? "text-white" : "text-[#172033]"}`}>
             {screen.title}
           </h1>
@@ -66,8 +56,7 @@ export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceS
         </div>
 
         {screen.status !== "incoming" ? <nav
-          className="absolute inset-x-7 bottom-5 z-20 overflow-hidden rounded-[1.7rem] border border-white/18 shadow-[0_12px_28px_rgba(0,0,0,0.12)] backdrop-blur-[22px]"
-          style={navGlassStyle}
+          className={`absolute inset-x-7 bottom-5 z-20 overflow-hidden rounded-[1.7rem] border ${isLightText ? "glass-surface-strong bg-black/[0.16]" : "glass-surface-light bg-white/40"}`}
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/72 to-transparent" />
           <div className="absolute left-6 top-0 h-[55%] w-[34%] rounded-full bg-white/[0.12] blur-2xl" />
@@ -83,7 +72,9 @@ export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceS
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={`mx-auto w-[3.15rem] rounded-[1.1rem] px-1 py-1.5 text-center transition ${
-                    active ? "bg-white/[0.035]" : "hover:bg-white/[0.025]"
+                    isLightText
+                      ? active ? "bg-white/[0.16]" : "hover:bg-white/10"
+                      : active ? "bg-black/[0.08]" : "hover:bg-black/5"
                   }`}
                   aria-pressed={active}
                   aria-label={tab.label}
@@ -94,11 +85,7 @@ export function ExperienceApp({ screenId }: { screenId: keyof typeof experienceS
                       alt={`${tab.label} icon`}
                       fill
                       sizes="24px"
-                      className={`object-contain transition ${
-                        active
-                          ? "scale-105 opacity-100 brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.14)]"
-                          : "opacity-68 brightness-0 invert"
-                      }`}
+                      className={`object-contain brightness-0 transition ${isLightText ? "invert" : ""} ${active ? "scale-105 opacity-100" : "opacity-70"}`}
                     />
                   </div>
                 </button>
@@ -122,7 +109,7 @@ function OverviewPage({
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/26 shadow-[0_24px_60px_rgba(0,0,0,0.16)]">
+      <div className={`relative overflow-hidden rounded-[2rem] border ${isLightText ? "glass-surface bg-black/[0.12]" : "glass-surface-light bg-white/[0.12]"}`}>
         <div className={`absolute inset-0 ${
           isLightText
             ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.32),rgba(0,0,0,0.18))]"
@@ -178,8 +165,7 @@ function HighlightsPage({
   if (!screen.bullets.length) {
     return (
       <div
-        className={`rounded-[1.7rem] border border-white/22 px-4 py-4 text-[0.82rem] leading-6 backdrop-blur-[20px] ${isLightText ? "text-white/84" : "text-[#31415e]"}`}
-        style={liquidGlassStyle}
+        className={`rounded-[1.7rem] border px-4 py-4 text-[0.82rem] leading-6 ${isLightText ? "glass-surface bg-black/[0.12] text-white/84" : "glass-surface-light bg-white/[0.12] text-[#31415e]"}`}
       >
         No detailed highlights have been added for this experience yet.
       </div>
@@ -195,10 +181,10 @@ function HighlightsPage({
           return (
             <li key={bullet} className={`relative pl-12 ${isLast ? "" : "pb-8"}`}>
               {!isLast ? (
-                <span className={`absolute left-[0.96rem] top-9 bottom-0 w-px ${isLightText ? "bg-white/16" : "bg-[#172033]/12"}`} />
+                <span className={`absolute left-[0.96rem] top-9 bottom-0 w-px ${isLightText ? "bg-white/[0.16]" : "bg-[#172033]/12"}`} />
               ) : null}
               <span
-                className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border bg-white/18 text-[11px] font-semibold backdrop-blur-[16px] ${isLightText ? "text-white" : "text-[#172033]"}`}
+                className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border bg-white/[0.12] text-[11px] font-semibold ${isLightText ? "glass-surface text-white" : "glass-surface-light text-[#172033]"}`}
                 style={{ borderColor: `${screen.accent}55` }}
               >
                 {String(index + 1).padStart(2, "0")}

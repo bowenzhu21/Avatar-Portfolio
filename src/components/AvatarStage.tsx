@@ -14,7 +14,7 @@ export function AvatarStage() {
   const footerLabel = latestUserUtterance ? `Latest prompt: ${latestUserUtterance}` : "";
 
   return (
-    <div className="relative min-h-[116px] overflow-hidden rounded-[2rem] border border-white/14 bg-black/40 shadow-[0_32px_100px_rgba(0,0,0,0.42)] backdrop-blur-[6px] lg:min-h-[min(445px,55dvh)] lg:rounded-[2.6rem]">
+    <div className="glass-surface-strong relative min-h-[116px] overflow-hidden rounded-[2rem] border bg-slate-950/30 lg:min-h-[min(445px,55dvh)] lg:rounded-[2.6rem]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_50%_78%,rgba(0,190,255,0.07),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.006)_28%,rgba(255,255,255,0.015)_100%)]" />
       <div className="absolute inset-x-10 top-0 h-24 rounded-b-[2.4rem] bg-white/7 blur-3xl" />
 

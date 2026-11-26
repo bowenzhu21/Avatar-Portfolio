@@ -52,11 +52,6 @@ const liquidGlassStyle = {
     "linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05)), linear-gradient(135deg,rgba(8,12,20,0.34),rgba(8,12,20,0.14))",
 } as const;
 
-const navGlassStyle = {
-  backgroundImage:
-    "linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015)), linear-gradient(135deg,rgba(255,255,255,0.012),rgba(255,255,255,0.004))",
-} as const;
-
 export function ProjectAppShell({
   title,
   backgroundImageSrc,
@@ -108,8 +103,8 @@ export function ProjectAppShell({
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         <header
-          className={`px-5 pb-5 pt-5 backdrop-blur-[18px] ${
-            isLightTone ? "border-b border-black/12" : "border-b border-white/10"
+          className={`border-b px-5 pb-5 pt-5 ${
+            isLightTone ? "glass-surface-light bg-white/[0.16]" : "glass-surface bg-black/10"
           }`}
         >
           <h1
@@ -159,8 +154,7 @@ export function ProjectAppShell({
         </div>
 
         <nav
-          className="absolute inset-x-7 bottom-5 z-20 overflow-hidden rounded-[1.7rem] border border-white/10 shadow-[0_12px_28px_rgba(0,0,0,0.14)] backdrop-blur-[22px]"
-          style={navGlassStyle}
+          className={`absolute inset-x-7 bottom-5 z-20 overflow-hidden rounded-[1.7rem] border ${isLightTone ? "glass-surface-light bg-white/40" : "glass-surface-strong bg-black/[0.16]"}`}
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/72 to-transparent" />
           <div className="absolute left-6 top-0 h-[55%] w-[34%] rounded-full bg-white/[0.12] blur-2xl" />
@@ -176,7 +170,9 @@ export function ProjectAppShell({
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={`mx-auto w-[3.15rem] rounded-[1.1rem] px-1 py-1.5 text-center transition ${
-                    active ? "bg-white/[0.035]" : "hover:bg-white/[0.025]"
+                    isLightTone
+                      ? active ? "bg-black/[0.08]" : "hover:bg-black/5"
+                      : active ? "bg-white/[0.16]" : "hover:bg-white/10"
                   }`}
                   aria-pressed={active}
                   aria-label={tab.label}
@@ -187,11 +183,7 @@ export function ProjectAppShell({
                       alt={`${tab.label} icon`}
                       fill
                       sizes="24px"
-                      className={`object-contain transition ${
-                        active
-                          ? "scale-105 opacity-100 brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.14)]"
-                          : "opacity-68 brightness-0 invert"
-                      }`}
+                      className={`object-contain brightness-0 transition ${isLightTone ? "" : "invert"} ${active ? "scale-105 opacity-100" : "opacity-70"}`}
                     />
                   </div>
                 </button>
@@ -268,7 +260,7 @@ function OverviewPage({
           className={`flex min-h-11 items-center justify-between gap-4 rounded-full border px-5 py-3 text-[0.82rem] font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ${
             isLightTone
               ? "border-black/15 bg-black/90 text-white hover:bg-black"
-              : "border-white/20 bg-white/12 text-white backdrop-blur-xl hover:bg-white/20"
+              : "glass-surface bg-white/10 text-white hover:bg-white/20"
           }`}
         >
           <span>{primaryAction.title}</span>
@@ -304,10 +296,10 @@ function HighlightsPage({
                 />
               ) : null}
               <span
-                className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-semibold backdrop-blur-[16px] ${
+                className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-semibold ${
                   isLightTone
-                    ? "border-black/18 bg-black/[0.03] text-black/82"
-                    : "border-white/22 bg-white/6 text-white/84"
+                    ? "glass-surface-light bg-white/[0.12] text-black/82"
+                    : "glass-surface bg-white/[0.06] text-white/84"
                 }`}
               >
                 {String(index + 1).padStart(2, "0")}
@@ -368,7 +360,7 @@ function GalleryPage({
             <button
               type="button"
               onClick={onPrevious}
-              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/14 bg-black/26 text-[1.35rem] text-white/86 backdrop-blur-xl"
+              className="glass-surface absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border bg-black/20 text-[1.35rem] text-white/86"
               aria-label={`Previous ${title} image`}
             >
               ‹
@@ -377,7 +369,7 @@ function GalleryPage({
             <button
               type="button"
               onClick={onNext}
-              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/14 bg-black/26 text-[1.35rem] text-white/86 backdrop-blur-xl"
+              className="glass-surface absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border bg-black/20 text-[1.35rem] text-white/86"
               aria-label={`Next ${title} image`}
             >
               ›
@@ -385,7 +377,7 @@ function GalleryPage({
           </>
         ) : null}
 
-        <div className="absolute bottom-4 right-4 rounded-full border border-white/12 bg-black/16 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/58 backdrop-blur-xl">
+        <div className="glass-surface absolute bottom-4 right-4 rounded-full border bg-black/[0.16] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/[0.72]">
           {activeImageIndex + 1}/{images.length}
         </div>
       </div>
@@ -403,7 +395,7 @@ function GalleryPage({
               href={activeImage.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex min-h-11 items-center justify-between gap-4 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-[0.82rem] font-medium text-white backdrop-blur-xl transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+              className="glass-surface flex min-h-11 items-center justify-between gap-4 rounded-full border bg-white/10 px-5 py-3 text-[0.82rem] font-medium text-white transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
             >
               <span>Open interactive report</span>
               <span aria-hidden="true">↗</span>
@@ -464,7 +456,7 @@ function LinksPage({ links }: { links: ProjectAppLink[] }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-[1.4rem] border border-white/10 bg-black/18 px-4 py-5 text-center backdrop-blur-xl">
+        <div className="glass-surface rounded-[1.4rem] border bg-black/[0.12] px-4 py-5 text-center">
           <p className="text-[0.82rem] font-medium text-white/72">Links coming soon.</p>
         </div>
       )}

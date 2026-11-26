@@ -199,7 +199,7 @@ function SafariChrome({
   isLoading: boolean;
 }) {
   return (
-    <div className="border-b border-black/6 bg-[rgba(250,250,252,0.94)] px-3 pb-3 pt-3 backdrop-blur-xl">
+    <div className="glass-surface-light border-b bg-white/65 px-3 pb-3 pt-3">
       <div className="flex items-center gap-2">
         <BrowserIcon onClick={onBack} disabled={!canGoBack}>
           &#8249;

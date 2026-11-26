@@ -35,7 +35,7 @@ export function SuggestedPromptChips() {
             setPartialTranscript("");
             submitUtterance(prompt, "chip");
           }}
-          className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-sand-100/80 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-sand-100"
+          className="glass-surface rounded-full border bg-slate-950/20 px-3 py-2 text-xs text-sand-100/90 transition hover:border-cyan-200/50 hover:bg-cyan-300/15 hover:text-sand-100"
         >
           {prompt}
         </button>

@@ -9,7 +9,7 @@ export function SettingsApp() {
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#f2f2f7] text-[#111111]">
-      <header className="border-b border-black/6 bg-[rgba(242,242,247,0.92)] px-5 pb-4 pt-6 backdrop-blur-xl">
+      <header className="glass-surface-light border-b bg-white/60 px-5 pb-4 pt-6">
         <h1 className="text-[2.2rem] font-semibold tracking-[-0.06em] text-[#111111]">
           Settings
         </h1>

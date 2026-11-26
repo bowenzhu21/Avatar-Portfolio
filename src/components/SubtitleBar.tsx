@@ -96,7 +96,7 @@ export function SubtitleBar() {
   return (
     <section
       aria-label="Ask Bowen"
-      className={`panel-blur relative mx-auto border border-white/25 bg-black/35 text-white shadow-[0_18px_50px_rgba(0,0,0,0.1)] backdrop-blur-[8px] ${hasFeedback || inputExpanded ? "w-full max-w-3xl rounded-[1.4rem] p-3 sm:p-4" : "w-fit rounded-full p-1"}`}
+      className={`glass-surface relative mx-auto border bg-slate-950/30 text-white ${hasFeedback || inputExpanded ? "w-full max-w-3xl rounded-[1.4rem] p-3 sm:p-4" : "w-fit rounded-full p-1"}`}
     >
       {(hasMessage || !inputExpanded) && (
         <div className="flex items-start gap-2">
@@ -136,7 +136,7 @@ export function SubtitleBar() {
         <form
           id="portfolio-prompt-form"
           onSubmit={handleSubmit}
-          className={`${hasMessage ? "mt-2 " : ""}flex items-center gap-1 rounded-full border border-white/20 bg-white/[0.07] p-1 focus-within:border-white/55`}
+          className={`${hasMessage ? "mt-2 " : ""}flex items-center gap-1 rounded-full border border-white/25 bg-white/[0.08] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-colors focus-within:border-white/55`}
           aria-busy={isPending}
         >
           <label htmlFor="portfolio-prompt" className="sr-only">Your question for Bowen</label>

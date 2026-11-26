@@ -161,7 +161,7 @@ function MessagesInbox({
 }) {
   return (
     <>
-      <div className="border-b border-black/6 bg-[rgba(248,248,250,0.94)] px-4 pb-3 pt-4 backdrop-blur-xl">
+      <div className="glass-surface-light border-b bg-white/60 px-4 pb-3 pt-4">
         <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#111111]">Messages</h1>
       </div>
 
@@ -247,7 +247,7 @@ function MessagesThreadHeader({
   onBack: () => void;
 }) {
   return (
-    <div className="border-b border-black/6 bg-[rgba(248,248,250,0.96)] px-3 pb-2 pt-2 backdrop-blur-xl">
+    <div className="glass-surface-light border-b bg-white/65 px-3 pb-2 pt-2">
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
         <button
           type="button"
@@ -336,7 +336,7 @@ function MessageComposer({
   }
 
   return (
-    <div className="border-t border-black/6 bg-[rgba(248,248,250,0.98)] px-3 pb-4 pt-2 backdrop-blur-xl">
+    <div className="glass-surface-light border-t bg-white/70 px-3 pb-4 pt-2">
       {error ? <p className="pb-2 text-[0.72rem] text-[#c24b4b]">{error}</p> : null}
       <form
         className="flex items-end gap-2"

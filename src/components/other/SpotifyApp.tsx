@@ -35,7 +35,7 @@ export function SpotifyApp() {
       </header>
 
       <main className="relative z-10 min-h-0 flex-1 overflow-y-auto px-5 pb-7 pt-3">
-        <section className="rounded-[1.65rem] border border-white/8 bg-white/[0.045] p-4 shadow-[0_26px_60px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+        <section className="glass-surface rounded-[1.65rem] border bg-white/[0.035] p-4">
           <div className="relative mx-auto aspect-square w-[82%] overflow-hidden rounded-[1.2rem] shadow-[0_24px_45px_rgba(0,0,0,0.5)]">
             <Image
               src={activeTrack.coverSrc}

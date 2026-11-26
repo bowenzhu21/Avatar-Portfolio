@@ -6,7 +6,7 @@ import type { Route } from "next";
 import clsx from "clsx";
 import { useRef } from "react";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
-import { derivePhoneScreen, getPhoneParent, resolvePhoneScreen } from "@/utils/phone";
+import { derivePhoneScreen, resolvePhoneScreen } from "@/utils/phone";
 
 interface RightSideCardProps {
   children: React.ReactNode;
@@ -21,7 +21,6 @@ export function RightSideCard({ children }: RightSideCardProps) {
   const activeRoute = usePortfolioStore((state) => state.activeRoute);
   const phoneScreen = resolvePhoneScreen(pathname, activeRoute, storedPhoneScreen);
   const showTopChrome = phoneScreen.view !== "detail";
-  const parent = getPhoneParent(phoneScreen);
 
   function navigateTo(route: string) {
     usePortfolioStore.setState({
@@ -90,19 +89,6 @@ export function RightSideCard({ children }: RightSideCardProps) {
                 className="isolate flex h-full flex-col overflow-hidden rounded-[2.5rem] bg-black"
                 style={{ clipPath: "inset(0 round 2.5rem)" }}
               >
-                {parent ? (
-                  <nav aria-label="Portfolio navigation" className="shrink-0 bg-white/[0.025] px-5 pb-1 pt-3">
-                    <button
-                      type="button"
-                      onClick={() => navigateTo(parent.route)}
-                      aria-label={`Back to ${parent.title}`}
-                      className="flex min-h-8 items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 text-[11px] font-medium text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
-                    >
-                      <span aria-hidden="true" className="text-base leading-none">‹</span>
-                      <span>{parent.title}</span>
-                    </button>
-                  </nav>
-                ) : null}
                 <div className="min-h-0 flex-1">{children}</div>
               </div>
             </div>
